@@ -1,0 +1,32 @@
+{
+    "name": "CompetitionProblem",
+    "fields": [
+        {
+            "fieldName": "order",
+            "fieldType": "Integer"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "problem",
+            "otherEntityName": "problem",
+            "otherEntityRelationshipName": "competitionProblem"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "competition",
+            "otherEntityName": "competition",
+            "otherEntityRelationshipName": "competitionProblem"
+        }
+    ],
+    "changelogDate": "20181219205716",
+    "entityTableName": "competition_problem",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}

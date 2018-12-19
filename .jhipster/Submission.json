@@ -1,0 +1,56 @@
+{
+    "name": "Submission",
+    "fields": [
+        {
+            "fieldName": "file",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "verdict",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "details",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "points",
+            "fieldType": "Integer"
+        },
+        {
+            "fieldName": "timeInMillis",
+            "fieldType": "Integer"
+        },
+        {
+            "fieldName": "memoryInBytes",
+            "fieldType": "Integer"
+        },
+        {
+            "fieldName": "uploadDate",
+            "fieldType": "ZonedDateTime"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "user",
+            "otherEntityName": "user",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "competitionProblem",
+            "otherEntityName": "competitionProblem",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20181219205717",
+    "entityTableName": "submission",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}
