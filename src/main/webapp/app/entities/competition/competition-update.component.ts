@@ -6,8 +6,6 @@ import { JhiAlertService } from 'ng-jhipster';
 
 import { ICompetition } from 'app/shared/model/competition.model';
 import { CompetitionService } from './competition.service';
-import { ICompetitionProblem } from 'app/shared/model/competition-problem.model';
-import { CompetitionProblemService } from 'app/entities/competition-problem';
 
 @Component({
     selector: 'jhi-competition-update',
@@ -19,12 +17,9 @@ export class CompetitionUpdateComponent implements OnInit {
 
     competitions: ICompetition[];
 
-    competitionproblems: ICompetitionProblem[];
-
     constructor(
         private jhiAlertService: JhiAlertService,
         private competitionService: CompetitionService,
-        private competitionProblemService: CompetitionProblemService,
         private activatedRoute: ActivatedRoute
     ) {}
 
@@ -36,12 +31,6 @@ export class CompetitionUpdateComponent implements OnInit {
         this.competitionService.query().subscribe(
             (res: HttpResponse<ICompetition[]>) => {
                 this.competitions = res.body;
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-        );
-        this.competitionProblemService.query().subscribe(
-            (res: HttpResponse<ICompetitionProblem[]>) => {
-                this.competitionproblems = res.body;
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
@@ -78,10 +67,6 @@ export class CompetitionUpdateComponent implements OnInit {
     }
 
     trackCompetitionById(index: number, item: ICompetition) {
-        return item.id;
-    }
-
-    trackCompetitionProblemById(index: number, item: ICompetitionProblem) {
         return item.id;
     }
 }

@@ -17,8 +17,7 @@
             },
             "title": "Title",
             "directory": "Directory",
-            "version": "Version",
-            "competitionProblem": "Competition Problem"
+            "version": "Version"
         }
     }
 }

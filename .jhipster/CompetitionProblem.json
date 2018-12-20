@@ -8,16 +8,16 @@
     ],
     "relationships": [
         {
-            "relationshipType": "one-to-many",
+            "relationshipType": "many-to-one",
             "relationshipName": "problem",
             "otherEntityName": "problem",
-            "otherEntityRelationshipName": "competitionProblem"
+            "otherEntityField": "id"
         },
         {
-            "relationshipType": "one-to-many",
+            "relationshipType": "many-to-one",
             "relationshipName": "competition",
             "otherEntityName": "competition",
-            "otherEntityRelationshipName": "competitionProblem"
+            "otherEntityField": "id"
         }
     ],
     "changelogDate": "20181219205716",

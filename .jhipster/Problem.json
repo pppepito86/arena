@@ -14,14 +14,7 @@
             "fieldType": "Integer"
         }
     ],
-    "relationships": [
-        {
-            "relationshipName": "competitionProblem",
-            "otherEntityName": "competitionProblem",
-            "relationshipType": "many-to-one",
-            "otherEntityField": "id"
-        }
-    ],
+    "relationships": [],
     "changelogDate": "20181219205715",
     "entityTableName": "problem",
     "dto": "mapstruct",

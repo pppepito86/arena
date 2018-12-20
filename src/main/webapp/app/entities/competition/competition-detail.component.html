@@ -23,12 +23,6 @@
                         <a [routerLink]="['/competition', competition.parentId, 'view']">{{competition.parentId}}</a>
                     </div>
                 </dd>
-                <dt><span jhiTranslate="arenaApp.competition.competitionProblem">Competition Problem</span></dt>
-                <dd>
-                    <div *ngIf="competition.competitionProblemId">
-                        <a [routerLink]="['/competition-problem', competition.competitionProblemId, 'view']">{{competition.competitionProblemId}}</a>
-                    </div>
-                </dd>
             </dl>
 
             <button type="submit"

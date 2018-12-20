@@ -18,8 +18,6 @@ public class CompetitionDTO implements Serializable {
 
     private Long parentId;
 
-    private Long competitionProblemId;
-
     public Long getId() {
         return id;
     }
@@ -60,14 +58,6 @@ public class CompetitionDTO implements Serializable {
         this.parentId = competitionId;
     }
 
-    public Long getCompetitionProblemId() {
-        return competitionProblemId;
-    }
-
-    public void setCompetitionProblemId(Long competitionProblemId) {
-        this.competitionProblemId = competitionProblemId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -97,7 +87,6 @@ public class CompetitionDTO implements Serializable {
             ", description='" + getDescription() + "'" +
             ", order=" + getOrder() +
             ", parent=" + getParentId() +
-            ", competitionProblem=" + getCompetitionProblemId() +
             "}";
     }
 }

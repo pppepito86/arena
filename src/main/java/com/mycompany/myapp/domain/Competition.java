@@ -36,10 +36,6 @@ public class Competition implements Serializable {
     @JsonIgnoreProperties("")
     private Competition parent;
 
-    @ManyToOne
-    @JsonIgnoreProperties("competitions")
-    private CompetitionProblem competitionProblem;
-
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -99,19 +95,6 @@ public class Competition implements Serializable {
 
     public void setParent(Competition competition) {
         this.parent = competition;
-    }
-
-    public CompetitionProblem getCompetitionProblem() {
-        return competitionProblem;
-    }
-
-    public Competition competitionProblem(CompetitionProblem competitionProblem) {
-        this.competitionProblem = competitionProblem;
-        return this;
-    }
-
-    public void setCompetitionProblem(CompetitionProblem competitionProblem) {
-        this.competitionProblem = competitionProblem;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

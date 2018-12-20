@@ -20,12 +20,6 @@
             "relationshipName": "parent",
             "otherEntityName": "competition",
             "otherEntityField": "id"
-        },
-        {
-            "relationshipName": "competitionProblem",
-            "otherEntityName": "competitionProblem",
-            "relationshipType": "many-to-one",
-            "otherEntityField": "id"
         }
     ],
     "changelogDate": "20181219205714",

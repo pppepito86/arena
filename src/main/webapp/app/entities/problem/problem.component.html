@@ -18,7 +18,6 @@
             <th jhiSortBy="title"><span jhiTranslate="arenaApp.problem.title">Title</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="directory"><span jhiTranslate="arenaApp.problem.directory">Directory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="version"><span jhiTranslate="arenaApp.problem.version">Version</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="competitionProblemId"><span jhiTranslate="arenaApp.problem.competitionProblem">Competition Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -28,11 +27,6 @@
                 <td>{{problem.title}}</td>
                 <td>{{problem.directory}}</td>
                 <td>{{problem.version}}</td>
-                <td>
-                    <div *ngIf="problem.competitionProblemId">
-                        <a [routerLink]="['../competition-problem', problem.competitionProblemId , 'view' ]" >{{problem.competitionProblemId}}</a>
-                    </div>
-                </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

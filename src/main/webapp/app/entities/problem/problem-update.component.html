@@ -25,13 +25,6 @@
                         [(ngModel)]="problem.version" />
                 </div>
 
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="arenaApp.problem.competitionProblem" for="field_competitionProblem">Competition Problem</label>
-                    <select class="form-control" id="field_competitionProblem" name="competitionProblem" [(ngModel)]="problem.competitionProblemId" >
-                        <option [ngValue]="null"></option>
-                        <option [ngValue]="competitionProblemOption.id" *ngFor="let competitionProblemOption of competitionproblems; trackBy: trackCompetitionProblemById">{{competitionProblemOption.id}}</option>
-                    </select>
-                </div>
             </div>
             <div>
                 <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">

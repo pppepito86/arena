@@ -17,12 +17,6 @@
                 <dd>
                     <span>{{problem.version}}</span>
                 </dd>
-                <dt><span jhiTranslate="arenaApp.problem.competitionProblem">Competition Problem</span></dt>
-                <dd>
-                    <div *ngIf="problem.competitionProblemId">
-                        <a [routerLink]="['/competition-problem', problem.competitionProblemId, 'view']">{{problem.competitionProblemId}}</a>
-                    </div>
-                </dd>
             </dl>
 
             <button type="submit"

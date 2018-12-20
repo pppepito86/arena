@@ -12,6 +12,10 @@ public class CompetitionProblemDTO implements Serializable {
 
     private Integer order;
 
+    private Long problemId;
+
+    private Long competitionId;
+
     public Long getId() {
         return id;
     }
@@ -26,6 +30,22 @@ public class CompetitionProblemDTO implements Serializable {
 
     public void setOrder(Integer order) {
         this.order = order;
+    }
+
+    public Long getProblemId() {
+        return problemId;
+    }
+
+    public void setProblemId(Long problemId) {
+        this.problemId = problemId;
+    }
+
+    public Long getCompetitionId() {
+        return competitionId;
+    }
+
+    public void setCompetitionId(Long competitionId) {
+        this.competitionId = competitionId;
     }
 
     @Override
@@ -54,6 +74,8 @@ public class CompetitionProblemDTO implements Serializable {
         return "CompetitionProblemDTO{" +
             "id=" + getId() +
             ", order=" + getOrder() +
+            ", problem=" + getProblemId() +
+            ", competition=" + getCompetitionId() +
             "}";
     }
 }

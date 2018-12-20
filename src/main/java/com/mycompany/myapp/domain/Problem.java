@@ -1,6 +1,5 @@
 package com.mycompany.myapp.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -31,10 +30,6 @@ public class Problem implements Serializable {
 
     @Column(name = "version")
     private Integer version;
-
-    @ManyToOne
-    @JsonIgnoreProperties("problems")
-    private CompetitionProblem competitionProblem;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -82,19 +77,6 @@ public class Problem implements Serializable {
 
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    public CompetitionProblem getCompetitionProblem() {
-        return competitionProblem;
-    }
-
-    public Problem competitionProblem(CompetitionProblem competitionProblem) {
-        this.competitionProblem = competitionProblem;
-        return this;
-    }
-
-    public void setCompetitionProblem(CompetitionProblem competitionProblem) {
-        this.competitionProblem = competitionProblem;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

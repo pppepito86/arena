@@ -1,14 +1,12 @@
 package com.mycompany.myapp.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
 
 /**
@@ -28,12 +26,14 @@ public class CompetitionProblem implements Serializable {
     @Column(name = "jhi_order")
     private Integer order;
 
-    @OneToMany(mappedBy = "competitionProblem")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<Problem> problems = new HashSet<>();
-    @OneToMany(mappedBy = "competitionProblem")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<Competition> competitions = new HashSet<>();
+    @ManyToOne
+    @JsonIgnoreProperties("")
+    private Problem problem;
+
+    @ManyToOne
+    @JsonIgnoreProperties("")
+    private Competition competition;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -56,54 +56,30 @@ public class CompetitionProblem implements Serializable {
         this.order = order;
     }
 
-    public Set<Problem> getProblems() {
-        return problems;
+    public Problem getProblem() {
+        return problem;
     }
 
-    public CompetitionProblem problems(Set<Problem> problems) {
-        this.problems = problems;
+    public CompetitionProblem problem(Problem problem) {
+        this.problem = problem;
         return this;
     }
 
-    public CompetitionProblem addProblem(Problem problem) {
-        this.problems.add(problem);
-        problem.setCompetitionProblem(this);
+    public void setProblem(Problem problem) {
+        this.problem = problem;
+    }
+
+    public Competition getCompetition() {
+        return competition;
+    }
+
+    public CompetitionProblem competition(Competition competition) {
+        this.competition = competition;
         return this;
     }
 
-    public CompetitionProblem removeProblem(Problem problem) {
-        this.problems.remove(problem);
-        problem.setCompetitionProblem(null);
-        return this;
-    }
-
-    public void setProblems(Set<Problem> problems) {
-        this.problems = problems;
-    }
-
-    public Set<Competition> getCompetitions() {
-        return competitions;
-    }
-
-    public CompetitionProblem competitions(Set<Competition> competitions) {
-        this.competitions = competitions;
-        return this;
-    }
-
-    public CompetitionProblem addCompetition(Competition competition) {
-        this.competitions.add(competition);
-        competition.setCompetitionProblem(this);
-        return this;
-    }
-
-    public CompetitionProblem removeCompetition(Competition competition) {
-        this.competitions.remove(competition);
-        competition.setCompetitionProblem(null);
-        return this;
-    }
-
-    public void setCompetitions(Set<Competition> competitions) {
-        this.competitions = competitions;
+    public void setCompetition(Competition competition) {
+        this.competition = competition;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

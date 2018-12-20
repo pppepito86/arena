@@ -9,6 +9,18 @@
                 <dd>
                     <span>{{competitionProblem.order}}</span>
                 </dd>
+                <dt><span jhiTranslate="arenaApp.competitionProblem.problem">Problem</span></dt>
+                <dd>
+                    <div *ngIf="competitionProblem.problemId">
+                        <a [routerLink]="['/problem', competitionProblem.problemId, 'view']">{{competitionProblem.problemId}}</a>
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.competitionProblem.competition">Competition</span></dt>
+                <dd>
+                    <div *ngIf="competitionProblem.competitionId">
+                        <a [routerLink]="['/competition', competitionProblem.competitionId, 'view']">{{competitionProblem.competitionId}}</a>
+                    </div>
+                </dd>
             </dl>
 
             <button type="submit"

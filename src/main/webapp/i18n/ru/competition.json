@@ -18,8 +18,7 @@
             "label": "Label",
             "description": "Description",
             "order": "Order",
-            "parent": "Parent",
-            "competitionProblem": "Competition Problem"
+            "parent": "Parent"
         }
     }
 }

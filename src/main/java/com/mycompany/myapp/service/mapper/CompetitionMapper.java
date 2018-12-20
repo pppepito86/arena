@@ -8,15 +8,13 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity Competition and its DTO CompetitionDTO.
  */
-@Mapper(componentModel = "spring", uses = {CompetitionProblemMapper.class})
+@Mapper(componentModel = "spring", uses = {})
 public interface CompetitionMapper extends EntityMapper<CompetitionDTO, Competition> {
 
     @Mapping(source = "parent.id", target = "parentId")
-    @Mapping(source = "competitionProblem.id", target = "competitionProblemId")
     CompetitionDTO toDto(Competition competition);
 
     @Mapping(source = "parentId", target = "parent")
-    @Mapping(source = "competitionProblemId", target = "competitionProblem")
     Competition toEntity(CompetitionDTO competitionDTO);
 
     default Competition fromId(Long id) {

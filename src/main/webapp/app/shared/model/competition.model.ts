@@ -4,16 +4,8 @@ export interface ICompetition {
     description?: string;
     order?: number;
     parentId?: number;
-    competitionProblemId?: number;
 }
 
 export class Competition implements ICompetition {
-    constructor(
-        public id?: number,
-        public label?: string,
-        public description?: string,
-        public order?: number,
-        public parentId?: number,
-        public competitionProblemId?: number
-    ) {}
+    constructor(public id?: number, public label?: string, public description?: string, public order?: number, public parentId?: number) {}
 }

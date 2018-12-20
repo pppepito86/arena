@@ -19,7 +19,6 @@
             <th jhiSortBy="description"><span jhiTranslate="arenaApp.competition.description">Description</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="order"><span jhiTranslate="arenaApp.competition.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="parentId"><span jhiTranslate="arenaApp.competition.parent">Parent</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="competitionProblemId"><span jhiTranslate="arenaApp.competition.competitionProblem">Competition Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -32,11 +31,6 @@
                 <td>
                     <div *ngIf="competition.parentId">
                         <a [routerLink]="['../competition', competition.parentId , 'view' ]" >{{competition.parentId}}</a>
-                    </div>
-                </td>
-                <td>
-                    <div *ngIf="competition.competitionProblemId">
-                        <a [routerLink]="['../competition-problem', competition.competitionProblemId , 'view' ]" >{{competition.competitionProblemId}}</a>
                     </div>
                 </td>
                 <td class="text-right">

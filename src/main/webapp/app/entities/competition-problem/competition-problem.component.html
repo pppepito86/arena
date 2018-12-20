@@ -16,6 +16,8 @@
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
             <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="order"><span jhiTranslate="arenaApp.competitionProblem.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="problemId"><span jhiTranslate="arenaApp.competitionProblem.problem">Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="competitionId"><span jhiTranslate="arenaApp.competitionProblem.competition">Competition</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -23,6 +25,16 @@
             <tr *ngFor="let competitionProblem of competitionProblems ;trackBy: trackId">
                 <td><a [routerLink]="['/competition-problem', competitionProblem.id, 'view' ]">{{competitionProblem.id}}</a></td>
                 <td>{{competitionProblem.order}}</td>
+                <td>
+                    <div *ngIf="competitionProblem.problemId">
+                        <a [routerLink]="['../problem', competitionProblem.problemId , 'view' ]" >{{competitionProblem.problemId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="competitionProblem.competitionId">
+                        <a [routerLink]="['../competition', competitionProblem.competitionId , 'view' ]" >{{competitionProblem.competitionId}}</a>
+                    </div>
+                </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

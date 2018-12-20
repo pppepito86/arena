@@ -16,8 +16,6 @@ public class ProblemDTO implements Serializable {
 
     private Integer version;
 
-    private Long competitionProblemId;
-
     public Long getId() {
         return id;
     }
@@ -50,14 +48,6 @@ public class ProblemDTO implements Serializable {
         this.version = version;
     }
 
-    public Long getCompetitionProblemId() {
-        return competitionProblemId;
-    }
-
-    public void setCompetitionProblemId(Long competitionProblemId) {
-        this.competitionProblemId = competitionProblemId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -86,7 +76,6 @@ public class ProblemDTO implements Serializable {
             ", title='" + getTitle() + "'" +
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
-            ", competitionProblem=" + getCompetitionProblemId() +
             "}";
     }
 }
