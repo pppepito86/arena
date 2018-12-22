@@ -1,0 +1,74 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="arenaApp.competitionProblem.home.title">Competition Problems</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-competition-problem" [routerLink]="['/competition-problem/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="arenaApp.competitionProblem.home.createLabel">
+            Create new Competition Problem
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="competitionProblems">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="order"><span jhiTranslate="arenaApp.competitionProblem.order">Order</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="problemId"><span jhiTranslate="arenaApp.competitionProblem.problem">Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="competitionId"><span jhiTranslate="arenaApp.competitionProblem.competition">Competition</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let competitionProblem of competitionProblems ;trackBy: trackId">
+                <td><a [routerLink]="['/competition-problem', competitionProblem.id, 'view' ]">{{competitionProblem.id}}</a></td>
+                <td>{{competitionProblem.order}}</td>
+                <td>
+                    <div *ngIf="competitionProblem.problemId">
+                        <a [routerLink]="['../problem', competitionProblem.problemId , 'view' ]" >{{competitionProblem.problemId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="competitionProblem.competitionId">
+                        <a [routerLink]="['../competition', competitionProblem.competitionId , 'view' ]" >{{competitionProblem.competitionId}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/competition-problem', competitionProblem.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/competition-problem', competitionProblem.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'competition-problem/'+ competitionProblem.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div *ngIf="competitionProblems && competitionProblems.length">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+        </div>
+    </div>
+</div>

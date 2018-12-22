@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="competitionProblem">
+            <h2><span jhiTranslate="arenaApp.competitionProblem.detail.title">Competition Problem</span> {{competitionProblem.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="arenaApp.competitionProblem.order">Order</span></dt>
+                <dd>
+                    <span>{{competitionProblem.order}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.competitionProblem.problem">Problem</span></dt>
+                <dd>
+                    <div *ngIf="competitionProblem.problemId">
+                        <a [routerLink]="['/problem', competitionProblem.problemId, 'view']">{{competitionProblem.problemId}}</a>
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.competitionProblem.competition">Competition</span></dt>
+                <dd>
+                    <div *ngIf="competitionProblem.competitionId">
+                        <a [routerLink]="['/competition', competitionProblem.competitionId, 'view']">{{competitionProblem.competitionId}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/competition-problem', competitionProblem.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>
