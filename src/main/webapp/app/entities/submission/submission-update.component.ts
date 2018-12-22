@@ -26,11 +26,11 @@ export class SubmissionUpdateComponent implements OnInit {
     uploadDate: string;
 
     constructor(
-        private jhiAlertService: JhiAlertService,
-        private submissionService: SubmissionService,
-        private userService: UserService,
-        private competitionProblemService: CompetitionProblemService,
-        private activatedRoute: ActivatedRoute
+        protected jhiAlertService: JhiAlertService,
+        protected submissionService: SubmissionService,
+        protected userService: UserService,
+        protected competitionProblemService: CompetitionProblemService,
+        protected activatedRoute: ActivatedRoute
     ) {}
 
     ngOnInit() {
@@ -67,20 +67,20 @@ export class SubmissionUpdateComponent implements OnInit {
         }
     }
 
-    private subscribeToSaveResponse(result: Observable<HttpResponse<ISubmission>>) {
+    protected subscribeToSaveResponse(result: Observable<HttpResponse<ISubmission>>) {
         result.subscribe((res: HttpResponse<ISubmission>) => this.onSaveSuccess(), (res: HttpErrorResponse) => this.onSaveError());
     }
 
-    private onSaveSuccess() {
+    protected onSaveSuccess() {
         this.isSaving = false;
         this.previousState();
     }
 
-    private onSaveError() {
+    protected onSaveError() {
         this.isSaving = false;
     }
 
-    private onError(errorMessage: string) {
+    protected onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
     }
 

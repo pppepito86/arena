@@ -29,6 +29,7 @@ spring:
     devtools:
         restart:
             enabled: true
+            additional-exclude: .h2.server.properties
         livereload:
             enabled: false # we use Webpack dev server + BrowserSync for livereload
     jackson:
@@ -94,7 +95,7 @@ jhipster:
     security:
         authentication:
             jwt:
-                # This token must be encoded using Base64 (you can type `echo 'secret-key'|base64` on your command line)
+                # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
                 base64-secret: ZWRkMWQ0NDNhNWQ3ZTI1N2Y2OTgwZTU4NTM0Yjg2YzEzMmQwOTY0YTE0MDBmZTg4MTM3NzNlZGIyOWI2YTg1Y2JhMzdjMWNiMTIyYzhkMjZmNjhhMjdmNTg1MTNjNTkzYjU4MDFlOGUyZTUxY2RkZGRkMjYzMWY2NGU4NDEwZmY=
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400

@@ -10,7 +10,7 @@ import { ICompetitionProblem } from 'app/shared/model/competition-problem.model'
 export class CompetitionProblemDetailComponent implements OnInit {
     competitionProblem: ICompetitionProblem;
 
-    constructor(private activatedRoute: ActivatedRoute) {}
+    constructor(protected activatedRoute: ActivatedRoute) {}
 
     ngOnInit() {
         this.activatedRoute.data.subscribe(({ competitionProblem }) => {

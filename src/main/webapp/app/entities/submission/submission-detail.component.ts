@@ -10,7 +10,7 @@ import { ISubmission } from 'app/shared/model/submission.model';
 export class SubmissionDetailComponent implements OnInit {
     submission: ISubmission;
 
-    constructor(private activatedRoute: ActivatedRoute) {}
+    constructor(protected activatedRoute: ActivatedRoute) {}
 
     ngOnInit() {
         this.activatedRoute.data.subscribe(({ submission }) => {

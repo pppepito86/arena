@@ -24,11 +24,11 @@ export class CompetitionProblemUpdateComponent implements OnInit {
     competitions: ICompetition[];
 
     constructor(
-        private jhiAlertService: JhiAlertService,
-        private competitionProblemService: CompetitionProblemService,
-        private problemService: ProblemService,
-        private competitionService: CompetitionService,
-        private activatedRoute: ActivatedRoute
+        protected jhiAlertService: JhiAlertService,
+        protected competitionProblemService: CompetitionProblemService,
+        protected problemService: ProblemService,
+        protected competitionService: CompetitionService,
+        protected activatedRoute: ActivatedRoute
     ) {}
 
     ngOnInit() {
@@ -63,20 +63,20 @@ export class CompetitionProblemUpdateComponent implements OnInit {
         }
     }
 
-    private subscribeToSaveResponse(result: Observable<HttpResponse<ICompetitionProblem>>) {
+    protected subscribeToSaveResponse(result: Observable<HttpResponse<ICompetitionProblem>>) {
         result.subscribe((res: HttpResponse<ICompetitionProblem>) => this.onSaveSuccess(), (res: HttpErrorResponse) => this.onSaveError());
     }
 
-    private onSaveSuccess() {
+    protected onSaveSuccess() {
         this.isSaving = false;
         this.previousState();
     }
 
-    private onSaveError() {
+    protected onSaveError() {
         this.isSaving = false;
     }
 
-    private onError(errorMessage: string) {
+    protected onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
     }
 

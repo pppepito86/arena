@@ -14,7 +14,7 @@ export class ProblemUpdateComponent implements OnInit {
     problem: IProblem;
     isSaving: boolean;
 
-    constructor(private problemService: ProblemService, private activatedRoute: ActivatedRoute) {}
+    constructor(protected problemService: ProblemService, protected activatedRoute: ActivatedRoute) {}
 
     ngOnInit() {
         this.isSaving = false;
@@ -36,16 +36,16 @@ export class ProblemUpdateComponent implements OnInit {
         }
     }
 
-    private subscribeToSaveResponse(result: Observable<HttpResponse<IProblem>>) {
+    protected subscribeToSaveResponse(result: Observable<HttpResponse<IProblem>>) {
         result.subscribe((res: HttpResponse<IProblem>) => this.onSaveSuccess(), (res: HttpErrorResponse) => this.onSaveError());
     }
 
-    private onSaveSuccess() {
+    protected onSaveSuccess() {
         this.isSaving = false;
         this.previousState();
     }
 
-    private onSaveError() {
+    protected onSaveError() {
         this.isSaving = false;
     }
 }
