@@ -13,7 +13,7 @@ type EntityArrayResponseType = HttpResponse<ICompetitionProblem[]>;
 export class CompetitionProblemService {
     public resourceUrl = SERVER_API_URL + 'api/competition-problems';
 
-    constructor(private http: HttpClient) {}
+    constructor(protected http: HttpClient) {}
 
     create(competitionProblem: ICompetitionProblem): Observable<EntityResponseType> {
         return this.http.post<ICompetitionProblem>(this.resourceUrl, competitionProblem, { observe: 'response' });

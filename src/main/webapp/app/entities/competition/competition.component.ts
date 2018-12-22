@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
 import { ICompetition } from 'app/shared/model/competition.model';
-import { Principal } from 'app/core';
+import { AccountService } from 'app/core';
 
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { CompetitionService } from './competition.service';
@@ -31,13 +31,13 @@ export class CompetitionComponent implements OnInit, OnDestroy {
     reverse: any;
 
     constructor(
-        private competitionService: CompetitionService,
-        private parseLinks: JhiParseLinks,
-        private jhiAlertService: JhiAlertService,
-        private principal: Principal,
-        private activatedRoute: ActivatedRoute,
-        private router: Router,
-        private eventManager: JhiEventManager
+        protected competitionService: CompetitionService,
+        protected parseLinks: JhiParseLinks,
+        protected jhiAlertService: JhiAlertService,
+        protected accountService: AccountService,
+        protected activatedRoute: ActivatedRoute,
+        protected router: Router,
+        protected eventManager: JhiEventManager
     ) {
         this.itemsPerPage = ITEMS_PER_PAGE;
         this.routeData = this.activatedRoute.data.subscribe(data => {
@@ -93,7 +93,7 @@ export class CompetitionComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadAll();
-        this.principal.identity().then(account => {
+        this.accountService.identity().then(account => {
             this.currentAccount = account;
         });
         this.registerChangeInCompetitions();
@@ -119,14 +119,14 @@ export class CompetitionComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    private paginateCompetitions(data: ICompetition[], headers: HttpHeaders) {
+    protected paginateCompetitions(data: ICompetition[], headers: HttpHeaders) {
         this.links = this.parseLinks.parse(headers.get('link'));
         this.totalItems = parseInt(headers.get('X-Total-Count'), 10);
         this.queryCount = this.totalItems;
         this.competitions = data;
     }
 
-    private onError(errorMessage: string) {
+    protected onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
     }
 }

@@ -14,7 +14,7 @@ import { ProblemService } from './problem.service';
 export class ProblemDeleteDialogComponent {
     problem: IProblem;
 
-    constructor(private problemService: ProblemService, public activeModal: NgbActiveModal, private eventManager: JhiEventManager) {}
+    constructor(protected problemService: ProblemService, public activeModal: NgbActiveModal, protected eventManager: JhiEventManager) {}
 
     clear() {
         this.activeModal.dismiss('cancel');
@@ -36,9 +36,9 @@ export class ProblemDeleteDialogComponent {
     template: ''
 })
 export class ProblemDeletePopupComponent implements OnInit, OnDestroy {
-    private ngbModalRef: NgbModalRef;
+    protected ngbModalRef: NgbModalRef;
 
-    constructor(private activatedRoute: ActivatedRoute, private router: Router, private modalService: NgbModal) {}
+    constructor(protected activatedRoute: ActivatedRoute, protected router: Router, protected modalService: NgbModal) {}
 
     ngOnInit() {
         this.activatedRoute.data.subscribe(({ problem }) => {

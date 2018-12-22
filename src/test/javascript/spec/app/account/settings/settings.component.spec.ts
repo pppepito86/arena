@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Observable, throwError } from 'rxjs';
 
 import { ArenaTestModule } from '../../../test.module';
-import { Principal, AccountService } from 'app/core';
+import { AccountService } from 'app/core';
 import { SettingsComponent } from 'app/account/settings/settings.component';
 import { JhiTrackerService } from 'app/core/tracker/tracker.service';
 import { MockTrackerService } from '../../../helpers/mock-tracker.service';
@@ -12,7 +12,6 @@ describe('Component Tests', () => {
         let comp: SettingsComponent;
         let fixture: ComponentFixture<SettingsComponent>;
         let mockAuth: any;
-        let mockPrincipal: any;
 
         beforeEach(async(() => {
             TestBed.configureTestingModule({
@@ -33,7 +32,6 @@ describe('Component Tests', () => {
             fixture = TestBed.createComponent(SettingsComponent);
             comp = fixture.componentInstance;
             mockAuth = fixture.debugElement.injector.get(AccountService);
-            mockPrincipal = fixture.debugElement.injector.get(Principal);
         });
 
         it('should send the current identity upon save', () => {
@@ -47,14 +45,14 @@ describe('Component Tests', () => {
                 langKey: 'ru',
                 login: 'john'
             };
-            mockPrincipal.setResponse(accountValues);
+            mockAuth.setIdentityResponse(accountValues);
 
             // WHEN
             comp.settingsAccount = accountValues;
             comp.save();
 
             // THEN
-            expect(mockPrincipal.identitySpy).toHaveBeenCalled();
+            expect(mockAuth.identitySpy).toHaveBeenCalled();
             expect(mockAuth.saveSpy).toHaveBeenCalledWith(accountValues);
             expect(comp.settingsAccount).toEqual(accountValues);
         });
@@ -65,7 +63,7 @@ describe('Component Tests', () => {
                 firstName: 'John',
                 lastName: 'Doe'
             };
-            mockPrincipal.setResponse(accountValues);
+            mockAuth.setIdentityResponse(accountValues);
 
             // WHEN
             comp.save();

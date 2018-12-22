@@ -16,7 +16,7 @@ type EntityArrayResponseType = HttpResponse<ISubmission[]>;
 export class SubmissionService {
     public resourceUrl = SERVER_API_URL + 'api/submissions';
 
-    constructor(private http: HttpClient) {}
+    constructor(protected http: HttpClient) {}
 
     create(submission: ISubmission): Observable<EntityResponseType> {
         const copy = this.convertDateFromClient(submission);

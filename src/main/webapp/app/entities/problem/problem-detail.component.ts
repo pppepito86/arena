@@ -10,7 +10,7 @@ import { IProblem } from 'app/shared/model/problem.model';
 export class ProblemDetailComponent implements OnInit {
     problem: IProblem;
 
-    constructor(private activatedRoute: ActivatedRoute) {}
+    constructor(protected activatedRoute: ActivatedRoute) {}
 
     ngOnInit() {
         this.activatedRoute.data.subscribe(({ problem }) => {

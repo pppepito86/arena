@@ -1,39 +1,36 @@
 {
-  "generator-jhipster": {
-    "promptValues": {
-      "packageName": "com.mycompany.myapp",
-      "nativeLanguage": "ru"
-    },
-    "jhipsterVersion": "5.7.0",
-    "applicationType": "monolith",
-    "baseName": "arena",
-    "packageName": "com.mycompany.myapp",
-    "packageFolder": "com/mycompany/myapp",
-    "serverPort": "8080",
-    "authenticationType": "jwt",
-    "cacheProvider": "ehcache",
-    "enableHibernateCache": true,
-    "websocket": "spring-websocket",
-    "databaseType": "sql",
-    "devDatabaseType": "h2Disk",
-    "prodDatabaseType": "mysql",
-    "searchEngine": false,
-    "messageBroker": false,
-    "serviceDiscoveryType": false,
-    "buildTool": "maven",
-    "enableSwaggerCodegen": false,
-    "jwtSecretKey": "ZWRkMWQ0NDNhNWQ3ZTI1N2Y2OTgwZTU4NTM0Yjg2YzEzMmQwOTY0YTE0MDBmZTg4MTM3NzNlZGIyOWI2YTg1Y2JhMzdjMWNiMTIyYzhkMjZmNjhhMjdmNTg1MTNjNTkzYjU4MDFlOGUyZTUxY2RkZGRkMjYzMWY2NGU4NDEwZmY=",
-    "clientFramework": "angularX",
-    "useSass": false,
-    "clientPackageManager": "npm",
-    "testFrameworks": [],
-    "jhiPrefix": "jhi",
-    "otherModules": [],
-    "enableTranslation": true,
-    "nativeLanguage": "ru",
-    "languages": [
-      "ru",
-      "en"
-    ]
-  }
+    "generator-jhipster": {
+        "promptValues": {
+            "packageName": "com.mycompany.myapp",
+            "nativeLanguage": "ru"
+        },
+        "jhipsterVersion": "5.7.2",
+        "applicationType": "monolith",
+        "baseName": "arena",
+        "packageName": "com.mycompany.myapp",
+        "packageFolder": "com/mycompany/myapp",
+        "serverPort": "8080",
+        "authenticationType": "jwt",
+        "cacheProvider": "ehcache",
+        "enableHibernateCache": true,
+        "websocket": "spring-websocket",
+        "databaseType": "sql",
+        "devDatabaseType": "h2Disk",
+        "prodDatabaseType": "mysql",
+        "searchEngine": false,
+        "messageBroker": false,
+        "serviceDiscoveryType": false,
+        "buildTool": "maven",
+        "enableSwaggerCodegen": false,
+        "jwtSecretKey": "ZWRkMWQ0NDNhNWQ3ZTI1N2Y2OTgwZTU4NTM0Yjg2YzEzMmQwOTY0YTE0MDBmZTg4MTM3NzNlZGIyOWI2YTg1Y2JhMzdjMWNiMTIyYzhkMjZmNjhhMjdmNTg1MTNjNTkzYjU4MDFlOGUyZTUxY2RkZGRkMjYzMWY2NGU4NDEwZmY=",
+        "clientFramework": "angularX",
+        "useSass": false,
+        "clientPackageManager": "npm",
+        "testFrameworks": [],
+        "jhiPrefix": "jhi",
+        "otherModules": [],
+        "enableTranslation": true,
+        "nativeLanguage": "ru",
+        "languages": ["ru", "en"]
+    }
 }
