@@ -19,6 +19,11 @@
             "description": "Description",
             "order": "Order",
             "parent": "Parent"
+        },
+        "catalog": {
+            "home": {
+                "title": "Catalog"
+            }
         }
     }
 }

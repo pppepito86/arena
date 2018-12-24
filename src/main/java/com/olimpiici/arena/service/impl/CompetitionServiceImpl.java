@@ -87,4 +87,16 @@ public class CompetitionServiceImpl implements CompetitionService {
         log.debug("Request to delete Competition : {}", id);
         competitionRepository.deleteById(id);
     }
+
+	@Override
+	public Page<CompetitionDTO> findChildren(Long id, Pageable pageable) {
+		log.debug("Request to get all children for Competition {}", id);
+		Optional<Competition> parent = competitionRepository.findById(id);
+		if (parent.isPresent()) {
+	        return competitionRepository.findByParent(parent.get(), pageable)
+	            .map(competitionMapper::toDto);
+		} else {
+			return Page.empty(pageable);
+		}
+	}
 }

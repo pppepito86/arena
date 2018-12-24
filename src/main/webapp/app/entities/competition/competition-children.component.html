@@ -1,0 +1,37 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="arenaApp.catalog.home.title">Catalog</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['/competition/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="arenaApp.competition.home.createLabel">
+            Create new Competition
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="competitions">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
+                <th jhiSortBy="label"><span jhiTranslate="arenaApp.competition.label">Label</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="description"><span jhiTranslate="arenaApp.competition.description">Description</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let competition of competitions ;trackBy: trackId">
+                <td><a [routerLink]="['/catalog', competition.id]">{{competition.label}}</a></td>
+                <td>{{competition.description}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div *ngIf="competitions && competitions.length && queryCount > 10">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+        </div>
+    </div>
+</div>

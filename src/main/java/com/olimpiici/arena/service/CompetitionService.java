@@ -43,4 +43,6 @@ public interface CompetitionService {
      * @param id the id of the entity
      */
     void delete(Long id);
+    
+    Page<CompetitionDTO> findChildren(Long id, Pageable pageable);
 }

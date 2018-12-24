@@ -11,6 +11,7 @@ import {
     competitionRoute,
     competitionPopupRoute
 } from './';
+import { CompetitionChildrenComponent } from './competition-children.component';
 
 const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
 
@@ -18,6 +19,7 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
     imports: [ArenaSharedModule, RouterModule.forChild(ENTITY_STATES)],
     declarations: [
         CompetitionComponent,
+        CompetitionChildrenComponent,
         CompetitionDetailComponent,
         CompetitionUpdateComponent,
         CompetitionDeleteDialogComponent,
