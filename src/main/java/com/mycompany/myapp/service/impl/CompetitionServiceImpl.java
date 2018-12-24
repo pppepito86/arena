@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Competition.
@@ -87,4 +89,13 @@ public class CompetitionServiceImpl implements CompetitionService {
         log.debug("Request to delete Competition : {}", id);
         competitionRepository.deleteById(id);
     }
+
+	@Override
+	public List<CompetitionDTO> findChildren(Long id) {
+		return competitionRepository
+				.findByParent(id)
+				.stream()
+				.map(competitionMapper::toDto)
+				.collect(Collectors.toList());
+	}
 }

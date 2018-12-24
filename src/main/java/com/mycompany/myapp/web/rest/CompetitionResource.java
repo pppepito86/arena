@@ -109,7 +109,21 @@ public class CompetitionResource {
         Optional<CompetitionDTO> competitionDTO = competitionService.findOne(id);
         return ResponseUtil.wrapOrNotFound(competitionDTO);
     }
-
+    
+    /**
+     * GET  /competitions/:id/children : get the children of "id" competition.
+     *
+     * @param id of the competitionDTO to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the competitionDTO, or with status 404 (Not Found)
+     */
+    @GetMapping("/competitions/{id}/children")
+    @Timed
+    public ResponseEntity<List<CompetitionDTO>> getCompetitionChildren(@PathVariable Long id) {
+        log.debug("REST request to get Competition children : {}", id);
+        List<CompetitionDTO> competitionDTO = competitionService.findChildren(id);
+        return ResponseEntity.ok(competitionDTO);
+    }
+    
     /**
      * DELETE  /competitions/:id : delete the "id" competition.
      *

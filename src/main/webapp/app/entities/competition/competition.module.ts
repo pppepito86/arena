@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ArenaSharedModule } from 'app/shared';
 import {
     CompetitionComponent,
+    CompetitionChildrenComponent,
     CompetitionDetailComponent,
     CompetitionUpdateComponent,
     CompetitionDeletePopupComponent,
@@ -18,6 +19,7 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
     imports: [ArenaSharedModule, RouterModule.forChild(ENTITY_STATES)],
     declarations: [
         CompetitionComponent,
+        CompetitionChildrenComponent,
         CompetitionDetailComponent,
         CompetitionUpdateComponent,
         CompetitionDeleteDialogComponent,
