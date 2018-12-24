@@ -1,3 +1,15 @@
+application {
+  config {
+    baseName arena
+    packageName	com.olimpiici.arena
+    applicationType monolith
+    devDatabaseType mysql
+    prodDatabaseType mysql
+  }
+  
+  entities *
+}
+
 entity Competition {
     label String
     description String

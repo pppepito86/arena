@@ -5,8 +5,6 @@ import { Observable, of, throwError } from 'rxjs';
 import { ArenaTestModule } from '../../../test.module';
 import { PasswordComponent } from 'app/account/password/password.component';
 import { PasswordService } from 'app/account/password/password.service';
-import { JhiTrackerService } from 'app/core/tracker/tracker.service';
-import { MockTrackerService } from '../../../helpers/mock-tracker.service';
 
 describe('Component Tests', () => {
     describe('PasswordComponent', () => {
@@ -18,12 +16,7 @@ describe('Component Tests', () => {
             TestBed.configureTestingModule({
                 imports: [ArenaTestModule],
                 declarations: [PasswordComponent],
-                providers: [
-                    {
-                        provide: JhiTrackerService,
-                        useClass: MockTrackerService
-                    }
-                ]
+                providers: []
             })
                 .overrideTemplate(PasswordComponent, '')
                 .compileComponents();

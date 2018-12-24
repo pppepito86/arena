@@ -22,7 +22,7 @@
             "otherEntityField": "id"
         }
     ],
-    "changelogDate": "20181219205714",
+    "changelogDate": "20181224184638",
     "entityTableName": "competition",
     "dto": "mapstruct",
     "pagination": "pagination",
@@ -30,5 +30,7 @@
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",
-    "applications": "*"
+    "applications": [
+        "arena"
+    ]
 }

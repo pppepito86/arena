@@ -31,7 +31,7 @@ import { JhiMainComponent, NavbarComponent, FooterComponent, PageRibbonComponent
             alertAsToast: false,
             alertTimeout: 5000,
             i18nEnabled: true,
-            defaultI18nLang: 'ru'
+            defaultI18nLang: 'en'
         }),
         ArenaSharedModule.forRoot(),
         ArenaCoreModule,

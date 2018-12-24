@@ -19,11 +19,8 @@ We use npm scripts and [Webpack][] as our build system.
 Run the following commands in two separate terminals to create a blissful development experience where your browser
 auto-refreshes when files change on your hard drive.
 
-<<<<<<< HEAD
-  
-=======
-./mvnw
-npm start
+    ./mvnw
+    npm start
 
 Npm is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
 specifying a newer version in [package.json](package.json). You can also run `npm update` and `npm install` to manage dependencies.
@@ -40,9 +37,9 @@ Service workers are commented by default, to enable them please uncomment the fo
 ```html
 <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-        .register('./service-worker.js')
-        .then(function() { console.log('Service Worker Registered'); });
+        navigator.serviceWorker.register('./service-worker.js').then(function() {
+            console.log('Service Worker Registered');
+        });
     }
 </script>
 ```
@@ -54,8 +51,6 @@ Note: workbox creates the respective service worker and dynamically generate the
 For example, to add [Leaflet][] library as a runtime dependency of your application, you would run following command:
 
     npm install --save --save-exact leaflet
-
-> > > > > > > jhipster_upgrade
 
 To benefit from TypeScript type definitions from [DefinitelyTyped][] repository in development, you would run following command:
 
@@ -96,8 +91,12 @@ will generate few files:
 
 To optimize the arena application for production, run:
 
+    ./mvnw -Pprod clean package
+
 This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
 To ensure everything worked, run:
+
+    java -jar target/*.war
 
 Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
 
@@ -107,7 +106,7 @@ Refer to [Using JHipster in production][] for more details.
 
 To launch your application's tests, run:
 
-    ./gradlew test
+    ./mvnw clean test
 
 ### Client tests
 
@@ -128,7 +127,7 @@ docker-compose -f src/main/docker/sonar.yml up -d
 Then, run a Sonar analysis:
 
 ```
-./gradlew -Pprod clean test sonarqube
+./mvnw -Pprod clean test sonar:sonar
 ```
 
 For more information, refer to the [Code quality page][].
@@ -137,13 +136,13 @@ For more information, refer to the [Code quality page][].
 
 You can use Docker to improve your JHipster development experience. A number of docker-compose configuration are available in the [src/main/docker](src/main/docker) folder to launch required third party services.
 
-For example, to start a database in a docker container, run:
+For example, to start a mysql database in a docker container, run:
 
-    docker-compose -f src/main/docker/.yml up -d
+    docker-compose -f src/main/docker/mysql.yml up -d
 
 To stop it and remove the container, run:
 
-    docker-compose -f src/main/docker/.yml down
+    docker-compose -f src/main/docker/mysql.yml down
 
 You can also fully dockerize your application and all the services that it depends on.
 To achieve this, first build a docker image of your app by running:

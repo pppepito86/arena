@@ -16,7 +16,7 @@
 logging:
     level:
         ROOT: INFO
-        com.mycompany.myapp: INFO
+        com.olimpiici.arena: INFO
         io.github.jhipster: INFO
 
 spring:
@@ -107,7 +107,7 @@ jhipster:
                 # - In the JHipster Registry (which includes a Spring Cloud Config server)
                 # - In a separate `application-prod.yml` file, in the same folder as your executable WAR file
                 # - In the `JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET` environment variable
-                base64-secret: ZWRkMWQ0NDNhNWQ3ZTI1N2Y2OTgwZTU4NTM0Yjg2YzEzMmQwOTY0YTE0MDBmZTg4MTM3NzNlZGIyOWI2YTg1Y2JhMzdjMWNiMTIyYzhkMjZmNjhhMjdmNTg1MTNjNTkzYjU4MDFlOGUyZTUxY2RkZGRkMjYzMWY2NGU4NDEwZmY=
+                base64-secret: NGQ0NmU0ZTAwNWZiMDY0NzA4ODM5MDBjYTkyNzE2M2ViODRiOGY3NWI1N2UwNDRjOWIzYTY4OTM2NjZiMzgyNzkzYmYzZDU5MTJkZDRlNTk0ODM0YTkxYzBlYWJhN2UzNzI5N2EwYjg3Njg4ZmJkYjE3ZTAxNzM2Zjk2NmQwMTM=
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
                 token-validity-in-seconds-for-remember-me: 2592000

@@ -44,7 +44,7 @@
             "otherEntityField": "id"
         }
     ],
-    "changelogDate": "20181219205717",
+    "changelogDate": "20181224184641",
     "entityTableName": "submission",
     "dto": "mapstruct",
     "pagination": "pagination",
@@ -52,5 +52,7 @@
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",
-    "applications": "*"
+    "applications": [
+        "arena"
+    ]
 }

@@ -12,7 +12,6 @@ import { CompetitionDetailComponent } from './competition-detail.component';
 import { CompetitionUpdateComponent } from './competition-update.component';
 import { CompetitionDeletePopupComponent } from './competition-delete-dialog.component';
 import { ICompetition } from 'app/shared/model/competition.model';
-import { CompetitionChildrenComponent } from 'app/entities/competition/competition-children.component';
 
 @Injectable({ providedIn: 'root' })
 export class CompetitionResolve implements Resolve<ICompetition> {
@@ -34,19 +33,6 @@ export const competitionRoute: Routes = [
     {
         path: 'competition',
         component: CompetitionComponent,
-        resolve: {
-            pagingParams: JhiResolvePagingParams
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            defaultSort: 'id,asc',
-            pageTitle: 'arenaApp.competition.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'catalog',
-        component: CompetitionChildrenComponent,
         resolve: {
             pagingParams: JhiResolvePagingParams
         },

@@ -1,0 +1,23 @@
+{
+    "arenaApp": {
+        "problem": {
+            "home": {
+                "title": "Problems",
+                "createLabel": "Créer un nouveau Problem",
+                "createOrEditLabel": "Créer ou éditer un Problem"
+            },
+            "created": "Un nouveau Problem a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Problem avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Problem avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Problem {{ id }} ?"
+            },
+            "detail": {
+                "title": "Problem"
+            },
+            "title": "Title",
+            "directory": "Directory",
+            "version": "Version"
+        }
+    }
+}

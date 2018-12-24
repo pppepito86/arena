@@ -1,0 +1,24 @@
+{
+    "arenaApp": {
+        "competition": {
+            "home": {
+                "title": "Competitions",
+                "createLabel": "Créer un nouveau Competition",
+                "createOrEditLabel": "Créer ou éditer un Competition"
+            },
+            "created": "Un nouveau Competition a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Competition avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Competition avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Competition {{ id }} ?"
+            },
+            "detail": {
+                "title": "Competition"
+            },
+            "label": "Label",
+            "description": "Description",
+            "order": "Order",
+            "parent": "Parent"
+        }
+    }
+}

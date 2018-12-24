@@ -35,9 +35,4 @@ export class CompetitionService {
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
-
-    findChildren(id: number, req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        return this.http.get<ICompetition[]>(`this.resourceUrl/${id}/children`, { params: options, observe: 'response' });
-    }
 }

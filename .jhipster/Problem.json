@@ -15,7 +15,7 @@
         }
     ],
     "relationships": [],
-    "changelogDate": "20181219205715",
+    "changelogDate": "20181224184639",
     "entityTableName": "problem",
     "dto": "mapstruct",
     "pagination": "pagination",
@@ -23,5 +23,7 @@
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",
-    "applications": "*"
+    "applications": [
+        "arena"
+    ]
 }

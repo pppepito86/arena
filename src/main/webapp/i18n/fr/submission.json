@@ -1,0 +1,29 @@
+{
+    "arenaApp": {
+        "submission": {
+            "home": {
+                "title": "Submissions",
+                "createLabel": "Créer un nouveau Submission",
+                "createOrEditLabel": "Créer ou éditer un Submission"
+            },
+            "created": "Un nouveau Submission a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Submission avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Submission avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Submission {{ id }} ?"
+            },
+            "detail": {
+                "title": "Submission"
+            },
+            "file": "File",
+            "verdict": "Verdict",
+            "details": "Details",
+            "points": "Points",
+            "timeInMillis": "Time In Millis",
+            "memoryInBytes": "Memory In Bytes",
+            "uploadDate": "Upload Date",
+            "user": "User",
+            "competitionProblem": "Competition Problem"
+        }
+    }
+}

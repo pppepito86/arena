@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <!--
+        Added the constraints for entity CompetitionProblem.
+    -->
+    <changeSet id="20181224184640-2" author="jhipster">
+        
+        <addForeignKeyConstraint baseColumnNames="problem_id"
+                                 baseTableName="competition_problem"
+                                 constraintName="fk_competition_problem_problem_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="problem"/>
+
+        <addForeignKeyConstraint baseColumnNames="competition_id"
+                                 baseTableName="competition_problem"
+                                 constraintName="fk_competition_problem_competition_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="competition"/>
+
+    </changeSet>
+</databaseChangeLog>
