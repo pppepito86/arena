@@ -8,10 +8,13 @@ import {
     CompetitionUpdateComponent,
     CompetitionDeletePopupComponent,
     CompetitionDeleteDialogComponent,
+    CompetitionProblemsComponent,
+    CompetitionChildrenComponent,
+    CompetitionPathComponent,
+    CatalogComponent,
     competitionRoute,
     competitionPopupRoute
 } from './';
-import { CompetitionChildrenComponent } from './competition-children.component';
 
 const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
 
@@ -23,7 +26,10 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
         CompetitionDetailComponent,
         CompetitionUpdateComponent,
         CompetitionDeleteDialogComponent,
-        CompetitionDeletePopupComponent
+        CompetitionDeletePopupComponent,
+        CompetitionProblemsComponent,
+        CompetitionPathComponent,
+        CatalogComponent
     ],
     entryComponents: [CompetitionComponent, CompetitionUpdateComponent, CompetitionDeleteDialogComponent, CompetitionDeletePopupComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

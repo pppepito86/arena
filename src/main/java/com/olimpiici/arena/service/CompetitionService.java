@@ -1,10 +1,12 @@
 package com.olimpiici.arena.service;
 
 import com.olimpiici.arena.service.dto.CompetitionDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,4 +47,8 @@ public interface CompetitionService {
     void delete(Long id);
     
     Page<CompetitionDTO> findChildren(Long id, Pageable pageable);
+    
+    List<CompetitionDTO> findPathFromRoot(Long id);
+    
+    Page<ProblemDTO> findProblems(Long id, Pageable pageable);
 }

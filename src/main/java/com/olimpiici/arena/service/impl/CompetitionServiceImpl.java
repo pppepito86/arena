@@ -2,9 +2,15 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.mapper.CompetitionMapper;
+import com.olimpiici.arena.service.mapper.ProblemMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -25,12 +35,21 @@ public class CompetitionServiceImpl implements CompetitionService {
     private final Logger log = LoggerFactory.getLogger(CompetitionServiceImpl.class);
 
     private final CompetitionRepository competitionRepository;
+    
+    private final CompetitionProblemRepository competitionProblemRepository;
 
     private final CompetitionMapper competitionMapper;
+    
+    private final ProblemMapper problemMapper;
 
-    public CompetitionServiceImpl(CompetitionRepository competitionRepository, CompetitionMapper competitionMapper) {
+    public CompetitionServiceImpl(CompetitionRepository competitionRepository, 
+    		CompetitionProblemRepository competitionProblemRepository, 
+    		CompetitionMapper competitionMapper,
+    		ProblemMapper problemMapper) {
         this.competitionRepository = competitionRepository;
         this.competitionMapper = competitionMapper;
+        this.problemMapper = problemMapper;
+        this.competitionProblemRepository = competitionProblemRepository;
     }
 
     /**
@@ -98,5 +117,44 @@ public class CompetitionServiceImpl implements CompetitionService {
 		} else {
 			return Page.empty(pageable);
 		}
+	}
+
+	@Override
+	public List<CompetitionDTO> findPathFromRoot(Long id) {
+		Optional<CompetitionDTO> res = competitionRepository.findById(id)
+				.map(competitionMapper::toDto);
+		if (!res.isPresent()) return null;
+		
+		CompetitionDTO curr = res.get();
+		CompetitionDTO parent;
+		List<CompetitionDTO> path = new ArrayList<CompetitionDTO>();
+		path.add(curr);
+		
+		while (curr.getId() != curr.getParentId() && curr.getParentId() != null) {
+			Optional<CompetitionDTO> parentRes = competitionRepository
+					.findById(curr.getParentId())
+					.map(competitionMapper::toDto);
+			if (!parentRes.isPresent()) break;
+			parent = parentRes.get();
+			path.add(parent);
+			curr = parent; 
+		}
+		
+		Collections.reverse(path);
+		return path;
+	}
+
+	@Override
+	public Page<ProblemDTO> findProblems(Long id, Pageable pageable) {
+		log.debug("Request to get all problems for Competition {}", id);
+		Competition competition = competitionRepository.findById(id).get();
+		
+		Page<ProblemDTO> problems = 
+				competitionProblemRepository
+				.findByCompetition(competition , pageable)
+				.map(competitionProblem -> competitionProblem.getProblem())
+				.map(problemMapper::toDto);
+		
+		return problems;
 	}
 }

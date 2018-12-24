@@ -13,6 +13,7 @@ import { CompetitionUpdateComponent } from './competition-update.component';
 import { CompetitionDeletePopupComponent } from './competition-delete-dialog.component';
 import { ICompetition } from 'app/shared/model/competition.model';
 import { CompetitionChildrenComponent } from './competition-children.component';
+import { CatalogComponent } from './catalog.component';
 
 @Injectable({ providedIn: 'root' })
 export class CompetitionResolve implements Resolve<ICompetition> {
@@ -45,8 +46,13 @@ export const competitionRoute: Routes = [
         canActivate: [UserRouteAccessService]
     },
     {
+        path: 'catalog',
+        redirectTo: 'catalog/1',
+        pathMatch: 'full'
+    },
+    {
         path: 'catalog/:id',
-        component: CompetitionChildrenComponent,
+        component: CatalogComponent,
         resolve: {
             pagingParams: JhiResolvePagingParams,
             parentCompetition: CompetitionResolve

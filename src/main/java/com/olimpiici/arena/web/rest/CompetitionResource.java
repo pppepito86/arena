@@ -6,6 +6,8 @@ import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,6 +124,24 @@ public class CompetitionResource {
         log.debug("REST request to get Competition children : {}", id);
         Page<CompetitionDTO> page = competitionService.findChildren(id, pageable);
         String url = String.format("/api/competitions/%d/children", id);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping("/competitions/{id}/path")
+    @Timed
+    public ResponseEntity<List<CompetitionDTO>> getCompetitionPath(@PathVariable Long id) {
+        log.debug("REST request to get Competition path : {}", id);
+        List<CompetitionDTO> path = competitionService.findPathFromRoot(id);
+        return ResponseEntity.ok(path);
+    }
+    
+    @GetMapping("/competitions/{id}/problems")
+    @Timed
+    public ResponseEntity<List<ProblemDTO>> getCompetitionProblems(@PathVariable Long id, Pageable pageable) {
+        log.debug("REST request to get Competition problems : {}", id);
+        Page<ProblemDTO> page = competitionService.findProblems(id, pageable);
+        String url = String.format("/api/competitions/%d/problems", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

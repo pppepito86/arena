@@ -40,4 +40,13 @@ export class CompetitionService {
         const options = createRequestOption(req);
         return this.http.get<ICompetition[]>(`${this.resourceUrl}/${id}/children`, { params: options, observe: 'response' });
     }
+
+    findProblems(id: number, req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http.get<ICompetition[]>(`${this.resourceUrl}/${id}/problems`, { params: options, observe: 'response' });
+    }
+
+    findPath(id: number): Observable<EntityArrayResponseType> {
+        return this.http.get<ICompetition[]>(`${this.resourceUrl}/${id}/path`, { observe: 'response' });
+    }
 }

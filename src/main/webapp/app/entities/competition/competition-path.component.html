@@ -1,0 +1,8 @@
+<div>
+    <span *ngFor="let ancestor of path; let i = index">
+        <span *ngIf="i != 0"> > </span>
+        <a [routerLink]="['/catalog', ancestor.id]">{{ancestor.label}}</a>
+    </span>
+    <jhi-alert></jhi-alert>
+    <br/>
+</div>

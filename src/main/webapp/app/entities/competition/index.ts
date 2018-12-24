@@ -4,3 +4,7 @@ export * from './competition-delete-dialog.component';
 export * from './competition-detail.component';
 export * from './competition.component';
 export * from './competition.route';
+export * from './competition-children.component';
+export * from './competition-problems.component';
+export * from './competition-path.component';
+export * from './catalog.component';

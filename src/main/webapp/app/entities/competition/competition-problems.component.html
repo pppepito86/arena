@@ -1,21 +1,19 @@
 <div>
-    <div class="table-responsive" *ngIf="competitions && competitions.length > 0">
+    <div class="table-responsive" *ngIf="problems && problems.length > 0">
         <table class="table table-striped">
             <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-                <th jhiSortBy="label"><span jhiTranslate="arenaApp.competition.label">Label</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="description"><span jhiTranslate="arenaApp.competition.description">Description</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+                <th><span jhiTranslate="arenaApp.problem.title">Tiitle</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let competition of competitions ;trackBy: trackId">
-                <td><a [routerLink]="['/catalog', competition.id]">{{competition.label}}</a></td>
-                <td>{{competition.description}}</td>
+            <tr *ngFor="let problem of problems; let i = index">
+                <td><a [routerLink]="['/problem', problem.id, 'view']">{{problem.title}}</a></td>
             </tr>
             </tbody>
         </table>
     </div>
-    <div *ngIf="competitions && competitions.length && queryCount > 10">
+    <div *ngIf="problems && problems.length && queryCount > 10">
         <div class="row justify-content-center">
             <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
         </div>
@@ -23,5 +21,6 @@
             <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
         </div>
     </div>
+
     <jhi-alert></jhi-alert>
 </div>

@@ -1,6 +1,10 @@
 package com.olimpiici.arena.repository;
 
+import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +15,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface CompetitionProblemRepository extends JpaRepository<CompetitionProblem, Long> {
-
+	Page<CompetitionProblem> findByCompetition(Competition parent, Pageable pageable);
 }
