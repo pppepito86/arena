@@ -1,6 +1,7 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
+import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
@@ -26,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +52,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     private final CompetitionProblemMapper competitionProblemMapper;
     
     private final SubmissionMapper submissionMapper;
+    
+    private final SubmissionService submissionService;
 
     public CompetitionServiceImpl(CompetitionRepository competitionRepository, 
     		CompetitionProblemRepository competitionProblemRepository, 
@@ -59,7 +61,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     		ProblemMapper problemMapper,
     		CompetitionProblemMapper competitionProblemMapper,
     		SubmissionRepository submissionRepository,
-    		SubmissionMapper submissionMapper) {
+    		SubmissionMapper submissionMapper,
+    		SubmissionService submissionService) {
         this.competitionRepository = competitionRepository;
         this.competitionMapper = competitionMapper;
         this.problemMapper = problemMapper;
@@ -67,6 +70,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         this.competitionProblemMapper = competitionProblemMapper;
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
+        this.submissionService = submissionService;
     }
 
     /**
@@ -191,11 +195,6 @@ public class CompetitionServiceImpl implements CompetitionService {
 	
 	@Override
 	public Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable) {
-		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
-		CompetitionProblem competitionProblem = competitionProblemRepository.findById(competitionProblemId).get();
-		Page<SubmissionDTO> submissoins = submissionRepository
-				.findByCompetitionProblem(competitionProblem, pageable)
-				.map(submissionMapper::toDto);
-		return submissoins;
+		return submissionService.findSubmissionsByCompetitionProblemId(competitionProblemId, pageable);
 	}
 }

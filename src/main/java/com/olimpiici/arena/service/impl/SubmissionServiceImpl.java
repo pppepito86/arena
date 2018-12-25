@@ -1,7 +1,9 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
+import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
@@ -25,12 +27,17 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final Logger log = LoggerFactory.getLogger(SubmissionServiceImpl.class);
 
     private final SubmissionRepository submissionRepository;
+    
+    private final CompetitionProblemRepository competitionProblemRepository;
 
     private final SubmissionMapper submissionMapper;
 
-    public SubmissionServiceImpl(SubmissionRepository submissionRepository, SubmissionMapper submissionMapper) {
+    public SubmissionServiceImpl(SubmissionRepository submissionRepository, 
+    		SubmissionMapper submissionMapper,
+    		CompetitionProblemRepository competitionProblemRepository) {
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
+        this.competitionProblemRepository = competitionProblemRepository;
     }
 
     /**
@@ -87,4 +94,26 @@ public class SubmissionServiceImpl implements SubmissionService {
         log.debug("Request to delete Submission : {}", id);
         submissionRepository.deleteById(id);
     }
+
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemId(Long competitionProblemId, Pageable pageable) {
+		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
+		CompetitionProblem competitionProblem = competitionProblemRepository.findById(competitionProblemId).get();
+		Page<SubmissionDTO> submissoins = submissionRepository
+				.findByCompetitionProblem(competitionProblem, pageable)
+				.map(submissionMapper::toDto);
+		return submissoins;
+	}
+
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionId(Long competitionId, Pageable pageable) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String findSubmissionsCode(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

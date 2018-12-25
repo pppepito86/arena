@@ -43,4 +43,10 @@ public interface SubmissionService {
      * @param id the id of the entity
      */
     void delete(Long id);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemId(Long competitionProblemId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionId(Long competitionId, Pageable pageable);
+    
+    String findSubmissionsCode(Long id);
 }
