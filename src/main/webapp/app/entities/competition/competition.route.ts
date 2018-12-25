@@ -16,6 +16,7 @@ import { CompetitionChildrenComponent } from './competition-children.component';
 import { CatalogComponent } from './catalog.component';
 import { ProblemInCompetitionComponent } from './problem-in-competition.component';
 import { StandingsComponent } from './standings.component';
+import { SubmissionComponent } from '../submission';
 
 @Injectable({ providedIn: 'root' })
 export class CompetitionResolve implements Resolve<ICompetition> {
@@ -69,8 +70,17 @@ export const competitionRoute: Routes = [
     },
     {
         path: 'catalog/:id/submissions',
-        redirectTo: 'submission/forCompetition/:id',
-        pathMatch: 'full'
+        component: SubmissionComponent,
+        resolve: {
+            pagingParams: JhiResolvePagingParams
+        },
+        data: {
+            authorities: ['ROLE_USER'],
+            defaultSort: 'id,desc',
+            pageTitle: 'arenaApp.submission.home.title',
+            forCompetition: true
+        },
+        canActivate: [UserRouteAccessService]
     },
     {
         path: 'catalog/:id/problem/:compProb',
@@ -85,8 +95,17 @@ export const competitionRoute: Routes = [
     },
     {
         path: 'catalog/:id/problem/:compProb/submissions',
-        redirectTo: 'submission/forProblem/:compProb',
-        pathMatch: 'full'
+        component: SubmissionComponent,
+        resolve: {
+            pagingParams: JhiResolvePagingParams
+        },
+        data: {
+            authorities: ['ROLE_USER'],
+            defaultSort: 'id,desc',
+            pageTitle: 'arenaApp.submission.home.title',
+            forProblem: true
+        },
+        canActivate: [UserRouteAccessService]
     },
     {
         path: 'competition/:id/view',

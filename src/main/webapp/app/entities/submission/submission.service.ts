@@ -45,6 +45,22 @@ export class SubmissionService {
             .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
     }
 
+    queryForCompetition(competitionId: number, req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        const url = `api/competitions/${competitionId}/submissions`;
+        return this.http
+            .get<ISubmission[]>(url, { params: options, observe: 'response' })
+            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
+    }
+
+    queryForProblem(competitionId: number, problemId: number, req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        const url = `api/competitions/${competitionId}/problem/${problemId}/submissions`;
+        return this.http
+            .get<ISubmission[]>(url, { params: options, observe: 'response' })
+            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
+    }
+
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }

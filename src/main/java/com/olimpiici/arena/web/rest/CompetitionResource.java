@@ -1,8 +1,11 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
+import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
@@ -155,6 +158,25 @@ public class CompetitionResource {
         log.debug("REST request to get Competition path : {}", id);
         List<CompetitionDTO> path = competitionService.findPathFromRoot(id);
         return ResponseEntity.ok(path);
+    }
+    
+    @GetMapping("/competitions/{id}/submissions")
+    @Timed
+    public ResponseEntity<List<SubmissionDTO>> getCompetitionSubmissions(
+    		@PathVariable Long id, Pageable pageable) {
+        log.debug("REST request to get Competition submissoins : {}", id);
+        Page<SubmissionDTO> page;
+        
+        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+        	page = competitionService.findSubmissionsByCompetition(id, pageable);
+        } else {
+        	User user = 
+        			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        	page = competitionService.findSubmissionsByCompetitionAndUser(user, id, pageable);
+        }
+        String url = String.format("/api/competitions/{id}/problem/{compProb}/submissions", id);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
     
     @GetMapping("/competitions/{id}/problems")

@@ -331,5 +331,36 @@ public class CompetitionServiceImpl implements CompetitionService {
 			.findByCompetitionIn(competitions);
 		return problems;
 	}
-
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetition(
+			Long competitionId, Pageable pageable) {
+		Competition competition = competitionRepository.getOne(competitionId);
+		List<CompetitionProblem> problems = 
+				findAllProblemsInSubTree(competition);
+		Page<SubmissionDTO> submissions = submissionRepository
+			.findByCompetitionProblemIn(problems, pageable)
+			.map(submissionMapper::toDto);
+		return submissions;
+	}
+	
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId, 
+			Pageable pageable) {
+		User user = userRepository.findById(userId).get();
+		return findSubmissionsByCompetitionAndUser(user, competitionId, pageable);
+	}
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(User user, Long competitionId, Pageable pageable) {
+		Competition competition = competitionRepository.getOne(competitionId);
+		List<CompetitionProblem> problems = 
+				findAllProblemsInSubTree(competition);
+		Page<SubmissionDTO> submissions = submissionRepository
+			.findByUserAndCompetitionProblemIn(user, problems, pageable)
+			.map(submissionMapper::toDto);
+		return submissions;
+	}
+	
 }

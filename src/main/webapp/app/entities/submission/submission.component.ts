@@ -29,6 +29,8 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     predicate: any;
     previousPage: any;
     reverse: any;
+    forCompetition: boolean;
+    forProblem: boolean;
 
     constructor(
         protected submissionService: SubmissionService,
@@ -40,6 +42,7 @@ export class SubmissionComponent implements OnInit, OnDestroy {
         protected eventManager: JhiEventManager
     ) {
         this.itemsPerPage = ITEMS_PER_PAGE;
+
         this.routeData = this.activatedRoute.data.subscribe(data => {
             this.page = data.pagingParams.page;
             this.previousPage = data.pagingParams.page;
@@ -49,16 +52,35 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     }
 
     loadAll() {
-        this.submissionService
-            .query({
+        let query;
+        if (this.forCompetition) {
+            console.log(this.activatedRoute.snapshot);
+            const competitionId = this.activatedRoute.snapshot.params['id'];
+            query = this.submissionService.queryForCompetition(competitionId, {
                 page: this.page - 1,
                 size: this.itemsPerPage,
                 sort: this.sort()
-            })
-            .subscribe(
-                (res: HttpResponse<ISubmission[]>) => this.paginateSubmissions(res.body, res.headers),
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
+            });
+        } else if (this.forProblem) {
+            const competitionId = this.activatedRoute.snapshot.params['id'];
+            const problemId = this.activatedRoute.snapshot.params['compProb'];
+            query = this.submissionService.queryForProblem(competitionId, problemId, {
+                page: this.page - 1,
+                size: this.itemsPerPage,
+                sort: this.sort()
+            });
+        } else {
+            query = this.submissionService.query({
+                page: this.page - 1,
+                size: this.itemsPerPage,
+                sort: this.sort()
+            });
+        }
+
+        query.subscribe(
+            (res: HttpResponse<ISubmission[]>) => this.paginateSubmissions(res.body, res.headers),
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     loadPage(page: number) {
@@ -92,6 +114,14 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        if (this.activatedRoute.snapshot.data['forCompetition']) {
+            this.forCompetition = true;
+        }
+
+        if (this.activatedRoute.snapshot.data['forProblem']) {
+            this.forProblem = true;
+        }
+
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;

@@ -1,7 +1,7 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.submission.home.title">Submissions</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-submission" [routerLink]="['/submission/new']">
+        <button *jhiHasAnyAuthority="'ROLE_ADMIN'" id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-submission" [routerLink]="['/submission/new']">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="arenaApp.submission.home.createLabel">
             Create new Submission
@@ -24,7 +24,7 @@
                 <th jhiSortBy="verdict"><span jhiTranslate="arenaApp.submission.verdict">Verdict</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="points"><span jhiTranslate="arenaApp.submission.points">Points</span> <fa-icon [icon]="'sort'"></fa-icon></th>
 
-                <th></th>
+                <th *jhiHasAnyAuthority="'ROLE_ADMIN'"></th>
             </tr>
             </thead>
             <tbody>
@@ -38,7 +38,7 @@
                 <td>{{submission.details}}</td>
                 <td>{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>
-                <td class="text-right">
+                <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
                                 [routerLink]="['/submission', submission.id, 'view' ]"

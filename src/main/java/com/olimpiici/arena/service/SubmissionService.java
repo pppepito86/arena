@@ -1,11 +1,13 @@
 package com.olimpiici.arena.service;
 
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -47,13 +49,16 @@ public interface SubmissionService {
     
     Page<SubmissionDTO> findSubmissionsByCompetitionProblem(Long competitionProblemId, Pageable pageable);
     
-    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user, Long competitionProblemId, Pageable pageable);
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemIn(List<CompetitionProblem> competitionProblems, Pageable pageable);
     
-    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId, Long competitionProblemId, Pageable pageable);
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user, 
+    		Long competitionProblemId, Pageable pageable);
     
-    Page<SubmissionDTO> findSubmissionsByCompetition(Long competitionId, Pageable pageable);
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId, 
+    		Long competitionProblemId, Pageable pageable);
     
-    Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId, Pageable pageable);
-    
+    Page<SubmissionDTO> findSubmissionsByUserAndCompetitionProblemIn(User user, 
+    		List<CompetitionProblem> competitionProblems, Pageable pageable);
+        
     String findSubmissionCode(Long id);
 }

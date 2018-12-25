@@ -1,5 +1,6 @@
 package com.olimpiici.arena.service.impl;
 
+import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
@@ -134,18 +135,13 @@ public class SubmissionServiceImpl implements SubmissionService {
 	}
 	
 	@Override
-	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId, 
-			Pageable pageable) {
-		Competition competition = competitionRepository.getOne(competitionId);
-		List<CompetitionProblem> competitionProblems = 
-				competitionProblemRepository.findByCompetition(competition);
-		User user = userRepository.findById(userId).get();
-		Page<SubmissionDTO> submissions = submissionRepository
-			.findByUserAndCompetitionProblemIn(user, competitionProblems, pageable)
-			.map(submissionMapper::toDto);
-		return submissions;
+	public Page<SubmissionDTO> findSubmissionsByUserAndCompetitionProblemIn(User user,
+			List<CompetitionProblem> competitionProblems, Pageable pageable) {
+		return submissionRepository
+				.findByUserAndCompetitionProblemIn(user, competitionProblems, pageable)
+				.map(submissionMapper::toDto);
 	}
-	
+
 	@Override
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblem(
 			Long competitionProblemId, Pageable pageable) {
@@ -156,17 +152,13 @@ public class SubmissionServiceImpl implements SubmissionService {
 				.map(submissionMapper::toDto);
 		return submissions;
 	}
-
+	
 	@Override
-	public Page<SubmissionDTO> findSubmissionsByCompetition(
-			Long competitionId, Pageable pageable) {
-		Competition competition = competitionRepository.getOne(competitionId);
-		List<CompetitionProblem> competitionProblems = 
-				competitionProblemRepository.findByCompetition(competition);
-		Page<SubmissionDTO> submissions = submissionRepository
-			.findByCompetitionProblemIn(competitionProblems, pageable)
-			.map(submissionMapper::toDto);
-		return submissions;
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemIn(
+			List<CompetitionProblem> competitionProblems, Pageable pageable) {
+		return submissionRepository
+				.findByCompetitionProblemIn(competitionProblems, pageable)
+				.map(submissionMapper::toDto);
 	}
 	
 	@Override
@@ -183,5 +175,4 @@ public class SubmissionServiceImpl implements SubmissionService {
 				"}";
 	}
 
-	
 }

@@ -74,4 +74,13 @@ public interface CompetitionService {
     Integer findTotalPoints(User user);
     
     Page<UserPoints> findStandings(Long competitionId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetition(Long competitionId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, 
+    		Long competitionId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(User user, 
+    		Long competitionId, Pageable pageable);
+
 }
