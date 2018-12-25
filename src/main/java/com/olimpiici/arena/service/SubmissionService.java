@@ -1,5 +1,6 @@
 package com.olimpiici.arena.service;
 
+import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import org.springframework.data.domain.Page;
@@ -44,9 +45,15 @@ public interface SubmissionService {
      */
     void delete(Long id);
     
-    Page<SubmissionDTO> findSubmissionsByCompetitionProblemId(Long competitionProblemId, Pageable pageable);
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblem(Long competitionProblemId, Pageable pageable);
     
-    Page<SubmissionDTO> findSubmissionsByCompetitionId(Long competitionId, Pageable pageable);
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user, Long competitionProblemId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId, Long competitionProblemId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetition(Long competitionId, Pageable pageable);
+    
+    Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId, Pageable pageable);
     
     String findSubmissionCode(Long id);
 }

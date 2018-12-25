@@ -126,11 +126,11 @@ export const competitionRoute: Routes = [
     },
     {
         path: 'standings',
-        redirectTo: 'competition/1/standings',
+        redirectTo: 'catalog/1/standings',
         pathMatch: 'full'
     },
     {
-        path: 'competition/:id/standings',
+        path: 'catalog/:id/standings',
         component: StandingsComponent,
         resolve: {
             parentCompetition: CompetitionResolve,

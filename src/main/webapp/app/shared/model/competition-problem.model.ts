@@ -4,6 +4,7 @@ export interface ICompetitionProblem {
     problemId?: number;
     competitionId?: number;
     title?: string;
+    points?: number;
 }
 
 export class CompetitionProblem implements ICompetitionProblem {
@@ -12,6 +13,7 @@ export class CompetitionProblem implements ICompetitionProblem {
         public order?: number,
         public problemId?: number,
         public competitionId?: number,
-        public titile?: string
+        public title?: string,
+        public points?: number
     ) {}
 }

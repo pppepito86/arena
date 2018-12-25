@@ -1,6 +1,7 @@
 package com.olimpiici.arena.service;
 
 import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
@@ -56,13 +57,17 @@ public interface CompetitionService {
     
     List<CompetitionDTO> findPathFromRoot(Long id);
     
+    List<Competition> findAllCompetitionsInSubTree(Competition competition);
+    
+    List<CompetitionProblem> findAllProblemsInSubTree(Competition competition);
+    
     Page<CompetitionProblemDTO> findProblems(Long id, Pageable pageable);
     
     ProblemDTO findProblem(Long competitionProblem);
     
-    Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable);
-    
     Integer findPointsForCompetitionProblem(User user, Long competitionProblemId);
+    
+    Integer findPointsForCompetitionProblem(User user, CompetitionProblem competitionProblem);
     
     Integer findPointsForCompetition(User user, Long competitionId);
     

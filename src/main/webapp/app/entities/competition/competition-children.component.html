@@ -2,9 +2,9 @@
     <div class="table-responsive" *ngIf="competitions && competitions.length > 0">
         <table class="table table-striped">
             <thead>
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-                <th jhiSortBy="label"><span jhiTranslate="arenaApp.competition.label">Label</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="description"><span jhiTranslate="arenaApp.competition.description">Description</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <tr>
+                <th><span jhiTranslate="arenaApp.competition.label">Label</span></th>
+                <th><span jhiTranslate="arenaApp.competition.description">Description</span></th>
             </tr>
             </thead>
             <tbody>

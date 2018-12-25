@@ -18,7 +18,17 @@ public class CompetitionProblemDTO implements Serializable {
     
     private String title;
     
-    public String getTitle() {
+    private Integer points;
+    
+    public Integer getPoints() {
+		return points;
+	}
+
+	public void setPoints(Integer points) {
+		this.points = points;
+	}
+
+	public String getTitle() {
 		return title;
 	}
 

@@ -1,20 +1,25 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
+import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
+import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
+import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,16 +33,24 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     private final SubmissionRepository submissionRepository;
     
+    private final UserRepository userRepository;
+    
+    private final CompetitionRepository competitionRepository;
+    
     private final CompetitionProblemRepository competitionProblemRepository;
 
     private final SubmissionMapper submissionMapper;
 
     public SubmissionServiceImpl(SubmissionRepository submissionRepository, 
     		SubmissionMapper submissionMapper,
-    		CompetitionProblemRepository competitionProblemRepository) {
+    		CompetitionProblemRepository competitionProblemRepository,
+    		UserRepository userRepository,
+    		CompetitionRepository competitionRepository) {
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
         this.competitionProblemRepository = competitionProblemRepository;
+        this.userRepository = userRepository;
+        this.competitionRepository = competitionRepository;
     }
 
     /**
@@ -100,21 +113,62 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
 	@Override
-	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemId(Long competitionProblemId, Pageable pageable) {
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId, 
+			Long competitionProblemId, Pageable pageable) {
 		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
-		CompetitionProblem competitionProblem = competitionProblemRepository.findById(competitionProblemId).get();
-		Page<SubmissionDTO> submissoins = submissionRepository
+		User user = userRepository.findById(userId).get();
+		return findSubmissionsByCompetitionProblemAndUser(user, competitionProblemId, pageable);
+	}
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user, 
+			Long competitionProblemId,
+			Pageable pageable) {
+		CompetitionProblem competitionProblem = competitionProblemRepository
+				.findById(competitionProblemId).get();
+		
+		Page<SubmissionDTO> submissions = submissionRepository
+				.findByCompetitionProblemAndUser(competitionProblem, user, pageable)
+				.map(submissionMapper::toDto);
+		return submissions;
+	}
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId, 
+			Pageable pageable) {
+		Competition competition = competitionRepository.getOne(competitionId);
+		List<CompetitionProblem> competitionProblems = 
+				competitionProblemRepository.findByCompetition(competition);
+		User user = userRepository.findById(userId).get();
+		Page<SubmissionDTO> submissions = submissionRepository
+			.findByUserAndCompetitionProblemIn(user, competitionProblems, pageable)
+			.map(submissionMapper::toDto);
+		return submissions;
+	}
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblem(
+			Long competitionProblemId, Pageable pageable) {
+		CompetitionProblem competitionProblem = 
+				competitionProblemRepository.getOne(competitionProblemId);
+		Page<SubmissionDTO> submissions = submissionRepository
 				.findByCompetitionProblem(competitionProblem, pageable)
 				.map(submissionMapper::toDto);
-		return submissoins;
+		return submissions;
 	}
 
 	@Override
-	public Page<SubmissionDTO> findSubmissionsByCompetitionId(Long competitionId, Pageable pageable) {
-		// TODO Auto-generated method stub
-		return null;
+	public Page<SubmissionDTO> findSubmissionsByCompetition(
+			Long competitionId, Pageable pageable) {
+		Competition competition = competitionRepository.getOne(competitionId);
+		List<CompetitionProblem> competitionProblems = 
+				competitionProblemRepository.findByCompetition(competition);
+		Page<SubmissionDTO> submissions = submissionRepository
+			.findByCompetitionProblemIn(competitionProblems, pageable)
+			.map(submissionMapper::toDto);
+		return submissions;
 	}
-
+	
 	@Override
 	public String findSubmissionCode(Long id) {
 		// TODO 
@@ -128,4 +182,6 @@ public class SubmissionServiceImpl implements SubmissionService {
 				"    return 0;\n" + 
 				"}";
 	}
+
+	
 }

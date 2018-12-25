@@ -1,11 +1,17 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.catalog.home.title">Catalog</span>
-        <button id="jh-create-entity"
-                class="btn btn-primary float-right jh-create-entity create-competition"
+        <button class="btn btn-primary float-right"
                 [routerLink]="['submissions']">
             <span  jhiTranslate="arenaApp.competition.submissions">
             Submissions
+            </span>
+        </button>
+        <button style="margin-right: 0.5em;"
+                class="btn btn-primary float-right"
+                [routerLink]="['standings']">
+            <span  jhiTranslate="arenaApp.standings.title">
+            Класиране
             </span>
         </button>
     </h2>

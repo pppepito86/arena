@@ -26,10 +26,10 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
     queryCount: any;
     itemsPerPage: any;
     page: any;
-    predicate: any;
     previousPage: any;
-    reverse: any;
     parentCompetition: ICompetition;
+
+    DEFAULT_SORT = 'order,asc';
 
     constructor(
         protected competitionService: CompetitionService,
@@ -48,8 +48,6 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             this.parentCompetition = data.parentCompetition;
             this.page = data.pagingParams.page;
             this.previousPage = data.pagingParams.page;
-            this.reverse = data.pagingParams.ascending;
-            this.predicate = data.pagingParams.predicate;
         });
     }
 
@@ -58,7 +56,7 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             .findChildren(this.parentCompetition.id, {
                 page: this.page - 1,
                 size: this.itemsPerPage,
-                sort: this.sort()
+                sort: [this.DEFAULT_SORT]
             })
             .subscribe(
                 (res: HttpResponse<ICompetition[]>) => this.paginateCompetitions(res.body, res.headers),
@@ -78,7 +76,7 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             queryParams: {
                 page: this.page,
                 size: this.itemsPerPage,
-                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+                sort: this.DEFAULT_SORT
             }
         });
         this.loadAll();
@@ -90,7 +88,7 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             '/catalog',
             {
                 page: this.page,
-                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+                sort: this.DEFAULT_SORT
             }
         ]);
         this.loadAll();
@@ -114,14 +112,6 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
 
     registerChangeInCompetitions() {
         this.eventSubscriber = this.eventManager.subscribe('competitionListModification', response => this.loadAll());
-    }
-
-    sort() {
-        const result = [this.predicate + ',' + (this.reverse ? 'asc' : 'desc')];
-        if (this.predicate !== 'id') {
-            result.push('id');
-        }
-        return result;
     }
 
     protected paginateCompetitions(data: ICompetition[], headers: HttpHeaders) {

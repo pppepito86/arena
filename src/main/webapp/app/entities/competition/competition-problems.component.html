@@ -2,13 +2,15 @@
     <div class="table-responsive" *ngIf="problems && problems.length > 0">
         <table class="table table-striped">
             <thead>
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-                <th><span jhiTranslate="arenaApp.problem.title">Tiitle</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <tr>
+                <th><span jhiTranslate="arenaApp.problem.title">Title</span> </th>
+                <th><span jhiTranslate="arenaApp.standings.points">Points</span> </th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let problem of problems; let i = index">
                 <td><a [routerLink]="['/catalog', parentCompetition.id, 'problem', problem.id]">{{problem.title}}</a></td>
+                <td> {{problem.points}} / 100</td>
             </tr>
             </tbody>
         </table>

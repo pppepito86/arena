@@ -3,7 +3,11 @@ package com.olimpiici.arena.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
+import com.olimpiici.arena.repository.UserRepository;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.CompetitionService;
+import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
@@ -24,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,9 +45,17 @@ public class CompetitionResource {
     private static final String ENTITY_NAME = "competition";
 
     private final CompetitionService competitionService;
+    
+    private final SubmissionService submissionService;
 
-    public CompetitionResource(CompetitionService competitionService) {
+    private final UserRepository userRepository;
+    
+    public CompetitionResource(CompetitionService competitionService,
+    		UserRepository userRepository,
+    		SubmissionService submissionService) {
         this.competitionService = competitionService;
+        this.userRepository = userRepository;
+        this.submissionService = submissionService;
     }
 
     /**
@@ -55,10 +67,12 @@ public class CompetitionResource {
      */
     @PostMapping("/competitions")
     @Timed
-    public ResponseEntity<CompetitionDTO> createCompetition(@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
+    public ResponseEntity<CompetitionDTO> createCompetition(
+    		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to save Competition : {}", competitionDTO);
         if (competitionDTO.getId() != null) {
-            throw new BadRequestAlertException("A new competition cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException(
+            		"A new competition cannot already have an ID", ENTITY_NAME, "idexists");
         }
         CompetitionDTO result = competitionService.save(competitionDTO);
         return ResponseEntity.created(new URI("/api/competitions/" + result.getId()))
@@ -77,7 +91,8 @@ public class CompetitionResource {
      */
     @PutMapping("/competitions")
     @Timed
-    public ResponseEntity<CompetitionDTO> updateCompetition(@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
+    public ResponseEntity<CompetitionDTO> updateCompetition(
+    		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to update Competition : {}", competitionDTO);
         if (competitionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -125,7 +140,8 @@ public class CompetitionResource {
      */
     @GetMapping("/competitions/{id}/children")
     @Timed
-    public ResponseEntity<List<CompetitionDTO>> getCompetitionChildren(@PathVariable Long id, Pageable pageable) {
+    public ResponseEntity<List<CompetitionDTO>> getCompetitionChildren(
+    		@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get Competition children : {}", id);
         Page<CompetitionDTO> page = competitionService.findChildren(id, pageable);
         String url = String.format("/api/competitions/%d/children", id);
@@ -143,9 +159,20 @@ public class CompetitionResource {
     
     @GetMapping("/competitions/{id}/problems")
     @Timed
-    public ResponseEntity<List<CompetitionProblemDTO>> getCompetitionProblems(@PathVariable Long id, Pageable pageable) {
+    public ResponseEntity<List<CompetitionProblemDTO>> getCompetitionProblems(
+    		@PathVariable Long id, Pageable pageable, Principal principal) {
         log.debug("REST request to get Competition problems : {}", id);
+        
+        User user = userRepository
+        		.findOneByLogin(SecurityUtils.getCurrentUserLogin().get())
+        		.get();
+        
         Page<CompetitionProblemDTO> page = competitionService.findProblems(id, pageable);
+        for (CompetitionProblemDTO dto : page.getContent()) {
+        	
+        	Integer points = competitionService.findPointsForCompetitionProblem(user, dto.getId());
+        	dto.setPoints(points);
+        }
         String url = String.format("/api/competitions/%d/problems", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -153,7 +180,8 @@ public class CompetitionResource {
     
     @GetMapping("/competitions/{id}/problem/{compProb}")
     @Timed
-    public ResponseEntity<ProblemDTO> getCompetitionProblem(@PathVariable Long id, @PathVariable Long compProb) {
+    public ResponseEntity<ProblemDTO> getCompetitionProblem(
+    		@PathVariable Long id, @PathVariable Long compProb) {
         log.debug("REST request to get Competition problems : {}", id);
         ProblemDTO problem = competitionService.findProblem(compProb);
         return ResponseEntity.ok(problem);
@@ -174,7 +202,14 @@ public class CompetitionResource {
     public ResponseEntity<List<SubmissionDTO>> getSubmissions(@PathVariable Long id, 
     		@PathVariable Long compProb, Pageable pageable) {
         log.debug("REST request to get submission for competitive problem : {}", compProb);
-        Page<SubmissionDTO> page = competitionService.findSubmissions(compProb, pageable);
+        Page<SubmissionDTO> page;
+        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+        	page = submissionService.findSubmissionsByCompetitionProblem(compProb, pageable);
+        } else {
+        	User user = 
+        			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        	page = submissionService.findSubmissionsByCompetitionProblemAndUser(user, compProb, pageable);
+        }
         String url = String.format("/api/competitions/{id}/problem/{compProb}/submissions", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

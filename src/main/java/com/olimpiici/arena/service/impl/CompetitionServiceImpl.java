@@ -2,9 +2,11 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.google.common.collect.Comparators;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
@@ -19,6 +21,9 @@ import com.olimpiici.arena.service.mapper.CompetitionMapper;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
+import com.olimpiici.arena.web.rest.UserResource;
+
+import liquibase.diff.compare.CompareControl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Competition.
@@ -204,55 +211,125 @@ public class CompetitionServiceImpl implements CompetitionService {
 	}
 	
 	@Override
-	public Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable) {
-		return submissionService.findSubmissionsByCompetitionProblemId(competitionProblemId, pageable);
-	}
-
-	@Override
 	public Integer findPointsForCompetitionProblem(User user, Long competitionProblemId) {
-		// TODO Auto-generated method stub
-		return null;
+		CompetitionProblem competitionProblem = competitionProblemRepository
+				.findById(competitionProblemId).get();
+		return findPointsForCompetitionProblem(user, competitionProblem);
+	}
+	
+	@Override
+	public Integer findPointsForCompetitionProblem(User user, CompetitionProblem competitionProblem) {
+		return submissionRepository
+				.findByCompetitionProblemAndUser(competitionProblem, user)
+				.stream()
+				.mapToInt(submission -> submission.getPoints())
+				.max()
+				.orElse(0);
 	}
 
 	@Override
 	public Integer findPointsForCompetition(User user, Long competitionId) {
-		// TODO Auto-generated method stub
-		return null;
+		Competition competition = competitionRepository.getOne(competitionId);
+		return competitionProblemRepository
+				.findByCompetition(competition)
+				.stream()
+				.mapToInt(cp -> findPointsForCompetitionProblem(user, cp))
+				.sum();
 	}
 
 	@Override
 	public Integer findTotalPoints(User user) {
-		// TODO Auto-generated method stub
-		return null;
+		return submissionRepository
+				.findByUser(user)
+				.stream()
+				.collect(Collectors.groupingBy( 
+						Submission::getCompetitionProblem,
+						Collectors.mapping(Submission::getPoints, 
+											Collectors.maxBy(Comparator.naturalOrder()))))
+				.values()
+				.stream()
+				.mapToInt(sum -> sum.orElse(0))
+				.sum();
 	}
 
 	@Override
-	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {
-		// TODO Auto-generated method stub
+	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {	
+		Map<Long, Map<Long, Integer>> userToPointsPerProblem 
+			= new HashMap<Long, Map<Long, Integer>>();
+		Map<Long, User> idToUser = new HashMap<>();
+		userRepository
+			.findAll()
+			.stream()
+			.forEach(user -> idToUser.put(user.getId(), user));
 		
 		Competition competition = competitionRepository.getOne(competitionId);
-		Map<User, Integer> standings = new HashMap<>();
-		standings.put(userRepository.getOne(1L), 1231);
-		standings.put(userRepository.getOne(2L), 325);
-		standings.put(userRepository.getOne(3L), 634);
+		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition);
 		
+		submissionRepository
+			.findByCompetitionProblemIn(problems)
+			.stream()
+			.forEach(submission -> {
+				Long userId = submission.getUser().getId();
+				if (!userToPointsPerProblem.containsKey(userId)) 
+					userToPointsPerProblem.put(userId, new HashMap<Long, Integer>());
+				Map<Long, Integer> pointsPerProblem = userToPointsPerProblem.get(userId);
+				Long problem = submission.getCompetitionProblem().getId();
+				Integer points = pointsPerProblem.getOrDefault(problem, 0);
+				points = Math.max(points, submission.getPoints());
+				pointsPerProblem.put(problem, points);
+			});
 		
-		List<UserPoints> list = new ArrayList<UserPoints>();
-		for(Map.Entry<User, Integer> entry : standings.entrySet()) {
-			list.add(new UserPoints(entry.getKey(), entry.getValue()));
-		}
-		Collections.sort(list);
+		List<UserPoints> standings = userToPointsPerProblem
+			.entrySet()
+			.stream()
+			.map(entry -> {
+				Integer points = entry.getValue()
+						.values()
+						.stream()
+						.mapToInt(Integer::intValue)
+						.sum();
+				User user = idToUser.get(entry.getKey());
+				return new UserPoints(user, points);
+			}).collect(Collectors.toList());
+		
+
+		Collections.sort(standings);
 		
 		int fromIndex = (int)(pageable.getOffset());
-		int toIndex = Math.min(list.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
+		int toIndex = Math.min(standings.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
 		List<UserPoints> pageContent;
 		
-		if (fromIndex < list.size()) {
-			pageContent = list.subList(fromIndex, toIndex);
+		if (fromIndex < standings.size()) {
+			pageContent = standings.subList(fromIndex, toIndex);
 		} else {
 			pageContent = new ArrayList<>();
 		}
 		
-		return new PageImpl<>(pageContent, pageable, list.size());
+		return new PageImpl<>(pageContent, pageable, standings.size());
 	}
+
+	@Override
+	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {
+		List<Competition> all = new ArrayList<>();
+		List<Competition> bfs = new ArrayList<>();
+		
+		all.add(competition);
+		bfs.add(competition);
+		while (!bfs.isEmpty()) {
+			List<Competition> next = competitionRepository.findByParentIn(bfs);
+			all.addAll(next);
+			bfs = next;
+		}
+		
+		return all;
+	}
+
+	@Override
+	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition) {
+		List<Competition> competitions = findAllCompetitionsInSubTree(competition);
+		List<CompetitionProblem> problems = competitionProblemRepository
+			.findByCompetitionIn(competitions);
+		return problems;
+	}
+
 }
