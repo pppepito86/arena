@@ -19,9 +19,9 @@
             "verdict": "Verdict",
             "details": "Details",
             "points": "Points",
-            "timeInMillis": "Time In Millis",
-            "memoryInBytes": "Memory In Bytes",
-            "uploadDate": "Upload Date",
+            "timeInMillis": "Time",
+            "memoryInBytes": "Memory",
+            "uploadDate": "Date",
             "user": "User",
             "competitionProblem": "Competition Problem"
         }

@@ -67,6 +67,11 @@ export const competitionRoute: Routes = [
         runGuardsAndResolvers: 'always'
     },
     {
+        path: 'catalog/:id/submissions',
+        redirectTo: 'submission/forCompetition/:id',
+        pathMatch: 'full'
+    },
+    {
         path: 'catalog/:id/problem/:compProb',
         component: ProblemInCompetitionComponent,
         resolve: {
@@ -76,6 +81,11 @@ export const competitionRoute: Routes = [
             authorities: ['ROLE_USER']
         },
         canActivate: [UserRouteAccessService]
+    },
+    {
+        path: 'catalog/:id/problem/:compProb/submissions',
+        redirectTo: 'submission/forProblem/:compProb',
+        pathMatch: 'full'
     },
     {
         path: 'competition/:id/view',

@@ -44,6 +44,32 @@ export const submissionRoute: Routes = [
         canActivate: [UserRouteAccessService]
     },
     {
+        path: 'submission/forCompetition/:id',
+        component: SubmissionComponent,
+        resolve: {
+            pagingParams: JhiResolvePagingParams
+        },
+        data: {
+            authorities: ['ROLE_USER'],
+            defaultSort: 'id,asc',
+            pageTitle: 'arenaApp.submission.home.title'
+        },
+        canActivate: [UserRouteAccessService]
+    },
+    {
+        path: 'submission/forProblem/:id',
+        component: SubmissionComponent,
+        resolve: {
+            pagingParams: JhiResolvePagingParams
+        },
+        data: {
+            authorities: ['ROLE_USER'],
+            defaultSort: 'id,asc',
+            pageTitle: 'arenaApp.submission.home.title'
+        },
+        canActivate: [UserRouteAccessService]
+    },
+    {
         path: 'submission/:id/view',
         component: SubmissionDetailComponent,
         resolve: {
