@@ -1,0 +1,142 @@
+{
+    "global": {
+        "title": "Арена",
+        "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"http://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
+        "menu": {
+            "home": "Начало",
+            "catalog": "Задачи",
+            "standings": "Класиране",
+            "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
+            "entities": {
+                "main": "Entities",
+                "competition": "Competition",
+                "problem": "Problem",
+                "competitionProblem": "Competition Problem",
+                "submission": "Submission",
+                "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
+            },
+            "account": {
+                "main": "Профил",
+                "settings": "Настройки",
+                "password": "Парола",
+                "sessions": "Сесии",
+                "login": "Вход",
+                "logout": "Изход",
+                "register": "Регистрация"
+            },
+            "admin": {
+                "main": "Администрация",
+                "userManagement": "User management",
+                "tracker": "User tracker",
+                "metrics": "Metrics",
+                "health": "Health",
+                "configuration": "Configuration",
+                "logs": "Logs",
+                "audits": "Audits",
+                "apidocs": "API",
+                "database": "Database",
+                "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
+            },
+            "language": "Език"
+        },
+        "form": {
+            "username": "Потребителско име",
+            "username.placeholder": "Вашето потребителско име",
+            "currentpassword": "Текуща парола",
+            "currentpassword.placeholder": "Текуща парола",
+            "newpassword": "Нова парола",
+            "newpassword.placeholder": "Нова парола",
+            "confirmpassword": "Повторена парола",
+            "confirmpassword.placeholder": "Въведете новата парола отново",
+            "email": "Имейл",
+            "email.placeholder": "Имейл"
+        },
+        "messages": {
+            "info": {
+                "authenticated": {
+                    "prefix": "If you want to ",
+                    "link": "sign in",
+                    "suffix": ", you can try the default accounts:<br/>- Administrator (login=\"admin\" and password=\"admin\") <br/>- User (login=\"user\" and password=\"user\")."
+                },
+                "register": {
+                    "noaccount": "Нямате профил?",
+                    "link": "Регистрирайте се!"
+                }
+            },
+            "error": {
+                "dontmatch": "Паролата и повторената парола не съвпадат!"
+            },
+            "validate": {
+                "newpassword": {
+                    "required": "Задължително е да въведете парола.",
+                    "minlength": "Паролата трябва да има поне 4 символа.",
+                    "maxlength": "Паролата не може да е по-дълга от 50 символа.",
+                    "strength": "Сила на поралата:"
+                },
+                "confirmpassword": {
+                    "required": "Задължително е да повторите паролата.",
+                    "maxlength": "Повторената парола не може да има повече от 50 символа.",
+                    "minlength": "Повторената парола трябва да има поне 4 симвоа."
+                },
+                "email": {
+                    "required": "Задължително е да въведете имейл.",
+                    "invalid": "Имейлът не е коректен.",
+                    "minlength": "Имейлът трябва да има поне 5 символа.",
+                    "maxlength": "Имейлът трябва да има най-много 50 символа."
+                }
+            }
+        },
+        "field": {
+            "id": "ID"
+        },
+        "ribbon": {
+            "dev": "Разработка"
+        },
+        "item-count": "Показани са {{first}} - {{second}} от общо {{total}}."
+    },
+    "entity": {
+        "action": {
+            "addblob": "Add blob",
+            "addimage": "Add image",
+            "back": "Назад",
+            "cancel": "Откажи",
+            "delete": "Изтриване",
+            "edit": "Редакция",
+            "open": "Отваряне",
+            "save": "Запази",
+            "view": "Виж"
+        },
+        "detail": {
+            "field": "Поле",
+            "value": "Стойност"
+        },
+        "delete": {
+            "title": "Потвърдене операцията за изтриване"
+        },
+        "validation": {
+            "required": "Това поле е задължително.",
+            "minlength": "Това поле трябва да има поне {{ min }} символа.",
+            "maxlength": "Това поле не трябва да има повече от {{ max }} символа.",
+            "min": "Стойността трябва да е поне {{ min }}.",
+            "max": "Стойността трябва да е най-много {{ max }}.",
+            "minbytes": "This field should be at least {{ min }} bytes.",
+            "maxbytes": "This field cannot be more than {{ max }} bytes.",
+            "pattern": "This field should follow pattern for {{ pattern }}.",
+            "number": "This field should be a number.",
+            "datetimelocal": "This field should be a date and time.",
+            "patternLogin": "This field can only contain letters, digits and e-mail addresses."
+        }
+    },
+    "error": {
+        "internalServerError": "Сървърна грешка",
+        "server.not.reachable": "Сървърът е недостъпен",
+        "url.not.found": "Не е намерено",
+        "NotNull": "Полето {{ fieldName }} не може да е празно!",
+        "Size": "Полето {{ fieldName }} но удовлетворява изискванията за големина!",
+        "userexists": "Потребителското име е заето!",
+        "emailexists": "Този имейл вече се използва!",
+        "idexists": "A new {{ entityName }} cannot already have an ID",
+        "idnull": "Invalid ID"
+    },
+    "footer": "Made with <3 by Pesho and Marin."
+}

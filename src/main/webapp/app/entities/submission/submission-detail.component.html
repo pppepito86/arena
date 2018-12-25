@@ -5,10 +5,6 @@
             <hr>
             <jhi-alert-error></jhi-alert-error>
             <dl class="row-md jh-entity-details">
-                <dt><span jhiTranslate="arenaApp.submission.file">File</span></dt>
-                <dd>
-                    <span>{{submission.file}}</span>
-                </dd>
                 <dt><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></dt>
                 <dd>
                     <span>{{submission.verdict}}</span>
@@ -21,13 +17,13 @@
                 <dd>
                     <span>{{submission.points}}</span>
                 </dd>
-                <dt><span jhiTranslate="arenaApp.submission.timeInMillis">Time In Millis</span></dt>
+                <dt><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span></dt>
                 <dd>
-                    <span>{{submission.timeInMillis}}</span>
+                    <span>{{submission.timeInMillis}}</span> ms
                 </dd>
-                <dt><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory In Bytes</span></dt>
+                <dt><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory</span></dt>
                 <dd>
-                    <span>{{submission.memoryInBytes}}</span>
+                    <span>{{submission.memoryInBytes}}</span> B
                 </dd>
                 <dt><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span></dt>
                 <dd>
@@ -42,6 +38,10 @@
                     <div *ngIf="submission.competitionProblemId">
                         <a [routerLink]="['/competition-problem', submission.competitionProblemId, 'view']">{{submission.competitionProblemId}}</a>
                     </div>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.file">Code</span></dt>
+                <dd>
+                    <pre>{{submission.code}}</pre>
                 </dd>
             </dl>
 

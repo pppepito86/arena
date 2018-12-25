@@ -1,0 +1,23 @@
+{
+    "arenaApp": {
+        "competitionProblem": {
+            "home": {
+                "title": "Competition Problems",
+                "createLabel": "Create a new Competition Problem",
+                "createOrEditLabel": "Create or edit a Competition Problem"
+            },
+            "created": "A new Competition Problem is created with identifier {{ param }}",
+            "updated": "A Competition Problem is updated with identifier {{ param }}",
+            "deleted": "A Competition Problem is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Competition Problem {{ id }}?"
+            },
+            "detail": {
+                "title": "Competition Problem"
+            },
+            "order": "Order",
+            "problem": "Problem",
+            "competition": "Competition"
+        }
+    }
+}

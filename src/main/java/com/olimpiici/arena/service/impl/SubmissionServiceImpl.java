@@ -81,7 +81,11 @@ public class SubmissionServiceImpl implements SubmissionService {
     public Optional<SubmissionDTO> findOne(Long id) {
         log.debug("Request to get Submission : {}", id);
         return submissionRepository.findById(id)
-            .map(submissionMapper::toDto);
+            .map(submissionMapper::toDto)
+            .map(dto -> {
+            	dto.setCode(findSubmissionCode(id));
+            	return dto;
+            });
     }
 
     /**
@@ -112,8 +116,16 @@ public class SubmissionServiceImpl implements SubmissionService {
 	}
 
 	@Override
-	public String findSubmissionsCode(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public String findSubmissionCode(Long id) {
+		// TODO 
+		
+		return "#include <iostream>\n" + 
+				"using namespace std;\n" + 
+				"\n" + 
+				"int main() \n" + 
+				"{\n" + 
+				"    cout << \"Hello, World!\";\n" + 
+				"    return 0;\n" + 
+				"}";
 	}
 }

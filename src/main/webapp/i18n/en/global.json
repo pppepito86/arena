@@ -5,6 +5,7 @@
         "menu": {
             "home": "Home",
             "catalog": "Catalog",
+            "standings": "Standings",
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
             "entities": {
                 "main": "Entities",
@@ -137,5 +138,5 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "This is your footer"
+    "footer": "Made with <3 by Pesho and Marin."
 }

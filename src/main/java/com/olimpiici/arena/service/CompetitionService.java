@@ -1,5 +1,8 @@
 package com.olimpiici.arena.service;
 
+import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.User;
+import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
@@ -9,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -57,4 +61,12 @@ public interface CompetitionService {
     ProblemDTO findProblem(Long competitionProblem);
     
     Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable);
+    
+    Integer findPointsForCompetitionProblem(User user, Long competitionProblemId);
+    
+    Integer findPointsForCompetition(User user, Long competitionId);
+    
+    Integer findTotalPoints(User user);
+    
+    Page<UserPoints> findStandings(Long competitionId, Pageable pageable);
 }

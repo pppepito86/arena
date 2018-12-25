@@ -1,6 +1,8 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.domain.User;
+import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -24,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -172,7 +175,17 @@ public class CompetitionResource {
     		@PathVariable Long compProb, Pageable pageable) {
         log.debug("REST request to get submission for competitive problem : {}", compProb);
         Page<SubmissionDTO> page = competitionService.findSubmissions(compProb, pageable);
-        String url = String.format("/api//competitions/{id}/problem/{compProb}/submissions", id);
+        String url = String.format("/api/competitions/{id}/problem/{compProb}/submissions", id);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping("/competitions/{id}/standings")
+    @Timed
+    public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, Pageable pageable) {
+        log.debug("REST request to get standings for competition: {}", id);
+		Page<UserPoints> page = competitionService.findStandings(id, pageable);
+        String url = String.format("/api/competitions/{id}/standings", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

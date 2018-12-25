@@ -5,9 +5,12 @@ import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.User;
+import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
+import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
@@ -21,13 +24,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -54,6 +60,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     private final SubmissionMapper submissionMapper;
     
     private final SubmissionService submissionService;
+    
+    private final UserRepository userRepository;
 
     public CompetitionServiceImpl(CompetitionRepository competitionRepository, 
     		CompetitionProblemRepository competitionProblemRepository, 
@@ -62,7 +70,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     		CompetitionProblemMapper competitionProblemMapper,
     		SubmissionRepository submissionRepository,
     		SubmissionMapper submissionMapper,
-    		SubmissionService submissionService) {
+    		SubmissionService submissionService,
+    		UserRepository userRepository) {
         this.competitionRepository = competitionRepository;
         this.competitionMapper = competitionMapper;
         this.problemMapper = problemMapper;
@@ -71,6 +80,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
         this.submissionService = submissionService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -196,5 +206,53 @@ public class CompetitionServiceImpl implements CompetitionService {
 	@Override
 	public Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable) {
 		return submissionService.findSubmissionsByCompetitionProblemId(competitionProblemId, pageable);
+	}
+
+	@Override
+	public Integer findPointsForCompetitionProblem(User user, Long competitionProblemId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer findPointsForCompetition(User user, Long competitionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer findTotalPoints(User user) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {
+		// TODO Auto-generated method stub
+		
+		Competition competition = competitionRepository.getOne(competitionId);
+		Map<User, Integer> standings = new HashMap<>();
+		standings.put(userRepository.getOne(1L), 1231);
+		standings.put(userRepository.getOne(2L), 325);
+		standings.put(userRepository.getOne(3L), 634);
+		
+		
+		List<UserPoints> list = new ArrayList<UserPoints>();
+		for(Map.Entry<User, Integer> entry : standings.entrySet()) {
+			list.add(new UserPoints(entry.getKey(), entry.getValue()));
+		}
+		Collections.sort(list);
+		
+		int fromIndex = (int)(pageable.getOffset());
+		int toIndex = Math.min(list.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
+		List<UserPoints> pageContent;
+		
+		if (fromIndex < list.size()) {
+			pageContent = list.subList(fromIndex, toIndex);
+		} else {
+			pageContent = new ArrayList<>();
+		}
+		
+		return new PageImpl<>(pageContent, pageable, list.size());
 	}
 }

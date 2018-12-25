@@ -29,7 +29,17 @@ public class SubmissionDTO implements Serializable {
 
     private Long competitionProblemId;
 
-    public Long getId() {
+    private String code;
+    
+    public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public Long getId() {
         return id;
     }
 

@@ -7,6 +7,7 @@ import { createRequestOption } from 'app/shared';
 import { ICompetition } from 'app/shared/model/competition.model';
 import { IProblem } from '../../shared/model/problem.model';
 import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
+import { IUserPoints } from '../../shared/model/user-points.model';
 
 type EntityResponseType = HttpResponse<ICompetition>;
 type EntityArrayResponseType = HttpResponse<ICompetition[]>;
@@ -59,5 +60,11 @@ export class CompetitionService {
     submitSolution(competitionId: number, competitionProblemId: number, solution: string) {
         const url = `${this.resourceUrl}/${competitionId}/problem/${competitionProblemId}/submit`;
         return this.http.post<IProblem>(url, solution, { observe: 'response' });
+    }
+
+    getStandings(competitionId: number, req?: any): Observable<HttpResponse<IUserPoints[]>> {
+        const options = createRequestOption(req);
+        const url = `${this.resourceUrl}/${competitionId}/standings`;
+        return this.http.get<IUserPoints[]>(url, { params: options, observe: 'response' });
     }
 }

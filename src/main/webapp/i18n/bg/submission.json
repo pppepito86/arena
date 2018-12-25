@@ -1,0 +1,29 @@
+{
+    "arenaApp": {
+        "submission": {
+            "home": {
+                "title": "Решение",
+                "createLabel": "Create a new Submission",
+                "createOrEditLabel": "Create or edit a Submission"
+            },
+            "created": "A new Submission is created with identifier {{ param }}",
+            "updated": "A Submission is updated with identifier {{ param }}",
+            "deleted": "A Submission is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Submission {{ id }}?"
+            },
+            "detail": {
+                "title": "Решение"
+            },
+            "file": "File",
+            "verdict": "Статус",
+            "details": "Детайли",
+            "points": "Точки",
+            "timeInMillis": "Време",
+            "memoryInBytes": "Памет",
+            "uploadDate": "Дата и  час",
+            "user": "Потребител",
+            "competitionProblem": "Competition Problem"
+        }
+    }
+}

@@ -48,5 +48,5 @@ public interface SubmissionService {
     
     Page<SubmissionDTO> findSubmissionsByCompetitionId(Long competitionId, Pageable pageable);
     
-    String findSubmissionsCode(Long id);
+    String findSubmissionCode(Long id);
 }

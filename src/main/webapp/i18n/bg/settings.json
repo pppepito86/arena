@@ -1,0 +1,32 @@
+{
+    "settings": {
+        "title": "Настройки за потребител <b>{{username}}</b>",
+        "form": {
+            "firstname": "Име",
+            "firstname.placeholder": "Име",
+            "lastname": "Фамилия",
+            "lastname.placeholder": "Фамилия",
+            "language": "Език",
+            "button": "Запази"
+        },
+        "messages": {
+            "error": {
+                "fail": "<strong>Грешка!</strong> Настройките не могат за бъдат запазени.",
+                "emailexists": "<strong>Имейлът вече се използва!</strong> Използвайте друг."
+            },
+            "success": "<strong>Настройките са запазени!</strong>",
+            "validate": {
+                "firstname": {
+                    "required": "Името е задължително.",
+                    "minlength": "Името трябва да има поне един символ",
+                    "maxlength": "Името не може да има повече от 50 символа"
+                },
+                "lastname": {
+                    "required": "Фамилията е задължителна.",
+                    "minlength": "Фамилията трябва да има поне един символ",
+                    "maxlength": "Фамилиията не може да има повече от 50 символа"
+                }
+            }
+        }
+    }
+}

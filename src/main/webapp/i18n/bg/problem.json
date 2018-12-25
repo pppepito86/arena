@@ -1,0 +1,23 @@
+{
+    "arenaApp": {
+        "problem": {
+            "home": {
+                "title": "Задачи",
+                "createLabel": "Create a new Problem",
+                "createOrEditLabel": "Create or edit a Problem"
+            },
+            "created": "A new Problem is created with identifier {{ param }}",
+            "updated": "A Problem is updated with identifier {{ param }}",
+            "deleted": "A Problem is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Problem {{ id }}?"
+            },
+            "detail": {
+                "title": "Задача"
+            },
+            "title": "Име",
+            "directory": "Directory",
+            "version": "Version"
+        }
+    }
+}

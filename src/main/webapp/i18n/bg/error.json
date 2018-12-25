@@ -1,0 +1,13 @@
+{
+    "error": {
+        "title": "Грешка!",
+        "http": {
+            "400": "Некоректна заявка.",
+            "403": "Нямате достъп до тази страница.",
+            "405": "The HTTP verb you used is not supported for this URL.",
+            "500": "Съвръвна грешка."
+        },
+        "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
+        "validation": "Validation error on the server."
+    }
+}

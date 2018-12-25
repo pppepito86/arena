@@ -11,6 +11,7 @@ export interface ISubmission {
     uploadDate?: Moment;
     userId?: number;
     competitionProblemId?: number;
+    code?: string;
 }
 
 export class Submission implements ISubmission {
@@ -24,6 +25,7 @@ export class Submission implements ISubmission {
         public memoryInBytes?: number,
         public uploadDate?: Moment,
         public userId?: number,
-        public competitionProblemId?: number
+        public competitionProblemId?: number,
+        public code?: string
     ) {}
 }

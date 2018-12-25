@@ -2,7 +2,7 @@
     "arenaApp": {
         "competition": {
             "home": {
-                "title": "Competitions",
+                "title": "Съсетезания",
                 "createLabel": "Create a new Competition",
                 "createOrEditLabel": "Create or edit a Competition"
             },
@@ -13,24 +13,24 @@
                 "question": "Are you sure you want to delete Competition {{ id }}?"
             },
             "detail": {
-                "title": "Competition"
+                "title": "Състезание"
             },
-            "label": "Label",
-            "description": "Description",
+            "label": "Име",
+            "description": "Описание",
             "order": "Order",
             "parent": "Parent",
-            "submit": "Submit",
-            "submissions": "Submissions"
+            "submit": "Изпрати",
+            "submissions": "Изпратени решения"
         },
         "catalog": {
             "home": {
-                "title": "Catalog"
+                "title": "Задачи"
             }
         },
         "standings": {
-            "title": "Standings",
-            "user": "User",
-            "points": "Points"
+            "title": "Класиране",
+            "user": "Потребител",
+            "points": "Точки"
         }
     }
 }
