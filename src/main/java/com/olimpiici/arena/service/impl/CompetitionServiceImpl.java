@@ -6,10 +6,15 @@ import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.CompetitionRepository;
+import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.mapper.CompetitionMapper;
+import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
+import com.olimpiici.arena.service.mapper.SubmissionMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +42,31 @@ public class CompetitionServiceImpl implements CompetitionService {
     private final CompetitionRepository competitionRepository;
     
     private final CompetitionProblemRepository competitionProblemRepository;
+    
+    private final SubmissionRepository submissionRepository;
 
     private final CompetitionMapper competitionMapper;
     
     private final ProblemMapper problemMapper;
+    
+    private final CompetitionProblemMapper competitionProblemMapper;
+    
+    private final SubmissionMapper submissionMapper;
 
     public CompetitionServiceImpl(CompetitionRepository competitionRepository, 
     		CompetitionProblemRepository competitionProblemRepository, 
     		CompetitionMapper competitionMapper,
-    		ProblemMapper problemMapper) {
+    		ProblemMapper problemMapper,
+    		CompetitionProblemMapper competitionProblemMapper,
+    		SubmissionRepository submissionRepository,
+    		SubmissionMapper submissionMapper) {
         this.competitionRepository = competitionRepository;
         this.competitionMapper = competitionMapper;
         this.problemMapper = problemMapper;
         this.competitionProblemRepository = competitionProblemRepository;
+        this.competitionProblemMapper = competitionProblemMapper;
+        this.submissionRepository = submissionRepository;
+        this.submissionMapper = submissionMapper;
     }
 
     /**
@@ -145,16 +162,40 @@ public class CompetitionServiceImpl implements CompetitionService {
 	}
 
 	@Override
-	public Page<ProblemDTO> findProblems(Long id, Pageable pageable) {
+	public Page<CompetitionProblemDTO> findProblems(Long id, Pageable pageable) {
 		log.debug("Request to get all problems for Competition {}", id);
 		Competition competition = competitionRepository.findById(id).get();
 		
-		Page<ProblemDTO> problems = 
+		Page<CompetitionProblemDTO> problems = 
 				competitionProblemRepository
 				.findByCompetition(competition , pageable)
-				.map(competitionProblem -> competitionProblem.getProblem())
-				.map(problemMapper::toDto);
+				.map(problem -> {
+					CompetitionProblemDTO dto = competitionProblemMapper.toDto(problem);
+					dto.setTitle(problem.getProblem().getTitle());
+					return dto;
+				});
 		
 		return problems;
+	}
+
+	@Override
+	public ProblemDTO findProblem(Long competitionProblem) {
+		Problem problem = competitionProblemRepository
+			.findById(competitionProblem)
+			.get()
+			.getProblem();
+		
+		ProblemDTO dto = problemMapper.toDto(problem);
+		return dto;
+	}
+	
+	@Override
+	public Page<SubmissionDTO> findSubmissions(Long competitionProblemId, Pageable pageable) {
+		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
+		CompetitionProblem competitionProblem = competitionProblemRepository.findById(competitionProblemId).get();
+		Page<SubmissionDTO> submissoins = submissionRepository
+				.findByCompetitionProblem(competitionProblem, pageable)
+				.map(submissionMapper::toDto);
+		return submissoins;
 	}
 }

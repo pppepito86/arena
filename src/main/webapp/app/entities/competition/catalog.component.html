@@ -1,6 +1,13 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.catalog.home.title">Catalog</span>
+        <button id="jh-create-entity"
+                class="btn btn-primary float-right jh-create-entity create-competition"
+                [routerLink]="['submissions']">
+            <span  jhiTranslate="arenaApp.competition.submissions">
+            Submissions
+            </span>
+        </button>
     </h2>
     <jhi-competition-path></jhi-competition-path>
     <jhi-competition-children></jhi-competition-children>

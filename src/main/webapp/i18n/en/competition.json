@@ -18,7 +18,9 @@
             "label": "Label",
             "description": "Description",
             "order": "Order",
-            "parent": "Parent"
+            "parent": "Parent",
+            "submit": "Submit",
+            "submissions": "Submissions"
         },
         "catalog": {
             "home": {

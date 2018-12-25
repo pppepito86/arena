@@ -8,7 +8,7 @@
             </thead>
             <tbody>
             <tr *ngFor="let problem of problems; let i = index">
-                <td><a [routerLink]="['/problem', problem.id, 'view']">{{problem.title}}</a></td>
+                <td><a [routerLink]="['/catalog', parentCompetition.id, 'problem', problem.id]">{{problem.title}}</a></td>
             </tr>
             </tbody>
         </table>

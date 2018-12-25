@@ -15,8 +15,18 @@ public class CompetitionProblemDTO implements Serializable {
     private Long problemId;
 
     private Long competitionId;
+    
+    private String title;
+    
+    public String getTitle() {
+		return title;
+	}
 
-    public Long getId() {
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public Long getId() {
         return id;
     }
 

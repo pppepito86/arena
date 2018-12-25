@@ -6,7 +6,9 @@ import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
@@ -138,10 +140,39 @@ public class CompetitionResource {
     
     @GetMapping("/competitions/{id}/problems")
     @Timed
-    public ResponseEntity<List<ProblemDTO>> getCompetitionProblems(@PathVariable Long id, Pageable pageable) {
+    public ResponseEntity<List<CompetitionProblemDTO>> getCompetitionProblems(@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get Competition problems : {}", id);
-        Page<ProblemDTO> page = competitionService.findProblems(id, pageable);
+        Page<CompetitionProblemDTO> page = competitionService.findProblems(id, pageable);
         String url = String.format("/api/competitions/%d/problems", id);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping("/competitions/{id}/problem/{compProb}")
+    @Timed
+    public ResponseEntity<ProblemDTO> getCompetitionProblem(@PathVariable Long id, @PathVariable Long compProb) {
+        log.debug("REST request to get Competition problems : {}", id);
+        ProblemDTO problem = competitionService.findProblem(compProb);
+        return ResponseEntity.ok(problem);
+    }
+    
+    @PostMapping("/competitions/{id}/problem/{compProb}/submit")
+    @Timed
+    public ResponseEntity<Void> submitProblem(@PathVariable Long id, 
+    		@PathVariable Long compProb, 
+    		@RequestBody String solution) {
+        log.debug("REST request to submit solution : {}", solution);
+        // TODO
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/competitions/{id}/problem/{compProb}/submissions")
+    @Timed
+    public ResponseEntity<List<SubmissionDTO>> getSubmissions(@PathVariable Long id, 
+    		@PathVariable Long compProb, Pageable pageable) {
+        log.debug("REST request to get submission for competitive problem : {}", compProb);
+        Page<SubmissionDTO> page = competitionService.findSubmissions(compProb, pageable);
+        String url = String.format("/api//competitions/{id}/problem/{compProb}/submissions", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

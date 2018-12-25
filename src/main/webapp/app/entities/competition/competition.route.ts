@@ -14,6 +14,7 @@ import { CompetitionDeletePopupComponent } from './competition-delete-dialog.com
 import { ICompetition } from 'app/shared/model/competition.model';
 import { CompetitionChildrenComponent } from './competition-children.component';
 import { CatalogComponent } from './catalog.component';
+import { ProblemInCompetitionComponent } from './problem-in-competition.component';
 
 @Injectable({ providedIn: 'root' })
 export class CompetitionResolve implements Resolve<ICompetition> {
@@ -64,6 +65,17 @@ export const competitionRoute: Routes = [
         },
         canActivate: [UserRouteAccessService],
         runGuardsAndResolvers: 'always'
+    },
+    {
+        path: 'catalog/:id/problem/:compProb',
+        component: ProblemInCompetitionComponent,
+        resolve: {
+            competition: CompetitionResolve
+        },
+        data: {
+            authorities: ['ROLE_USER']
+        },
+        canActivate: [UserRouteAccessService]
     },
     {
         path: 'competition/:id/view',

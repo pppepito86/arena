@@ -12,6 +12,7 @@ import {
     CompetitionChildrenComponent,
     CompetitionPathComponent,
     CatalogComponent,
+    ProblemInCompetitionComponent,
     competitionRoute,
     competitionPopupRoute
 } from './';
@@ -29,7 +30,8 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
         CompetitionDeletePopupComponent,
         CompetitionProblemsComponent,
         CompetitionPathComponent,
-        CatalogComponent
+        CatalogComponent,
+        ProblemInCompetitionComponent
     ],
     entryComponents: [CompetitionComponent, CompetitionUpdateComponent, CompetitionDeleteDialogComponent, CompetitionDeletePopupComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

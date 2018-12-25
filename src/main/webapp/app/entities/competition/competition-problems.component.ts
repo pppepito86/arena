@@ -10,6 +10,7 @@ import { AccountService } from 'app/core';
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { CompetitionService } from './competition.service';
 import { IProblem } from '../../shared/model/problem.model';
+import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
 
 @Component({
     selector: 'jhi-competition-problems',
@@ -17,7 +18,7 @@ import { IProblem } from '../../shared/model/problem.model';
 })
 export class CompetitionProblemsComponent implements OnInit {
     currentAccount: any;
-    problems: IProblem[];
+    problems: ICompetitionProblem[];
     error: any;
     success: any;
     eventSubscriber: Subscription;
