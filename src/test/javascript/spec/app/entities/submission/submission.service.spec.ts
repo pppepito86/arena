@@ -25,7 +25,7 @@ describe('Service Tests', () => {
             httpMock = injector.get(HttpTestingController);
             currentDate = moment();
 
-            elemDefault = new Submission(0, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA', 0, 0, 0, currentDate);
+            elemDefault = new Submission(0, 'AAAAAAA', 'AAAAAAA', 'AAAAAAA', 0, 0, 0, currentDate, 'AAAAAAA');
         });
 
         describe('Service methods', async () => {
@@ -76,7 +76,8 @@ describe('Service Tests', () => {
                         points: 1,
                         timeInMillis: 1,
                         memoryInBytes: 1,
-                        uploadDate: currentDate.format(DATE_TIME_FORMAT)
+                        uploadDate: currentDate.format(DATE_TIME_FORMAT),
+                        securityKey: 'BBBBBB'
                     },
                     elemDefault
                 );
@@ -104,7 +105,8 @@ describe('Service Tests', () => {
                         points: 1,
                         timeInMillis: 1,
                         memoryInBytes: 1,
-                        uploadDate: currentDate.format(DATE_TIME_FORMAT)
+                        uploadDate: currentDate.format(DATE_TIME_FORMAT),
+                        securityKey: 'BBBBBB'
                     },
                     elemDefault
                 );

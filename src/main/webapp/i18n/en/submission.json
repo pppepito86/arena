@@ -6,6 +6,7 @@
                 "createLabel": "Create a new Submission",
                 "createOrEditLabel": "Create or edit a Submission"
             },
+            "securityKey": "Security Key",
             "created": "A new Submission is created with identifier {{ param }}",
             "updated": "A Submission is updated with identifier {{ param }}",
             "deleted": "A Submission is deleted with identifier {{ param }}",

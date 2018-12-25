@@ -69,6 +69,9 @@ public class SubmissionResourceIntTest {
     private static final ZonedDateTime DEFAULT_UPLOAD_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_UPLOAD_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
+    private static final String DEFAULT_SECURITY_KEY = "AAAAAAAAAA";
+    private static final String UPDATED_SECURITY_KEY = "BBBBBBBBBB";
+
     @Autowired
     private SubmissionRepository submissionRepository;
 
@@ -123,7 +126,8 @@ public class SubmissionResourceIntTest {
             .points(DEFAULT_POINTS)
             .timeInMillis(DEFAULT_TIME_IN_MILLIS)
             .memoryInBytes(DEFAULT_MEMORY_IN_BYTES)
-            .uploadDate(DEFAULT_UPLOAD_DATE);
+            .uploadDate(DEFAULT_UPLOAD_DATE)
+            .securityKey(DEFAULT_SECURITY_KEY);
         return submission;
     }
 
@@ -155,6 +159,7 @@ public class SubmissionResourceIntTest {
         assertThat(testSubmission.getTimeInMillis()).isEqualTo(DEFAULT_TIME_IN_MILLIS);
         assertThat(testSubmission.getMemoryInBytes()).isEqualTo(DEFAULT_MEMORY_IN_BYTES);
         assertThat(testSubmission.getUploadDate()).isEqualTo(DEFAULT_UPLOAD_DATE);
+        assertThat(testSubmission.getSecurityKey()).isEqualTo(DEFAULT_SECURITY_KEY);
     }
 
     @Test
@@ -194,7 +199,8 @@ public class SubmissionResourceIntTest {
             .andExpect(jsonPath("$.[*].points").value(hasItem(DEFAULT_POINTS)))
             .andExpect(jsonPath("$.[*].timeInMillis").value(hasItem(DEFAULT_TIME_IN_MILLIS)))
             .andExpect(jsonPath("$.[*].memoryInBytes").value(hasItem(DEFAULT_MEMORY_IN_BYTES)))
-            .andExpect(jsonPath("$.[*].uploadDate").value(hasItem(sameInstant(DEFAULT_UPLOAD_DATE))));
+            .andExpect(jsonPath("$.[*].uploadDate").value(hasItem(sameInstant(DEFAULT_UPLOAD_DATE))))
+            .andExpect(jsonPath("$.[*].securityKey").value(hasItem(DEFAULT_SECURITY_KEY.toString())));
     }
     
     @Test
@@ -214,7 +220,8 @@ public class SubmissionResourceIntTest {
             .andExpect(jsonPath("$.points").value(DEFAULT_POINTS))
             .andExpect(jsonPath("$.timeInMillis").value(DEFAULT_TIME_IN_MILLIS))
             .andExpect(jsonPath("$.memoryInBytes").value(DEFAULT_MEMORY_IN_BYTES))
-            .andExpect(jsonPath("$.uploadDate").value(sameInstant(DEFAULT_UPLOAD_DATE)));
+            .andExpect(jsonPath("$.uploadDate").value(sameInstant(DEFAULT_UPLOAD_DATE)))
+            .andExpect(jsonPath("$.securityKey").value(DEFAULT_SECURITY_KEY.toString()));
     }
 
     @Test
@@ -244,7 +251,8 @@ public class SubmissionResourceIntTest {
             .points(UPDATED_POINTS)
             .timeInMillis(UPDATED_TIME_IN_MILLIS)
             .memoryInBytes(UPDATED_MEMORY_IN_BYTES)
-            .uploadDate(UPDATED_UPLOAD_DATE);
+            .uploadDate(UPDATED_UPLOAD_DATE)
+            .securityKey(UPDATED_SECURITY_KEY);
         SubmissionDTO submissionDTO = submissionMapper.toDto(updatedSubmission);
 
         restSubmissionMockMvc.perform(put("/api/submissions")
@@ -263,6 +271,7 @@ public class SubmissionResourceIntTest {
         assertThat(testSubmission.getTimeInMillis()).isEqualTo(UPDATED_TIME_IN_MILLIS);
         assertThat(testSubmission.getMemoryInBytes()).isEqualTo(UPDATED_MEMORY_IN_BYTES);
         assertThat(testSubmission.getUploadDate()).isEqualTo(UPDATED_UPLOAD_DATE);
+        assertThat(testSubmission.getSecurityKey()).isEqualTo(UPDATED_SECURITY_KEY);
     }
 
     @Test

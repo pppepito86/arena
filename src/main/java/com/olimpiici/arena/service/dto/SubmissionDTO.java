@@ -25,6 +25,8 @@ public class SubmissionDTO implements Serializable {
 
     private ZonedDateTime uploadDate;
 
+    private String securityKey;
+
     private Long userId;
 
     private Long competitionProblemId;
@@ -103,6 +105,14 @@ public class SubmissionDTO implements Serializable {
         this.uploadDate = uploadDate;
     }
 
+    public String getSecurityKey() {
+        return securityKey;
+    }
+
+    public void setSecurityKey(String securityKey) {
+        this.securityKey = securityKey;
+    }
+
     public Long getUserId() {
         return userId;
     }
@@ -151,6 +161,7 @@ public class SubmissionDTO implements Serializable {
             ", timeInMillis=" + getTimeInMillis() +
             ", memoryInBytes=" + getMemoryInBytes() +
             ", uploadDate='" + getUploadDate() + "'" +
+            ", securityKey='" + getSecurityKey() + "'" +
             ", user=" + getUserId() +
             ", competitionProblem=" + getCompetitionProblemId() +
             "}";

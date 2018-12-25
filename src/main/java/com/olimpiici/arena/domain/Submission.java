@@ -45,6 +45,9 @@ public class Submission implements Serializable {
     @Column(name = "upload_date")
     private ZonedDateTime uploadDate;
 
+    @Column(name = "security_key")
+    private String securityKey;
+
     @ManyToOne
     @JsonIgnoreProperties("")
     private User user;
@@ -153,6 +156,19 @@ public class Submission implements Serializable {
         this.uploadDate = uploadDate;
     }
 
+    public String getSecurityKey() {
+        return securityKey;
+    }
+
+    public Submission securityKey(String securityKey) {
+        this.securityKey = securityKey;
+        return this;
+    }
+
+    public void setSecurityKey(String securityKey) {
+        this.securityKey = securityKey;
+    }
+
     public User getUser() {
         return user;
     }
@@ -211,6 +227,7 @@ public class Submission implements Serializable {
             ", timeInMillis=" + getTimeInMillis() +
             ", memoryInBytes=" + getMemoryInBytes() +
             ", uploadDate='" + getUploadDate() + "'" +
+            ", securityKey='" + getSecurityKey() + "'" +
             "}";
     }
 }

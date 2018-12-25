@@ -28,6 +28,10 @@
         {
             "fieldName": "uploadDate",
             "fieldType": "ZonedDateTime"
+        },
+	{
+            "fieldName": "securityKey",
+            "fieldType": "String"
         }
     ],
     "relationships": [

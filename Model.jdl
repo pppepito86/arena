@@ -46,6 +46,7 @@ entity Submission {
 	timeInMillis Integer
 	memoryInBytes Integer
     uploadDate ZonedDateTime
+    securityKey String
 }
 
 relationship ManyToOne {
