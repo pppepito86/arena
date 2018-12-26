@@ -1,26 +1,41 @@
 package com.olimpiici.arena.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import io.github.jhipster.web.util.ResponseUtil;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
-import java.util.List;
-import java.util.Optional;
+import io.github.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing Problem.
@@ -35,6 +50,9 @@ public class ProblemResource {
 
     private final ProblemService problemService;
 
+    @Autowired
+    private ApplicationProperties applicationProperties;
+    
     public ProblemResource(ProblemService problemService) {
         this.problemService = problemService;
     }
@@ -110,6 +128,37 @@ public class ProblemResource {
         return ResponseUtil.wrapOrNotFound(problemDTO);
     }
 
+    /**
+     * GET  /problems/:id/pdf : get the problem description in pdf format.
+     *
+     * @param id the id of the problem to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the problemDTO, or with status 404 (Not Found)
+     */
+    @GetMapping("/problems/{id}/pdf")
+    @Timed
+    public ResponseEntity<?> getProblemPdf(@PathVariable Long id, 
+    		@RequestParam(value = "download", defaultValue = "false") Boolean download) throws Exception {
+        log.debug("REST request to get Problem PDF: {}", id);
+    	
+       	HttpHeaders respHeaders = new HttpHeaders();
+    	if (download) {
+    		respHeaders.setContentDispositionFormData("attachment", "problem.pdf");
+    	} else {
+    		respHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+    	}
+    	
+    	File dir = new File(applicationProperties.getWorkDir() + "/problems/" + id + "/problem");
+    	Optional<File> pdf = Arrays.stream(dir.listFiles()).filter(f -> f.getName().endsWith(".pdf")).findAny();
+    	Optional<InputStreamResource> isr = pdf.map(f -> {
+			try {
+				return new FileInputStream(f);
+			} catch (FileNotFoundException e) {
+				return null;
+			}
+		}).map(fis -> new InputStreamResource(fis));
+    	
+    	return ResponseUtil.wrapOrNotFound(isr, respHeaders);
+    }
     /**
      * DELETE  /problems/:id : delete the "id" problem.
      *

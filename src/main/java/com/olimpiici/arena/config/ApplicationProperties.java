@@ -11,4 +11,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+	private String workDir = ".";
+
+	public String getWorkDir() {
+		return workDir;
+	}
+	
+	public void setWorkDir(String workDir) {
+		this.workDir = workDir;
+	}
+	
 }
