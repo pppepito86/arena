@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ApplicationProperties {
 
 	private String workDir = ".";
+	private String workerUrl = "localhost:8089";
 
 	public String getWorkDir() {
 		return workDir;
@@ -19,6 +20,14 @@ public class ApplicationProperties {
 	
 	public void setWorkDir(String workDir) {
 		this.workDir = workDir;
+	}
+	
+	public String getWorkerUrl() {
+		return workerUrl;
+	}
+	
+	public void setWorkerUrl(String workerUrl) {
+		this.workerUrl = workerUrl;
 	}
 	
 }

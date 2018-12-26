@@ -60,5 +60,7 @@ public interface SubmissionService {
     Page<SubmissionDTO> findSubmissionsByUserAndCompetitionProblemIn(User user, 
     		List<CompetitionProblem> competitionProblems, Pageable pageable);
         
+	Optional<SubmissionDTO> findSubmissionByVerdict(String verdict);
+    
     String findSubmissionCode(Long id);
 }

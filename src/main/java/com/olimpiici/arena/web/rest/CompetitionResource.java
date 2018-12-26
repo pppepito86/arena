@@ -1,40 +1,48 @@
 package com.olimpiici.arena.web.rest;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.domain.Competition;
-import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
-import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.Principal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * REST controller for managing Competition.
@@ -52,6 +60,9 @@ public class CompetitionResource {
     private final SubmissionService submissionService;
 
     private final UserRepository userRepository;
+
+    @Autowired
+    private ApplicationProperties applicationProperties;
     
     public CompetitionResource(CompetitionService competitionService,
     		UserRepository userRepository,
@@ -213,9 +224,22 @@ public class CompetitionResource {
     @Timed
     public ResponseEntity<Void> submitProblem(@PathVariable Long id, 
     		@PathVariable Long compProb, 
-    		@RequestBody String solution) {
+    		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
         // TODO
+        
+        SubmissionDTO submission = new SubmissionDTO();
+        submission.setUserId(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId());
+        submission.setCompetitionProblemId(compProb);
+        submission = submissionService.save(submission);
+        
+        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
+        File submissionDir = new File(submissionsDir, ""+submission.getId());
+        File submissionFile = new File(submissionDir, "solution.cpp");
+        
+        submissionDir.mkdirs();
+        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
+        
         return ResponseEntity.ok().build();
     }
     

@@ -44,4 +44,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     
     List<Submission> findByCompetitionProblemIn(
     		Collection<CompetitionProblem> competitionProblem);
+    
+    List<Submission> findByVerdict(String verdict);
+    
 }

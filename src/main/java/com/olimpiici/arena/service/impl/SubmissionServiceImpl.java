@@ -162,6 +162,15 @@ public class SubmissionServiceImpl implements SubmissionService {
 	}
 	
 	@Override
+	public Optional<SubmissionDTO> findSubmissionByVerdict(String verdict) {
+		return submissionRepository
+				.findByVerdict(verdict)
+				.stream()
+				.map(submissionMapper::toDto)
+				.findFirst();
+	}
+	
+	@Override
 	public String findSubmissionCode(Long id) {
 		// TODO 
 		
