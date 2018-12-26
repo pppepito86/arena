@@ -38,9 +38,12 @@ public class GraderTask {
     
 	@Scheduled(fixedDelay = 3000)
 	public void gradeTask() throws IOException {
-		if (!worker.isAlive()) return;
-		
-		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict(null);
+		if (!worker.isAlive()) {
+			log.debug("worker is not alive: " + worker.getUrl());
+			return;
+		}
+
+		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict("");
 		submission.ifPresent(s -> grade(s));
 	}
 	
