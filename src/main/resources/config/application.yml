@@ -112,4 +112,4 @@ jhipster:
 
 application:
     work-dir: .
-    worker-url: localhost:8080
+    worker-url: localhost:8089
