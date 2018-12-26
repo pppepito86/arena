@@ -48,7 +48,6 @@ public class PublicResource {
         log.debug("REST request to get Problem PDF: {}", id);
     	
     	File dir = new File(applicationProperties.getWorkDir() + "/problems/" + id + "/problem");
-    	log.debug("***dir is " + dir.getAbsolutePath());
     	Optional<File> pdf = Arrays.stream(dir.listFiles()).filter(f -> f.getName().endsWith(".pdf")).findAny();
     	Optional<InputStreamResource> isr = pdf.map(f -> {
 			try {
