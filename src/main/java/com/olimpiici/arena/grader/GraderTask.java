@@ -43,7 +43,7 @@ public class GraderTask {
 			return;
 		}
 
-		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict("");
+		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict(null);
 		submission.ifPresent(s -> grade(s));
 	}
 	
