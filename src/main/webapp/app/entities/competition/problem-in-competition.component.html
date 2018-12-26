@@ -3,8 +3,7 @@
         <div *ngIf="problem">
             <h2  id="page-heading">
                 {{problem.title}}
-                <button id="jh-create-entity"
-                        class="btn btn-primary float-right jh-create-entity create-competition"
+                <button class="btn btn-primary float-right jh-create-entity create-competition"
                         [routerLink]="['submissions']">
                     <span  jhiTranslate="arenaApp.competition.submissions">
                     Submissions
@@ -18,6 +17,26 @@
                 <dt><span jhiTranslate="arenaApp.problem.title">Title</span></dt>
                 <dd>
                     <span>{{problem.title}}</span>
+                </dd>
+            </dl>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="arenaApp.problem.statement">Statement</span></dt>
+                <dd>
+                    <a class="btn btn-primary"
+                            href="api/public/problems/{{problem.id}}/pdf?download=true">
+                        <span jhiTranslate="arenaApp.problem.download">
+                            Download
+                        </span>
+                    </a>
+                </dd>
+                <dd>
+                    <a class="btn btn-primary"
+                            href="api/public/problems/1/pdf">
+                        <span jhiTranslate="arenaApp.problem.open">
+                            Open
+                        </span>
+                    </a>
                 </dd>
             </dl>
 
