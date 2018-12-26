@@ -33,14 +33,15 @@ export class CompetitionPathComponent implements OnInit {
         this.router.routeReuseStrategy.shouldReuseRoute = function() {
             return false;
         };
-        this.routeData = this.activatedRoute.data.subscribe(data => {
-            this.parentCompetition = data.parentCompetition;
-        });
+        // this.routeData = this.activatedRoute.data.subscribe(data => {
+        //     this.parentCompetition = data.parentCompetition;
+        // });
     }
 
     loadAll() {
+        const competitionId = this.activatedRoute.snapshot.params['id'];
         this.competitionService
-            .findPath(this.parentCompetition.id)
+            .findPath(competitionId)
             .subscribe(
                 (res: HttpResponse<ICompetition[]>) => (this.path = res.body),
                 (res: HttpErrorResponse) => this.onError(res.message)

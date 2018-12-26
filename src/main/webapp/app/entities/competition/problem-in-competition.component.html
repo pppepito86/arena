@@ -10,31 +10,23 @@
                     </span>
                 </button>
             </h2>
-
+            <jhi-competition-path></jhi-competition-path>
             <hr>
             <jhi-alert-error></jhi-alert-error>
-            <dl class="row-md jh-entity-details">
-                <dt><span jhiTranslate="arenaApp.problem.title">Title</span></dt>
-                <dd>
-                    <span>{{problem.title}}</span>
-                </dd>
-            </dl>
 
             <dl class="row-md jh-entity-details">
                 <dt><span jhiTranslate="arenaApp.problem.statement">Statement</span></dt>
                 <dd>
                     <a class="btn btn-primary"
-                            href="api/public/problems/{{problem.id}}/pdf?download=true">
-                        <span jhiTranslate="arenaApp.problem.download">
-                            Download
-                        </span>
-                    </a>
-                </dd>
-                <dd>
-                    <a class="btn btn-primary"
-                            href="api/public/problems/1/pdf">
+                       href="api/public/problems/{{problem.id}}/pdf" target="_blank">
                         <span jhiTranslate="arenaApp.problem.open">
                             Open
+                        </span>
+                    </a>
+                    <a class="btn btn-primary"
+                            href="api/public/problems/{{problem.id}}/pdf?download=true" target="_blank">
+                        <span jhiTranslate="arenaApp.problem.download">
+                            Download
                         </span>
                     </a>
                 </dd>
