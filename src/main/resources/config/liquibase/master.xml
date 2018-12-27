@@ -15,4 +15,5 @@
     <include file="config/liquibase/changelog/20181224184641_added_entity_constraints_Submission.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <include file="config/liquibase/changelog/20181225184641_added_securityKey_Submission.xml" relativeToChangelogFile="false"/>
+	<include file="config/liquibase/changelog/20181227184641_added_indexes_submissions_verdict.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

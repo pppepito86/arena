@@ -20,7 +20,6 @@
                 <th jhiSortBy="uploadDate"><span jhiTranslate="arenaApp.submission.uploadDate">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="timeInMillis"><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="memoryInBytes"><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="details"><span jhiTranslate="arenaApp.submission.details">Details</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="verdict"><span jhiTranslate="arenaApp.submission.verdict">Verdict</span> <fa-icon [icon]="'sort'"></fa-icon></th>
                 <th jhiSortBy="points"><span jhiTranslate="arenaApp.submission.points">Points</span> <fa-icon [icon]="'sort'"></fa-icon></th>
 
@@ -29,13 +28,13 @@
             </thead>
             <tbody>
             <tr *ngFor="let submission of submissions ;trackBy: trackId">
-                <td><a [routerLink]="['/submission', submission.id, 'view' ]">{{submission.id}}</a></td>
+                <td><a [routerLink]="['/submission', submission.id, 'view' ]"
+                       [queryParams]="{securityKey: submission.securityKey}">{{submission.id}}</a></td>
                 <td></td>
                 <td>{{submission.userId}}</td>
                 <td>{{submission.uploadDate | date:'medium'}}</td>
                 <td>{{submission.timeInMillis}}</td>
                 <td>{{submission.memoryInBytes}}</td>
-                <td>{{submission.details}}</td>
                 <td>{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>
                 <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">

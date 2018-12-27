@@ -20,7 +20,8 @@
             "order": "Order",
             "parent": "Parent",
             "submit": "Изпрати",
-            "submissions": "Изпратени решения"
+            "submissions": "Изпратени решения",
+            "solution": "Решение"
         },
         "catalog": {
             "home": {

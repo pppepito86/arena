@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
@@ -55,6 +57,7 @@ public class ProblemResource {
      */
     @PostMapping("/problems")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<ProblemDTO> createProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
         log.debug("REST request to save Problem : {}", problemDTO);
         if (problemDTO.getId() != null) {
@@ -77,6 +80,7 @@ public class ProblemResource {
      */
     @PutMapping("/problems")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<ProblemDTO> updateProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
         log.debug("REST request to update Problem : {}", problemDTO);
         if (problemDTO.getId() == null) {
@@ -127,6 +131,7 @@ public class ProblemResource {
      */
     @DeleteMapping("/problems/{id}")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteProblem(@PathVariable Long id) {
         log.debug("REST request to delete Problem : {}", id);
         problemService.delete(id);

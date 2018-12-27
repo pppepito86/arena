@@ -12,6 +12,10 @@ public final class RandomUtil {
     private RandomUtil() {
     }
 
+    public static String generateSubmissionSecurityKey() {
+        return RandomStringUtils.randomAlphanumeric(DEF_COUNT);
+    }
+    
     /**
      * Generate a password.
      *

@@ -126,7 +126,7 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -138,7 +138,7 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -171,7 +171,7 @@ export const competitionPopupRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService],

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +39,7 @@ import com.olimpiici.arena.service.dto.CompetitionDTO;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.util.RandomUtil;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
@@ -81,6 +83,7 @@ public class CompetitionResource {
      */
     @PostMapping("/competitions")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> createCompetition(
     		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to save Competition : {}", competitionDTO);
@@ -105,6 +108,7 @@ public class CompetitionResource {
      */
     @PutMapping("/competitions")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateCompetition(
     		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to update Competition : {}", competitionDTO);
@@ -231,6 +235,7 @@ public class CompetitionResource {
         SubmissionDTO submission = new SubmissionDTO();
         submission.setUserId(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId());
         submission.setCompetitionProblemId(compProb);
+        submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         submission = submissionService.save(submission);
         
         File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
@@ -281,6 +286,7 @@ public class CompetitionResource {
      */
     @DeleteMapping("/competitions/{id}")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteCompetition(@PathVariable Long id) {
         log.debug("REST request to delete Competition : {}", id);
         competitionService.delete(id);

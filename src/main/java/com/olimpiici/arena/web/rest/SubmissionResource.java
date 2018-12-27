@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,11 +20,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.domain.User;
+import com.olimpiici.arena.repository.UserRepository;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.util.RandomUtil;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
@@ -41,9 +49,13 @@ public class SubmissionResource {
     private static final String ENTITY_NAME = "submission";
 
     private final SubmissionService submissionService;
+    
+    private final UserRepository userRepository;
 
-    public SubmissionResource(SubmissionService submissionService) {
+    public SubmissionResource(SubmissionService submissionService,
+    		UserRepository userRepository) {
         this.submissionService = submissionService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -60,6 +72,7 @@ public class SubmissionResource {
         if (submissionDTO.getId() != null) {
             throw new BadRequestAlertException("A new submission cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        submissionDTO.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         SubmissionDTO result = submissionService.save(submissionDTO);
         return ResponseEntity.created(new URI("/api/submissions/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
@@ -111,10 +124,32 @@ public class SubmissionResource {
      */
     @GetMapping("/submissions/{id}")
     @Timed
-    public ResponseEntity<SubmissionDTO> getSubmission(@PathVariable Long id) {
-        log.debug("REST request to get Submission : {}", id);
+    public ResponseEntity<SubmissionDTO> getSubmission(@PathVariable Long id,
+    		@RequestParam(value = "securityKey", defaultValue = "") String securityKey) {
+        log.debug("REST request to get Submission : {} with security key {} ", id, securityKey);
+        
+        boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
+        
+        User user = 
+    			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<SubmissionDTO> submissionDTO = submissionService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(submissionDTO);
+        if (!submissionDTO.isPresent()) {
+        	ResponseUtil.wrapOrNotFound(submissionDTO); 
+        }
+        
+        boolean isSubmissionAuthor = submissionDTO.get().getUserId() == user.getId();
+        boolean goodSecurityCode; 
+        if (submissionDTO.get().getSecurityKey() == null) { 
+        	goodSecurityCode = false;
+        } else {
+        	goodSecurityCode = submissionDTO.get().getSecurityKey().equals(securityKey);
+        }
+        
+        if (isAdmin || isSubmissionAuthor || goodSecurityCode) {
+        	return ResponseUtil.wrapOrNotFound(submissionDTO);
+        } else {
+        	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -125,6 +160,7 @@ public class SubmissionResource {
      */
     @DeleteMapping("/submissions/{id}")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteSubmission(@PathVariable Long id) {
         log.debug("REST request to delete Submission : {}", id);
         submissionService.delete(id);

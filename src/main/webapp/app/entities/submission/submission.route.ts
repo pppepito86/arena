@@ -46,9 +46,6 @@ export const submissionRoute: Routes = [
     {
         path: 'submission/:id/view',
         component: SubmissionDetailComponent,
-        resolve: {
-            submission: SubmissionResolve
-        },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.submission.home.title'
@@ -62,7 +59,7 @@ export const submissionRoute: Routes = [
             submission: SubmissionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.submission.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -74,7 +71,7 @@ export const submissionRoute: Routes = [
             submission: SubmissionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.submission.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -89,7 +86,7 @@ export const submissionPopupRoute: Routes = [
             submission: SubmissionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.submission.home.title'
         },
         canActivate: [UserRouteAccessService],

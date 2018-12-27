@@ -1,11 +1,12 @@
 <div class="row justify-content-center">
     <div class="col-8">
-        <div *ngIf="submission">
+        <div *ngIf="submission != null">
             <h2><span jhiTranslate="arenaApp.submission.detail.title">Submission</span></h2>
             <hr>
             <jhi-alert-error></jhi-alert-error>
+
             <div class="alert alert-warning"
-                   *ngIf="submission.verdict == null" jhiTranslate="arenaApp.submission.judging_warning">
+                   *ngIf="!isJudged(submission)" jhiTranslate="arenaApp.submission.judging_warning">
             </div>
             <table border="1">
                 <tr>
@@ -38,6 +39,17 @@
                 </tr>
             </table>
             <br/>
+
+            <!--{{Object.keys(submission.details)}}-->
+            <!--<table>-->
+                <!--<tr *ngFor="let scoreStep of Object.keys(submissions.details)">-->
+                    <!--<td> {{scoreStep}} </td>-->
+                    <!--<td> {{submissions.details[scoreStep]}} </td>-->
+                <!--</tr>-->
+            <!--</table>-->
+
+            <!--"scoreSteps":{"Compile":{"verdict":"OK","reason":null,"output":null,"expectedOutput":null,"time":null},"Test1":{"verdict":"WA","reason":null,"output":null,"expectedOutput":"39\r\n","time":0.011},"Test2":{"verdict":"WA","reason":null,"output":null,"e"-->
+
             <dt><span jhiTranslate="arenaApp.submission.solution">Solution</span></dt>
             <dd>
                 <pre>{{submission.code}}</pre>
@@ -47,12 +59,6 @@
                     (click)="previousState()"
                     class="btn btn-info">
                 <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
-            </button>
-
-            <button type="button"
-                    [routerLink]="['/submission', submission.id, 'edit']"
-                    class="btn btn-primary">
-                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
             </button>
         </div>
     </div>

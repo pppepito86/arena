@@ -1,6 +1,7 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -48,6 +50,7 @@ public class CompetitionProblemResource {
      */
     @PostMapping("/competition-problems")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionProblemDTO> createCompetitionProblem(@RequestBody CompetitionProblemDTO competitionProblemDTO) throws URISyntaxException {
         log.debug("REST request to save CompetitionProblem : {}", competitionProblemDTO);
         if (competitionProblemDTO.getId() != null) {
@@ -70,6 +73,7 @@ public class CompetitionProblemResource {
      */
     @PutMapping("/competition-problems")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionProblemDTO> updateCompetitionProblem(@RequestBody CompetitionProblemDTO competitionProblemDTO) throws URISyntaxException {
         log.debug("REST request to update CompetitionProblem : {}", competitionProblemDTO);
         if (competitionProblemDTO.getId() == null) {
@@ -118,6 +122,7 @@ public class CompetitionProblemResource {
      */
     @DeleteMapping("/competition-problems/{id}")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteCompetitionProblem(@PathVariable Long id) {
         log.debug("REST request to delete CompetitionProblem : {}", id);
         competitionProblemService.delete(id);

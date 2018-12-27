@@ -32,9 +32,15 @@ export class SubmissionService {
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
-    find(id: number): Observable<EntityResponseType> {
+    find(id: number, securityKey = ''): Observable<EntityResponseType> {
+        let securityKeyPart;
+        if (securityKey === '' || securityKey == null || securityKey === undefined) {
+            securityKeyPart = '';
+        } else {
+            securityKeyPart = `?securityKey=${securityKey}`;
+        }
         return this.http
-            .get<ISubmission>(`${this.resourceUrl}/${id}`, { observe: 'response' })
+            .get<ISubmission>(`${this.resourceUrl}/${id}${securityKeyPart}`, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
