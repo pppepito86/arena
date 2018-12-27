@@ -1,23 +1,23 @@
 {
     "register": {
-        "title": "Registration",
+        "title": "Регистрация",
         "form": {
-            "button": "Register"
+            "button": "Регистрация"
         },
         "messages": {
             "validate": {
                 "login": {
-                    "required": "Your username is required.",
-                    "minlength": "Your username is required to be at least 1 character.",
-                    "maxlength": "Your username cannot be longer than 50 characters.",
-                    "pattern": "Your username can only contain letters and digits."
+                    "required": "Потребителското име е задължително.",
+                    "minlength": "Потребителското има трябва да има поне един символ.",
+                    "maxlength": "Потребителското име не трябва да има повече от 50 символа.",
+                    "pattern": "Потребителското име трябва да са съдържа само букви и цифри."
                 }
             },
-            "success": "<strong>Registration saved!</strong> Please check your email for confirmation.",
+            "success": "<strong>Регистрацията е успешна!</strong> Проверете имейла си за потвърждение.",
             "error": {
-                "fail": "<strong>Registration failed!</strong> Please try again later.",
-                "userexists": "<strong>Login name already registered!</strong> Please choose another one.",
-                "emailexists": "<strong>Email is already in use!</strong> Please choose another one."
+                "fail": "<strong>Регистрацията е неуспешна!</strong> Опитайте отново по-късно.",
+                "userexists": "<strong>Потребителското име е заето!</strong> Изберете друго.",
+                "emailexists": "<strong>Имейлът вече се използва!</strong>"
             }
         }
     }
