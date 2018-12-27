@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse, HttpHeaders, HttpResponse, HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { IProblem } from 'app/shared/model/problem.model';
 import { CompetitionService } from './competition.service';
 import { ICompetition } from '../../shared/model/competition.model';
 import { JhiAlertService } from 'ng-jhipster';
 import { Title } from '@angular/platform-browser';
+import { ISubmission } from '../../shared/model/submission.model';
 
 @Component({
     selector: 'jhi-problem-in-competition',
@@ -17,9 +18,10 @@ export class ProblemInCompetitionComponent implements OnInit {
     competitionId: number;
     competitionProblemId: number;
     isSubmitting: boolean;
-    solution: string = '#include <bits/stdc++.h>\n' + 'using namespace std;\n' + '\n' + 'int main() {\n' + '\n' + '    return 0;\n' + '}';
+    solution: string = '';
 
     constructor(
+        private router: Router,
         protected activatedRoute: ActivatedRoute,
         protected competitionService: CompetitionService,
         protected jhiAlertService: JhiAlertService,
@@ -48,8 +50,9 @@ export class ProblemInCompetitionComponent implements OnInit {
     submit() {
         this.isSubmitting = true;
         this.competitionService.submitSolution(this.competitionId, this.competitionProblemId, this.solution).subscribe(
-            (res: HttpResponse<IProblem>) => {
+            (res: HttpResponse<ISubmission>) => {
                 this.isSubmitting = false;
+                this.router.navigate(['submission', res.body.id, 'view']);
             },
             (res: HttpErrorResponse) => {
                 this.isSubmitting = false;

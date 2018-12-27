@@ -20,7 +20,8 @@
             "version": "Version",
             "statement": "Условие",
             "open": "Отвори",
-            "download": "Свали"
+            "download": "Свали",
+            "downloadZip": "Свали"
         }
     }
 }

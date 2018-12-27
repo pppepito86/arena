@@ -1,49 +1,47 @@
 <div class="row justify-content-center">
     <div class="col-8">
         <div *ngIf="submission">
-            <h2><span jhiTranslate="arenaApp.submission.detail.title">Submission</span> {{submission.id}}</h2>
+            <h2><span jhiTranslate="arenaApp.submission.detail.title">Submission</span></h2>
             <hr>
             <jhi-alert-error></jhi-alert-error>
-            <dl class="row-md jh-entity-details">
-                <dt><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></dt>
-                <dd>
-                    <span>{{submission.verdict}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.details">Details</span></dt>
-                <dd>
-                    <span>{{submission.details}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.points">Points</span></dt>
-                <dd>
-                    <span>{{submission.points}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span></dt>
-                <dd>
-                    <span>{{submission.timeInMillis}}</span> ms
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory</span></dt>
-                <dd>
-                    <span>{{submission.memoryInBytes}}</span> B
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span></dt>
-                <dd>
-                    <span>{{submission.uploadDate}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.user">User</span></dt>
-                <dd>
-                    {{submission.userId}}
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></dt>
-                <dd>
-                    <div *ngIf="submission.competitionProblemId">
-                        <a [routerLink]="['/competition-problem', submission.competitionProblemId, 'view']">{{submission.competitionProblemId}}</a>
-                    </div>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.submission.file">Code</span></dt>
-                <dd>
-                    <pre>{{submission.code}}</pre>
-                </dd>
-            </dl>
+            <div class="alert alert-warning"
+                   *ngIf="submission.verdict == null" jhiTranslate="arenaApp.submission.judging_warning">
+            </div>
+            <table border="1">
+                <tr>
+                    <th><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></th>
+                    <th><span jhiTranslate="arenaApp.submission.points">Points</span></th>
+                    <th><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span></th>
+                    <th><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span></th>
+                    <th><span jhiTranslate="arenaApp.submission.user">User</span></th>
+                    <th><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></th>
+                </tr>
+                <tr>
+                    <td><span>{{submission.verdict}}</span></td>
+                    <td>
+                        <span>{{submission.points}}</span>
+                    </td>
+                    <td>
+                        <span>{{submission.timeInMillis}}</span> ms
+                    </td>
+                    <td>
+                        <span>{{submission.uploadDate}}</span>
+                    </td>
+                    <td>
+                        {{submission.userId}}
+                    </td>
+                    <td>
+                        <div *ngIf="submission.competitionProblemId">
+                            <a [routerLink]="['/catalog', competitionProblem.competitionId, 'problem', competitionProblem.id]">{{competitionProblem?.title}}</a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <dt><span jhiTranslate="arenaApp.submission.solution">Solution</span></dt>
+            <dd>
+                <pre>{{submission.code}}</pre>
+            </dd>
 
             <button type="submit"
                     (click)="previousState()"

@@ -20,7 +20,8 @@
             "version": "Version",
             "statement": "Statement",
             "open": "Open",
-            "download": "Download"
+            "download": "Download",
+            "downloadZip": "Download"
         }
     }
 }

@@ -24,7 +24,8 @@
             "memoryInBytes": "Memory",
             "uploadDate": "Date",
             "user": "User",
-            "competitionProblem": "Competition Problem"
+            "competitionProblem": "Problem",
+            "solution": "Solution"
         }
     }
 }

@@ -1,0 +1,11 @@
+table {
+    width: 100%;
+}
+
+th {
+    text-align: center;
+}
+tr {
+    margin: 1px;
+    text-align: center;
+}

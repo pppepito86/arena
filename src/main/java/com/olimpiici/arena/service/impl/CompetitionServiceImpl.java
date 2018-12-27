@@ -21,6 +21,7 @@ import com.olimpiici.arena.service.mapper.CompetitionMapper;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
+import com.olimpiici.arena.service.util.IntUtil;
 import com.olimpiici.arena.web.rest.UserResource;
 
 import liquibase.diff.compare.CompareControl;
@@ -40,6 +41,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -222,9 +224,8 @@ public class CompetitionServiceImpl implements CompetitionService {
 		return submissionRepository
 				.findByCompetitionProblemAndUser(competitionProblem, user)
 				.stream()
-				.mapToInt(submission -> submission.getPoints())
-				.max()
-				.orElse(0);
+				.map(submission -> submission.getPoints())
+				.reduce(0, IntUtil::safeMax);
 	}
 
 	@Override
@@ -233,8 +234,8 @@ public class CompetitionServiceImpl implements CompetitionService {
 		return competitionProblemRepository
 				.findByCompetition(competition)
 				.stream()
-				.mapToInt(cp -> findPointsForCompetitionProblem(user, cp))
-				.sum();
+				.map(cp -> findPointsForCompetitionProblem(user, cp))
+				.reduce(0, IntUtil::safeSum);
 	}
 
 	@Override
@@ -245,11 +246,10 @@ public class CompetitionServiceImpl implements CompetitionService {
 				.collect(Collectors.groupingBy( 
 						Submission::getCompetitionProblem,
 						Collectors.mapping(Submission::getPoints, 
-											Collectors.maxBy(Comparator.naturalOrder()))))
+								Collectors.reducing(0, IntUtil::safeMax))))
 				.values()
 				.stream()
-				.mapToInt(sum -> sum.orElse(0))
-				.sum();
+				.reduce(0, IntUtil::safeSum);
 	}
 
 	@Override
@@ -275,7 +275,7 @@ public class CompetitionServiceImpl implements CompetitionService {
 				Map<Long, Integer> pointsPerProblem = userToPointsPerProblem.get(userId);
 				Long problem = submission.getCompetitionProblem().getId();
 				Integer points = pointsPerProblem.getOrDefault(problem, 0);
-				points = Math.max(points, submission.getPoints());
+				points = IntUtil.safeMax(points, submission.getPoints());
 				pointsPerProblem.put(problem, points);
 			});
 		

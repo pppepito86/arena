@@ -23,7 +23,9 @@
             "memoryInBytes": "Памет",
             "uploadDate": "Дата и  час",
             "user": "Потребител",
-            "competitionProblem": "Competition Problem"
+            "competitionProblem": "Задача",
+            "solution": "Решение",
+            "judging_warning": "Решението се оценява. Страница се обновява автоманично на всеки 2 сек."
         }
     }
 }

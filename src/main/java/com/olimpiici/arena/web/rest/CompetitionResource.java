@@ -222,7 +222,7 @@ public class CompetitionResource {
     
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @Timed
-    public ResponseEntity<Void> submitProblem(@PathVariable Long id, 
+    public ResponseEntity<SubmissionDTO> submitProblem(@PathVariable Long id, 
     		@PathVariable Long compProb, 
     		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
@@ -242,7 +242,7 @@ public class CompetitionResource {
         submission.setVerdict("waiting");
         submissionService.save(submission);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(submission);
     }
     
     @GetMapping("/competitions/{id}/problem/{compProb}/submissions")
