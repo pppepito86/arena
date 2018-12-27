@@ -83,7 +83,7 @@ public class Worker {
 	}
 	
 	private File getSourceFile(long submissionId) {
-		return Paths.get(workDir, "submissions", ""+submissionId, "submission.cpp").toFile();
+		return Paths.get(workDir, "submissions", ""+submissionId, "solution.cpp").toFile();
 	}
 	
 	private boolean isRunning(long submissionId) throws IOException {
