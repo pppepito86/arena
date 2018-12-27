@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import io.github.jhipster.web.util.ResponseUtil;
 
@@ -35,6 +38,9 @@ public class PublicResource {
 
     @Autowired
     private ApplicationProperties applicationProperties;
+    
+    @Autowired
+    private SubmissionService submissionService;
     
     /**
      * GET  /problems/:id/pdf : get the problem description in pdf format.
@@ -89,6 +95,34 @@ public class PublicResource {
     	respHeaders.setContentDispositionFormData("attachment", "problem.zip");
     	
     	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
+    }
+
+    @GetMapping("/time_limits")
+    @Timed
+    public ResponseEntity<?> setTimeLimits() throws Exception {
+        log.debug("REST request to get set time limits");
+    	
+        
+        File problemsDir = Paths.get(applicationProperties.getWorkDir(), "problems").toFile();
+        for (File f: problemsDir.listFiles()) {
+        	File author = Paths.get(f.getAbsolutePath(), "problem", "author", "author.cpp").toFile();
+        	if (!author.exists()) continue;
+        	
+        	long id = Integer.valueOf(f.getName());
+        	SubmissionDTO submission = new SubmissionDTO();
+        	submission.setCompetitionProblemId(id);
+        	submission.setUserId(4L);
+
+        	for (int i = 0; i < 3; i++) {
+        		SubmissionDTO s = submissionService.save(submission);        	
+        		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
+        		FileUtils.copyFile(author, submissionFile);
+        		s.setVerdict("waiting");
+        		submissionService.save(s);
+        	}
+        }
+        
+        return ResponseEntity.noContent().build();
     }
 
 }

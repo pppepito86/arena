@@ -43,7 +43,7 @@ public class GraderTask {
 			return;
 		}
 
-		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict(null);
+		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict("waiting");
 		submission.ifPresent(s -> grade(s));
 	}
 	
@@ -59,6 +59,7 @@ public class GraderTask {
 		String result = "";
 		String details = "";
 		int points = 0;
+		double time = 0;
 		try {
 			SubmissionScore score = worker.grade(problemId, submissionId);
 		
@@ -71,12 +72,14 @@ public class GraderTask {
 					if (i != 1)
 						result += ",";
 					result += step.getVerdict();
+					if (step.getTime() != null) {
+						time = Math.max(time, step.getTime());
+					}
 				}
 			} else {
 				result = values[0].getVerdict().toString();
 				System.out.println("Submission <" + submissionId + "> failed with " + values[0].getReason());
-}
-			
+			}
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
 			result = "system error";
@@ -85,6 +88,7 @@ public class GraderTask {
 			submission.setDetails(details);
 			submission.setPoints(points);
 			submission.setVerdict(result);
+			submission.setTimeInMillis((int) (1000*time+0.5));
 			
 			try {
 				submissionService.save(submission);

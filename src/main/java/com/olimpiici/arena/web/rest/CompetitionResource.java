@@ -239,6 +239,8 @@ public class CompetitionResource {
         
         submissionDir.mkdirs();
         FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
+        submission.setVerdict("waiting");
+        submissionService.save(submission);
         
         return ResponseEntity.ok().build();
     }
