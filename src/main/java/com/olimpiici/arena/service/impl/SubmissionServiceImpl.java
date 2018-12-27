@@ -2,6 +2,7 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
@@ -13,6 +14,7 @@ import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,17 +47,21 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final CompetitionProblemRepository competitionProblemRepository;
 
     private final SubmissionMapper submissionMapper;
+    
+    private final ApplicationProperties applicationProperties;
 
     public SubmissionServiceImpl(SubmissionRepository submissionRepository, 
     		SubmissionMapper submissionMapper,
     		CompetitionProblemRepository competitionProblemRepository,
     		UserRepository userRepository,
-    		CompetitionRepository competitionRepository) {
+    		CompetitionRepository competitionRepository,
+    		ApplicationProperties applicationProperties) {
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
         this.competitionProblemRepository = competitionProblemRepository;
         this.userRepository = userRepository;
         this.competitionRepository = competitionRepository;
+        this.applicationProperties = applicationProperties;
     }
 
     /**
@@ -172,16 +182,16 @@ public class SubmissionServiceImpl implements SubmissionService {
 	
 	@Override
 	public String findSubmissionCode(Long id) {
-		// TODO 
+		File solutionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+id, "solution.cpp").toFile();
+		if (!solutionFile.exists()) return null;
 		
-		return "#include <iostream>\n" + 
-				"using namespace std;\n" + 
-				"\n" + 
-				"int main() \n" + 
-				"{\n" + 
-				"    cout << \"Hello, World!\";\n" + 
-				"    return 0;\n" + 
-				"}";
+		try {
+			return FileUtils.readFileToString(solutionFile, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			log.error("Problem reading solution file source", e);
+			return null;
+		}
+		
 	}
 
 }

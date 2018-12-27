@@ -3,6 +3,7 @@ package com.olimpiici.arena.web.rest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ public class PublicResource {
      * GET  /problems/:id/pdf : get the problem description in pdf format.
      *
      * @param id the id of the problem to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the problemDTO, or with status 404 (Not Found)
+     * @return the ResponseEntity with status 200 (OK) and the pdf, or with status 404 (Not Found)
      */
     @GetMapping("/problems/{id}/pdf")
     @Timed
@@ -65,6 +66,29 @@ public class PublicResource {
     	}
     	
     	return ResponseUtil.wrapOrNotFound(isr, respHeaders);
+    }
+
+    /**
+     * GET  /problems/:id/zip : get the problem archive in zip format.
+     *
+     * @param id the id of the problem to retrieve
+     * @return the ResponseEntity with status 200 (OK), downloading the zip, or with status 404 (Not Found)
+     */
+    @GetMapping("/problems/{id}/zip")
+    @Timed
+    public ResponseEntity<?> getProblemZip(@PathVariable Long id) throws Exception {
+        log.debug("REST request to get Problem ZIP: {}", id);
+    	
+        File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
+        InputStreamResource isr = null;
+        if (zipFile.exists()) {
+        	isr = new InputStreamResource(new FileInputStream(zipFile));
+        }
+    	
+    	HttpHeaders respHeaders = new HttpHeaders();
+    	respHeaders.setContentDispositionFormData("attachment", "problem.zip");
+    	
+    	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
     }
 
 }
