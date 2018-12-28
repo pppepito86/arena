@@ -73,8 +73,12 @@ export class SubmissionDetailComponent implements OnInit {
             let property = `Test${i}`;
             if (this.submission.details['scoreSteps'].hasOwnProperty(property)) {
                 let val = this.submission.details['scoreSteps'][property];
-                if (!val.output) val.output = '';
-                if (val.output.length > 70) val.output = val.output.substring(0, 70) + '...';
+                if (!val.output) {
+                    val.output = '';
+                }
+                if (val.output.length > 70) {
+                    val.output = val.output.substring(0, 70) + '...';
+                }
                 this.testDetails.push({
                     key: property,
                     value: val

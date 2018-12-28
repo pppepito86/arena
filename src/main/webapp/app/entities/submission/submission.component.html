@@ -33,7 +33,7 @@
                 <td>{{submission.userFirstName}} {{submission.userLastName}}</td>
                 <td>{{submission.uploadDate | date:'medium'}}</td>
                 <td>{{submission.timeInMillis}}</td>
-                <td>{{submission.verdict}}</td>
+                <td style="max-width: 15em;">{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>
                 <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                     <div class="btn-group flex-btn-group-container">

@@ -47,7 +47,9 @@ export class SubmissionComponent implements OnInit, OnDestroy {
 
         this.activatedRoute.queryParams.subscribe(params => {
             this.page = params['page'];
-            if (!this.page) this.page = 0;
+            if (!this.page) {
+                this.page = 0;
+            }
         });
 
         this.routeData = this.activatedRoute.data.subscribe(data => {
