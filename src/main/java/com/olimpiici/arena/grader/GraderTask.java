@@ -82,7 +82,7 @@ public class GraderTask {
 			log.error("scoring failed for submission: " + submissionId, e);
 			result = "system error";
 		} finally {
-			result = result.substring(0, Math.min(details.length(), 500));
+			result = result.substring(0, Math.min(result.length(), 500));
 			submission.setDetails(details);
 			submission.setPoints(points);
 			submission.setVerdict(result);
