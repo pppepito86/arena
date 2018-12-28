@@ -31,6 +31,8 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     reverse: any;
     forCompetition: boolean;
     forProblem: boolean;
+    competitionId: number;
+    problemId: number;
 
     constructor(
         protected submissionService: SubmissionService,
@@ -43,8 +45,12 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     ) {
         this.itemsPerPage = ITEMS_PER_PAGE;
 
+        this.activatedRoute.queryParams.subscribe(params => {
+            this.page = params['page'];
+            if (!this.page) this.page = 0;
+        });
+
         this.routeData = this.activatedRoute.data.subscribe(data => {
-            this.page = data.pagingParams.page;
             this.previousPage = data.pagingParams.page;
             this.reverse = data.pagingParams.ascending;
             this.predicate = data.pagingParams.predicate;
@@ -54,17 +60,16 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     loadAll() {
         let query;
         if (this.forCompetition) {
-            console.log(this.activatedRoute.snapshot);
-            const competitionId = this.activatedRoute.snapshot.params['id'];
-            query = this.submissionService.queryForCompetition(competitionId, {
+            this.competitionId = this.activatedRoute.snapshot.params['id'];
+            query = this.submissionService.queryForCompetition(this.competitionId, {
                 page: this.page - 1,
                 size: this.itemsPerPage,
                 sort: this.sort()
             });
         } else if (this.forProblem) {
-            const competitionId = this.activatedRoute.snapshot.params['id'];
-            const problemId = this.activatedRoute.snapshot.params['compProb'];
-            query = this.submissionService.queryForProblem(competitionId, problemId, {
+            this.competitionId = this.activatedRoute.snapshot.params['id'];
+            this.problemId = this.activatedRoute.snapshot.params['compProb'];
+            query = this.submissionService.queryForProblem(this.competitionId, this.problemId, {
                 page: this.page - 1,
                 size: this.itemsPerPage,
                 sort: this.sort()
@@ -83,6 +88,16 @@ export class SubmissionComponent implements OnInit, OnDestroy {
         );
     }
 
+    getUrl(): any[] {
+        if (this.forCompetition) {
+            return ['/catalog', this.competitionId, 'submissions'];
+        } else if (this.forProblem) {
+            return ['/catalog', this.competitionId, 'problem', this.problemId, 'submissions'];
+        } else {
+            return ['/submission'];
+        }
+    }
+
     loadPage(page: number) {
         if (page !== this.previousPage) {
             this.previousPage = page;
@@ -91,7 +106,8 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     }
 
     transition() {
-        this.router.navigate(['/submission'], {
+        console.log('transition', this.page);
+        this.router.navigate(this.getUrl(), {
             queryParams: {
                 page: this.page,
                 size: this.itemsPerPage,
@@ -103,13 +119,12 @@ export class SubmissionComponent implements OnInit, OnDestroy {
 
     clear() {
         this.page = 0;
-        this.router.navigate([
-            '/submission',
-            {
+        this.router.navigate(this.getUrl(), {
+            queryParams: {
                 page: this.page,
                 sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
             }
-        ]);
+        });
         this.loadAll();
     }
 
@@ -138,7 +153,9 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     }
 
     registerChangeInSubmissions() {
-        this.eventSubscriber = this.eventManager.subscribe('submissionListModification', response => this.loadAll());
+        this.eventSubscriber = this.eventManager.subscribe('submissionListModification', response => {
+            this.loadAll();
+        });
     }
 
     sort() {

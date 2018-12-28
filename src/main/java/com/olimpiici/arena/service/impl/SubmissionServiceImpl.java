@@ -93,6 +93,12 @@ public class SubmissionServiceImpl implements SubmissionService {
         return submissionRepository.findAll(pageable)
             .map(submissionMapper::toDto);
     }
+    
+    @Override
+	public Page<SubmissionDTO> findByUser(User user, Pageable pageable) {
+		return submissionRepository.findByUser(user, pageable)
+				.map(submissionMapper::toDto);
+	}
 
 
     /**
@@ -194,5 +200,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 		}
 		
 	}
+
+	
 
 }

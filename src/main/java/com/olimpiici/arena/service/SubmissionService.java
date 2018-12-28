@@ -31,6 +31,7 @@ public interface SubmissionService {
      */
     Page<SubmissionDTO> findAll(Pageable pageable);
 
+    Page<SubmissionDTO> findByUser(User user, Pageable pageable);
 
     /**
      * Get the "id" submission.

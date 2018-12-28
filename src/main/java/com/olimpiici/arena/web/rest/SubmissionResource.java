@@ -90,6 +90,7 @@ public class SubmissionResource {
      */
     @PutMapping("/submissions")
     @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<SubmissionDTO> updateSubmission(@RequestBody SubmissionDTO submissionDTO) throws URISyntaxException {
         log.debug("REST request to update Submission : {}", submissionDTO);
         if (submissionDTO.getId() == null) {
@@ -111,7 +112,17 @@ public class SubmissionResource {
     @Timed
     public ResponseEntity<List<SubmissionDTO>> getAllSubmissions(Pageable pageable) {
         log.debug("REST request to get a page of Submissions");
-        Page<SubmissionDTO> page = submissionService.findAll(pageable);
+        
+        boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
+        
+        Page<SubmissionDTO> page;
+        if (isAdmin) {
+        	page = submissionService.findAll(pageable);
+        } else {
+        	User user = userRepository
+        			.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        	page = submissionService.findByUser(user, pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/submissions");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

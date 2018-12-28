@@ -24,6 +24,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     
     List<Submission> findByUser(User user);
     
+    Page<Submission> findByUser(User user, Pageable pageable);
+    
     Page<Submission> findByCompetitionProblem(
     		CompetitionProblem competitionProblem, Pageable pageable);
     
