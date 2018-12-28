@@ -19,13 +19,17 @@
             "verdict": "Статус",
             "details": "Детайли",
             "points": "Точки",
+            "problem": "Задача",
             "timeInMillis": "Време",
             "memoryInBytes": "Памет",
             "uploadDate": "Дата и  час",
             "user": "Потребител",
             "competitionProblem": "Задача",
             "solution": "Решение",
-            "judging_warning": "Решението се оценява. Страница се обновява автоманично на всеки 2 сек."
+            "judging_warning": "Решението се оценява. Страница се обновява автоманично на всеки 2 сек.",
+            "test": "Тест",
+            "output": "Изход",
+            "expectedOutput": "Очакван изход"
         }
     }
 }

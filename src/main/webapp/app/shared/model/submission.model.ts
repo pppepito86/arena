@@ -13,6 +13,11 @@ export interface ISubmission {
     userId?: number;
     competitionProblemId?: number;
     code?: string;
+    userFirstName?: string;
+    userLastName?: string;
+    problemName?: string;
+    competitionName?: string;
+    competitionId?: number;
 }
 
 export class Submission implements ISubmission {
@@ -28,6 +33,11 @@ export class Submission implements ISubmission {
         public securityKey?: string,
         public userId?: number,
         public competitionProblemId?: number,
-        public code?: string
+        public code?: string,
+        public userFirstName?: string,
+        public userLastName?: string,
+        public problemName?: string,
+        public competitionName?: string,
+        public competitionId?: number
     ) {}
 }

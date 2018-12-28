@@ -20,12 +20,16 @@
             "verdict": "Verdict",
             "details": "Details",
             "points": "Points",
+            "problem": "Problem",
             "timeInMillis": "Time",
             "memoryInBytes": "Memory",
             "uploadDate": "Date",
             "user": "User",
             "competitionProblem": "Problem",
-            "solution": "Solution"
+            "solution": "Solution",
+            "test": "Test",
+            "output": "Output",
+            "expectedOutput": "Expected Output"
         }
     }
 }

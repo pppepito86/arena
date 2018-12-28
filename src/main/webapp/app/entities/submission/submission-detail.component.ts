@@ -20,6 +20,7 @@ export class SubmissionDetailComponent implements OnInit {
     submissionId: number;
     competitionProblem: ICompetitionProblem;
     securityKey: string;
+    testDetails: any;
 
     constructor(
         protected activatedRoute: ActivatedRoute,
@@ -38,14 +39,16 @@ export class SubmissionDetailComponent implements OnInit {
         this.submissionService.find(this.submissionId, this.securityKey).subscribe(
             res => {
                 this.submission = res.body;
+                this.submission.details = JSON.parse(res.body.details);
+                this.parseTestDetails();
                 this.submissionId = this.submission.id;
-
-                this.loadProblem();
 
                 if (!this.isJudged(this.submission)) {
                     this.refreshInterval = setInterval(() => {
                         this.submissionService.find(this.submissionId).subscribe(res => {
                             this.submission = res.body;
+                            this.submission.details = JSON.parse(res.body.details);
+                            this.parseTestDetails();
                             if (this.isJudged(this.submission)) {
                                 clearInterval(this.refreshInterval);
                             }
@@ -60,16 +63,26 @@ export class SubmissionDetailComponent implements OnInit {
         );
     }
 
-    loadProblem() {
-        this.competitionProblemService.find(this.submission.competitionProblemId).subscribe(
-            res => {
-                console.log(res);
-                this.competitionProblem = res.body;
-            },
-            error => {
-                console.log(error);
+    parseTestDetails() {
+        if (!this.submission || !this.submission.details || !this.submission.details['scoreSteps']) {
+            return;
+        }
+
+        this.testDetails = [];
+        for (let i = 1; ; i++) {
+            let property = `Test${i}`;
+            if (this.submission.details['scoreSteps'].hasOwnProperty(property)) {
+                let val = this.submission.details['scoreSteps'][property];
+                if (!val.output) val.output = '';
+                if (val.output.length > 70) val.output = val.output.substring(0, 70) + '...';
+                this.testDetails.push({
+                    key: property,
+                    value: val
+                });
+            } else {
+                break;
             }
-        );
+        }
     }
 
     isJudged(submission: ISubmission): boolean {

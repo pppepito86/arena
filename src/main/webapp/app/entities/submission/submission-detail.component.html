@@ -18,7 +18,7 @@
                     <th><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></th>
                 </tr>
                 <tr>
-                    <td><span>{{submission.verdict}}</span></td>
+                    <td style="max-width: 15em;"><span>{{submission.verdict}}</span></td>
                     <td>
                         <span>{{submission.points}}</span>
                     </td>
@@ -29,26 +29,39 @@
                         <span>{{submission.uploadDate}}</span>
                     </td>
                     <td>
-                        {{submission.userId}}
+                        {{submission.userFirstName}} {{submission.userLastName}}
                     </td>
                     <td>
                         <div *ngIf="submission.competitionProblemId">
-                            <a [routerLink]="['/catalog', competitionProblem.competitionId, 'problem', competitionProblem.id]">{{competitionProblem?.title}}</a>
+                            <a [routerLink]="['/catalog', submission.competitionId, 'problem', submission.competitionProblemId]">{{submission.problemName}}</a>
                         </div>
                     </td>
                 </tr>
             </table>
             <br/>
 
-            <!--{{Object.keys(submission.details)}}-->
-            <!--<table>-->
-                <!--<tr *ngFor="let scoreStep of Object.keys(submissions.details)">-->
-                    <!--<td> {{scoreStep}} </td>-->
-                    <!--<td> {{submissions.details[scoreStep]}} </td>-->
-                <!--</tr>-->
-            <!--</table>-->
+            <div *ngIf="submission?.details?.scoreSteps?.Compile?.reason"
+                 class="alert alert-warning">
+                {{submission.details.scoreSteps.Compile.reason}}
+            </div>
+            <!--{{ Object.keys(submission.details) }}-->
+            <table *ngIf="testDetails && testDetails.length">
+                <tr>
+                    <th> <span jhiTranslate="arenaApp.submission.test">Test</span> </th>
+                    <th> <span jhiTranslate="arenaApp.submission.verdict">Verdict</span> </th>
+                    <th> <span jhiTranslate="arenaApp.submission.timeInMillis">Time</span> </th>
+                    <th> <span jhiTranslate="arenaApp.submission.output">Output</span> </th>
+                    <!--<th> <span jhiTranslate="arenaApp.submission.expectedOutput">Expected Output</span> </th>-->
+                </tr>
 
-            <!--"scoreSteps":{"Compile":{"verdict":"OK","reason":null,"output":null,"expectedOutput":null,"time":null},"Test1":{"verdict":"WA","reason":null,"output":null,"expectedOutput":"39\r\n","time":0.011},"Test2":{"verdict":"WA","reason":null,"output":null,"e"-->
+                <tr *ngFor="let scoreStep of testDetails">
+                    <td> {{scoreStep.key}} </td>
+                    <td> {{scoreStep.value.verdict}} </td>
+                    <td> {{scoreStep.value.time}} </td>
+                    <td style="max-width: 15em; text-align: left"> <pre>{{scoreStep.value.output}}</pre></td>
+                    <!--<td style="max-width: 15em;"> <pre>{{scoreStep.value.expectedOutput}}</pre> </td>-->
+                </tr>
+            </table>
 
             <dt><span jhiTranslate="arenaApp.submission.solution">Solution</span></dt>
             <dd>

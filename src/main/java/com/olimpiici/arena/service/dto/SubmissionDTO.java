@@ -33,7 +33,57 @@ public class SubmissionDTO implements Serializable {
 
     private String code;
     
-    public String getCode() {
+    private String userFirstName;
+
+    private String userLastName;
+    
+    private String problemName;
+    
+    private String competitionName;
+    
+    private Long competitionId;
+
+	public String getUserFirstName() {
+		return userFirstName;
+	}
+
+	public void setUserFirstName(String userFirstName) {
+		this.userFirstName = userFirstName;
+	}
+
+	public String getUserLastName() {
+		return userLastName;
+	}
+
+	public void setUserLastName(String userLastName) {
+		this.userLastName = userLastName;
+	}
+
+	public String getProblemName() {
+		return problemName;
+	}
+
+	public void setProblemName(String problemName) {
+		this.problemName = problemName;
+	}
+
+	public String getCompetitionName() {
+		return competitionName;
+	}
+
+	public void setCompetitionName(String competitionName) {
+		this.competitionName = competitionName;
+	}
+
+	public Long getCompetitionId() {
+		return competitionId;
+	}
+
+	public void setCompetitionId(Long competitionId) {
+		this.competitionId = competitionId;
+	}
+
+	public String getCode() {
 		return code;
 	}
 
