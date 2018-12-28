@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Submission.
@@ -172,12 +173,12 @@ public class SubmissionServiceImpl implements SubmissionService {
 	}
 	
 	@Override
-	public Optional<SubmissionDTO> findSubmissionByVerdict(String verdict) {
+	public List<SubmissionDTO> findSubmissionByVerdict(String verdict) {
 		return submissionRepository
 				.findByVerdict(verdict)
 				.stream()
 				.map(submissionMapper::toDto)
-				.findFirst();
+				.collect(Collectors.toList());
 	}
 	
 	@Override

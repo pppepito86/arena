@@ -1,7 +1,5 @@
 package com.olimpiici.arena.grader;
 
-import java.util.Optional;
-
 import org.pesho.grader.SubmissionScore;
 import org.pesho.grader.step.StepResult;
 import org.slf4j.Logger;
@@ -43,8 +41,8 @@ public class GraderTask {
 			return;
 		}
 
-		Optional<SubmissionDTO> submission = submissionService.findSubmissionByVerdict("waiting");
-		submission.ifPresent(s -> grade(s));
+		submissionService.findSubmissionByVerdict("judging").forEach(s -> grade(s));
+		submissionService.findSubmissionByVerdict("waiting").forEach(s -> grade(s));
 	}
 	
 	private void grade(SubmissionDTO submission) {
@@ -84,7 +82,7 @@ public class GraderTask {
 			log.error("scoring failed for submission: " + submissionId, e);
 			result = "system error";
 		} finally {
-			details = details.substring(0, Math.min(details.length(), 250));
+			result = result.substring(0, Math.min(details.length(), 500));
 			submission.setDetails(details);
 			submission.setPoints(points);
 			submission.setVerdict(result);
