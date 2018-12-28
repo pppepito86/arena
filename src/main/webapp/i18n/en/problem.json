@@ -21,7 +21,8 @@
             "statement": "Statement",
             "open": "Open",
             "download": "Download",
-            "downloadZip": "Download"
+            "downloadZip": "Download",
+            "bad_problem_warning": "Due to a corruption in the problem submitting is unavailable. This may be bacause of missing test cases, wrong problem or other."
         }
     }
 }

@@ -40,10 +40,13 @@
                 </dd>
             </dl>
 
-            <form name="submitSolutionForm" role="form" novalidate (ngSubmit)="submit()" #submitSolutionForm="ngForm">
+            <form *ngIf="problem.version > 0"
+                  name="submitSolutionForm" role="form" novalidate
+                  (ngSubmit)="submit()" #submitSolutionForm="ngForm" >
                 <div>
                     <div class="form-group">
-                        <label class="form-control-label" jhiTranslate="arenaApp.competition.solution" for="solution">Solution</label>
+                        <b><label class="form-control-label"
+                                  jhiTranslate="arenaApp.competition.solution" for="solution">Solution</label></b>
                         <textarea rows="15" class="form-control" name="solution" id="solution"
                                [(ngModel)]="solution" >
 
@@ -51,11 +54,18 @@
                     </div>
                 </div>
                 <div>
-                    <button type="submit" id="save-entity" [disabled]="submitSolutionForm.form.invalid || isSubmitting" class="btn btn-primary">
+                    <button type="submit" id="save-entity"
+                            [disabled]="submitSolutionForm.form.invalid || isSubmitting" class="btn btn-primary">
                         <span jhiTranslate="arenaApp.competition.submit">Submit</span>
                     </button>
                 </div>
             </form>
+
+            <div *ngIf="problem.version == 0"
+                 class="alert alert-warning"
+                 jhiTranslate="arenaApp.problem.bad_problem_warning">
+
+            </div>
         </div>
     </div>
 </div>
