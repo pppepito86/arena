@@ -47,7 +47,7 @@
                             <th jhiTranslate="arenaApp.problem.memory" style="width:5em">Memory</th>
                         </tr>
                         <tr>
-                            <td>{{problem.time}} s </td>
+                            <td>{{problem.time/1000 | number: '1.1-1'}} s</td>
                             <td>{{problem.memory}} MB</td>
                         </tr>
                     </table>
