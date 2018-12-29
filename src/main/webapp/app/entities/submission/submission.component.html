@@ -31,7 +31,7 @@
                        [queryParams]="{securityKey: submission.securityKey}">{{submission.id}}</a></td>
                 <td>{{submission.problemName}}</td>
                 <td>{{submission.userFirstName}} {{submission.userLastName}}</td>
-                <td>{{submission.uploadDate | date:'medium'}}</td>
+                <td>{{submission.uploadDate | date:'dd MMM y HH:mm'}}</td>
                 <td>{{submission.timeInMillis}}</td>
                 <td style="max-width: 15em;">{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>

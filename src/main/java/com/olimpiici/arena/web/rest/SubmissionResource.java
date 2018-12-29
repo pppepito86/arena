@@ -2,6 +2,7 @@ package com.olimpiici.arena.web.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,6 +73,7 @@ public class SubmissionResource {
         if (submissionDTO.getId() != null) {
             throw new BadRequestAlertException("A new submission cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        submissionDTO.setUploadDate(ZonedDateTime.now());
         submissionDTO.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         SubmissionDTO result = submissionService.save(submissionDTO);
         return ResponseEntity.created(new URI("/api/submissions/" + result.getId()))

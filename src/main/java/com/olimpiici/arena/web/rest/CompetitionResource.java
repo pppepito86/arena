@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -235,6 +236,7 @@ public class CompetitionResource {
         SubmissionDTO submission = new SubmissionDTO();
         submission.setUserId(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId());
         submission.setCompetitionProblemId(compProb);
+        submission.setUploadDate(ZonedDateTime.now());
         submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         submission = submissionService.save(submission);
         

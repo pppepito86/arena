@@ -26,7 +26,7 @@
                         <span>{{submission.timeInMillis}}</span> ms
                     </td>
                     <td>
-                        <span>{{submission.uploadDate}}</span>
+                        <span>{{submission.uploadDate  | date:'dd MMM y, EEE, HH:mm:ss'}}</span>
                     </td>
                     <td>
                         {{submission.userFirstName}} {{submission.userLastName}}
