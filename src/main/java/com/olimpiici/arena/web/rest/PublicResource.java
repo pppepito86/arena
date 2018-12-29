@@ -116,7 +116,7 @@ public class PublicResource {
     	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
     }
 
-    @GetMapping("/time_limits")
+//    @GetMapping("/time_limits")
     @Timed
     public ResponseEntity<?> setTimeLimits() throws Exception {
         log.debug("REST request to get set time limits");
@@ -144,7 +144,7 @@ public class PublicResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/copy_submissions")
+//    @GetMapping("/copy_submissions")
     @Timed
     public ResponseEntity<?> copySubmissions() throws Exception {
         log.debug("REST request to get set time limits");
@@ -163,7 +163,7 @@ public class PublicResource {
 
 	private ObjectMapper mapper = new ObjectMapper();
     
-    @GetMapping("/fix_verdicts")
+//    @GetMapping("/fix_verdicts")
     @Timed
     public ResponseEntity<?> fixVerdicts() throws Exception {
         log.debug("REST request to get set time limits");
@@ -194,7 +194,7 @@ public class PublicResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/times")
+//    @GetMapping("/times")
     @Timed
     public ResponseEntity<?> setTimes(
     		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {

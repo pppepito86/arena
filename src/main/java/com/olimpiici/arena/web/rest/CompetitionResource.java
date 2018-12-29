@@ -257,22 +257,28 @@ public class CompetitionResource {
     		@PathVariable Long compProb, 
     		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
-        // TODO
-        
+
         SubmissionDTO submission = new SubmissionDTO();
         submission.setUserId(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId());
         submission.setCompetitionProblemId(compProb);
         submission.setUploadDate(ZonedDateTime.now());
         submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         submission = submissionService.save(submission);
-        
-        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
-        File submissionDir = new File(submissionsDir, ""+submission.getId());
-        File submissionFile = new File(submissionDir, "solution.cpp");
-        
-        submissionDir.mkdirs();
-        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
-        submission.setVerdict("waiting");
+
+        // max allowed source code size is 64 KB UTF-8
+        if (solution.length() > 64*1024/4) {
+        	submission.setVerdict("source too large");
+        	submission.setDetails("source too large");
+        } else {
+	        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
+	        File submissionDir = new File(submissionsDir, ""+submission.getId());
+	        File submissionFile = new File(submissionDir, "solution.cpp");
+	        
+	        submissionDir.mkdirs();
+	        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
+	        submission.setVerdict("waiting");
+        }
+
         submissionService.save(submission);
         
         return ResponseEntity.ok(submission);
