@@ -1,13 +1,17 @@
 package com.olimpiici.arena.web.rest;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -222,8 +226,30 @@ public class CompetitionResource {
     		@PathVariable Long id, @PathVariable Long compProb) {
         log.debug("REST request to get Competition problems : {}", id);
         ProblemDTO problem = competitionService.findProblem(compProb);
+        setLimits(problem);
         return ResponseEntity.ok(problem);
     }
+
+	private void setLimits(ProblemDTO problem) {
+        int time = 1;
+		int memory = 256;
+		
+		File propertyFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
+		if (propertyFile.exists()) {
+       		try (InputStream is = new FileInputStream(propertyFile)) {
+       			Properties props = new Properties();
+	        	props.load(is);
+	        			
+	        	time = Integer.valueOf(props.getProperty("time", ""+time));
+	        	memory = Integer.valueOf(props.getProperty("memory", ""+memory));
+	        } catch (Exception e) {
+	        	log.error("cannot read metadata for problem: " + problem.getId(), e);
+	        }
+		}
+		
+        problem.setTime(time);
+        problem.setMemory(memory);
+	}
     
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @Timed

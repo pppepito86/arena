@@ -3,15 +3,22 @@ package com.olimpiici.arena.web.rest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.pesho.grader.SubmissionScore;
+import org.pesho.grader.step.StepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +28,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import io.github.jhipster.web.util.ResponseUtil;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 
 /**
  * REST controller for managing Problem.
@@ -41,7 +56,12 @@ public class PublicResource {
     
     @Autowired
     private SubmissionService submissionService;
-    
+
+    @Autowired
+    private ProblemService problemService;
+
+    @Autowired
+    private CompetitionProblemService competitionProblemService;
     /**
      * GET  /problems/:id/pdf : get the problem description in pdf format.
      *
@@ -125,4 +145,100 @@ public class PublicResource {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/copy_submissions")
+    @Timed
+    public ResponseEntity<?> copySubmissions() throws Exception {
+        log.debug("REST request to get set time limits");
+    	
+        List<SubmissionDTO> byVerdict = submissionService.findSubmissionByVerdict("CE");
+        for (SubmissionDTO s: byVerdict) {
+        	long problemId = competitionProblemService.findOne(s.getCompetitionProblemId()).get().getProblemId();
+
+        	File author = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, "problem", "author", "author.cpp").toFile();
+    		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
+    		FileUtils.copyFile(author, submissionFile);
+        }
+        
+        return ResponseEntity.noContent().build();
+    }
+
+	private ObjectMapper mapper = new ObjectMapper();
+    
+    @GetMapping("/fix_verdicts")
+    @Timed
+    public ResponseEntity<?> fixVerdicts() throws Exception {
+        log.debug("REST request to get set time limits");
+    	
+        List<SubmissionDTO> byVerdict = submissionService.findSubmissionByVerdict("CE");
+        for (SubmissionDTO s: byVerdict) {
+        	String details = s.getDetails();
+        	try {
+        		SubmissionScore score = mapper.readValue(details, SubmissionScore.class);
+        		String result = "";
+    			StepResult[] values = score.getScoreSteps().values().toArray(new StepResult[0]);
+    			if (values.length > 1) {
+    				for (int i = 1; i < values.length; i++) {
+    					StepResult step = values[i];
+    					if (i != 1)
+    						result += ",";
+    					result += step.getVerdict();
+    				}
+    			} else {
+    				result = values[0].getVerdict().toString();
+    			}
+    			s.setVerdict(result);
+    			submissionService.save(s);
+        	} catch (Exception e) {
+			}
+        }
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/times")
+    @Timed
+    public ResponseEntity<?> setTimes(
+    		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
+        log.debug("REST request to get set time limits");
+
+        Page<CompetitionProblemDTO> competitionProblems = competitionProblemService.findAll(Pageable.unpaged());
+        
+        for (CompetitionProblemDTO competitionProblem: competitionProblems) {
+        	
+        	Page<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(competitionProblem.getId(), Pageable.unpaged());
+        	
+        	ProblemDTO problem = problemService.findOne(competitionProblem.getProblemId()).get();
+        	if (submissions.getSize() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
+        		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
+        		int max = times.stream().mapToInt(t -> t).max().getAsInt();
+        		
+        		int limit = max*15/10;
+        		limit = (limit/100+1)*100;
+
+        		log.debug(String.format("limit for problem<%d> with times %s will be %1.f", problem.getId(), times.toString(), limit/10));
+        		
+        		if (set) {
+        			String timeProp = String.format("time = %.1f", limit/10.);
+                	File propeties = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
+                	FileUtils.writeStringToFile(propeties, timeProp, StandardCharsets.UTF_8);
+                	
+                	ZipFile zip = new ZipFile(Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem.zip").toFile());
+                	
+                	ZipParameters parameters = new ZipParameters();
+                	parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+                	parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+                	zip.addFile(propeties, parameters);
+        		}
+        		
+        	} else {
+        		if (!set) continue;
+        		
+        		problem.setVersion(0);
+        		problemService.save(problem);
+        	}
+        	
+        }
+        
+        return ResponseEntity.noContent().build();
+    }
 }

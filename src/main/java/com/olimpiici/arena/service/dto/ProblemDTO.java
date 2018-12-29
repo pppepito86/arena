@@ -16,6 +16,10 @@ public class ProblemDTO implements Serializable {
 
     private Integer version;
 
+    private Integer time;
+    
+    private Integer memory;
+    
     public Long getId() {
         return id;
     }
@@ -48,6 +52,22 @@ public class ProblemDTO implements Serializable {
         this.version = version;
     }
 
+    public Integer getTime() {
+		return time;
+	}
+    
+    public void setTime(Integer time) {
+		this.time = time;
+	}
+    
+    public Integer getMemory() {
+		return memory;
+	}
+    
+    public void setMemory(Integer memory) {
+		this.memory = memory;
+	}
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {

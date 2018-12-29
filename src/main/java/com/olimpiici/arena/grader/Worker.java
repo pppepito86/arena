@@ -121,7 +121,7 @@ public class Worker {
 			}
 			return false;
 		} catch (Exception e) {
-			log.warn("Cannot connect to worker " + url);
+			log.warn("Cannot connect to worker " + url, e);
 			return false;
 		}
 	}
