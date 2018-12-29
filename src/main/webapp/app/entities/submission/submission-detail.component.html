@@ -40,11 +40,10 @@
             </table>
             <br/>
 
-            <div *ngIf="submission?.details?.scoreSteps?.Compile?.reason"
+            <div *ngIf="submissionDetails?.scoreSteps?.Compile?.reason"
                  class="alert alert-warning">
-                {{submission.details.scoreSteps.Compile.reason}}
+                {{submissionDetails.scoreSteps.Compile.reason}}
             </div>
-            <!--{{ Object.keys(submission.details) }}-->
             <table *ngIf="testDetails && testDetails.length">
                 <tr>
                     <th> <span jhiTranslate="arenaApp.submission.test">Test</span> </th>

@@ -21,6 +21,7 @@ export class SubmissionDetailComponent implements OnInit {
     competitionProblem: ICompetitionProblem;
     securityKey: string;
     testDetails: any;
+    submissionDetails: any;
 
     constructor(
         protected activatedRoute: ActivatedRoute,
@@ -39,7 +40,7 @@ export class SubmissionDetailComponent implements OnInit {
         this.submissionService.find(this.submissionId, this.securityKey).subscribe(
             res => {
                 this.submission = res.body;
-                this.submission.details = JSON.parse(res.body.details);
+                this.submissionDetails = JSON.parse(res.body.details);
                 this.parseTestDetails();
                 this.submissionId = this.submission.id;
 
@@ -47,7 +48,7 @@ export class SubmissionDetailComponent implements OnInit {
                     this.refreshInterval = setInterval(() => {
                         this.submissionService.find(this.submissionId).subscribe(res => {
                             this.submission = res.body;
-                            this.submission.details = JSON.parse(res.body.details);
+                            this.submissionDetails = JSON.parse(res.body.details);
                             this.parseTestDetails();
                             if (this.isJudged(this.submission)) {
                                 clearInterval(this.refreshInterval);
@@ -64,15 +65,15 @@ export class SubmissionDetailComponent implements OnInit {
     }
 
     parseTestDetails() {
-        if (!this.submission || !this.submission.details || !this.submission.details['scoreSteps']) {
+        if (!this.submission || !this.submissionDetails || !this.submissionDetails['scoreSteps']) {
             return;
         }
 
         this.testDetails = [];
         for (let i = 1; ; i++) {
             let property = `Test${i}`;
-            if (this.submission.details['scoreSteps'].hasOwnProperty(property)) {
-                let val = this.submission.details['scoreSteps'][property];
+            if (this.submissionDetails['scoreSteps'].hasOwnProperty(property)) {
+                let val = this.submissionDetails['scoreSteps'][property];
                 if (!val.output) {
                     val.output = '';
                 }
