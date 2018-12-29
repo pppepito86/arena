@@ -240,7 +240,7 @@ public class CompetitionResource {
        			Properties props = new Properties();
 	        	props.load(is);
 	        			
-	        	time = Integer.valueOf(props.getProperty("time", ""+time));
+	        	time = (int) (1000*Double.valueOf(props.getProperty("time", ""+time)) + 0.1);
 	        	memory = Integer.valueOf(props.getProperty("memory", ""+memory));
 	        } catch (Exception e) {
 	        	log.error("cannot read metadata for problem: " + problem.getId(), e);
