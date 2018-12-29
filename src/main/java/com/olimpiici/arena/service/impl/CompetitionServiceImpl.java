@@ -290,7 +290,9 @@ public class CompetitionServiceImpl implements CompetitionService {
 						.sum();
 				User user = idToUser.get(entry.getKey());
 				return new UserPoints(user, points);
-			}).collect(Collectors.toList());
+			})
+			.filter(userPoints -> userPoints.user.getId() > 4)
+			.collect(Collectors.toList());
 		
 
 		Collections.sort(standings);
