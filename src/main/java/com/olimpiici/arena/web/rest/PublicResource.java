@@ -17,9 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -216,13 +214,12 @@ public class PublicResource {
         		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
         		int max = times.stream().mapToInt(t -> t).max().getAsInt();
         		
-        		int limit = max*15/10;
-        		limit = (limit/100+1)*100;
+        		int limit = (max*15/10)/100+1;
 
-        		log.debug(String.format("limit for problem<%d> with times %s will be %1.f", problem.getId(), times.toString(), limit/10));
+        		log.debug("limit for problem<"+problem.getId()+"> with times "+times+" will be "+limit/10+"."+limit%10);
         		
         		if (set) {
-        			String timeProp = String.format("time = %.1f", limit/10.);
+        			String timeProp = "time = "+limit/10+"."+limit%10;
                 	File propeties = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
                 	FileUtils.writeStringToFile(propeties, timeProp, StandardCharsets.UTF_8);
                 	
