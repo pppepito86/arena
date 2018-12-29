@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -200,15 +201,18 @@ public class PublicResource {
     public ResponseEntity<?> setTimes(
     		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
         log.debug("REST request to get set time limits");
-
-        Page<CompetitionProblemDTO> competitionProblems = competitionProblemService.findAll(Pageable.unpaged());
+        
+        PageRequest page = PageRequest.of(0, 10000);
+        List<CompetitionProblemDTO> competitionProblems = competitionProblemService.findAll(page).getContent();
+        log.debug("competition problems: " + competitionProblems.size());
         
         for (CompetitionProblemDTO competitionProblem: competitionProblems) {
         	
-        	Page<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(competitionProblem.getId(), Pageable.unpaged());
+        	List<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(competitionProblem.getId(), page).getContent();
+        	log.debug("competition problem " + competitionProblem.getId() + " has " + submissions.size() + " submissions");
         	
         	ProblemDTO problem = problemService.findOne(competitionProblem.getProblemId()).get();
-        	if (submissions.getSize() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
+        	if (submissions.size() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
         		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
         		int max = times.stream().mapToInt(t -> t).max().getAsInt();
         		
@@ -231,6 +235,8 @@ public class PublicResource {
         		}
         		
         	} else {
+        		log.debug("competition problem " + competitionProblem.getId() + " version 0");
+            	
         		if (!set) continue;
         		
         		problem.setVersion(0);
