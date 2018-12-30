@@ -41,7 +41,7 @@
         },
         "form": {
             "username": "Потребителско име",
-            "username.placeholder": "Вашето потребителско име",
+            "username.placeholder": "Потребителско име",
             "currentpassword": "Текуща парола",
             "currentpassword.placeholder": "Текуща парола",
             "newpassword": "Нова парола",
@@ -71,7 +71,7 @@
                     "required": "Задължително е да въведете парола.",
                     "minlength": "Паролата трябва да има поне 4 символа.",
                     "maxlength": "Паролата не може да е по-дълга от 50 символа.",
-                    "strength": "Сила на поралата:"
+                    "strength": "Сила на паролата:"
                 },
                 "confirmpassword": {
                     "required": "Задължително е да повторите паролата.",
