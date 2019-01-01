@@ -18,13 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.pesho.grader.SubmissionScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -49,7 +43,7 @@ public class Worker {
 		this.workDir = workDir;
 	}
 
-	public SubmissionScore grade(long problemId, long submissionId)
+	public SubmissionScore grade(long problemId, long submissionId, GraderTask listener)
 			throws Exception {
 		
 		if (!isProblemUploaded(problemId)) {
@@ -72,8 +66,11 @@ public class Worker {
 		httpclient.close();
 		
 		for (int i = 0; i < 600; i++) {
-			if (isRunning(submissionId)) Thread.sleep(1000);
-			else return getScore(submissionId);
+			SubmissionScore score = getScore(submissionId);
+			listener.updateScore(submissionId, score);
+
+			if (score.isFinished()) return score;
+			Thread.sleep(2000);
 		}
 		throw new IllegalStateException("time out");
 	}
@@ -109,9 +106,9 @@ public class Worker {
 	
 	public boolean isAlive() {
 		RequestConfig config = RequestConfig.custom()
-				  .setConnectTimeout(1000)
-				  .setConnectionRequestTimeout(1000)
-				  .setSocketTimeout(1000).build();
+				  .setConnectTimeout(3000)
+				  .setConnectionRequestTimeout(3000)
+				  .setSocketTimeout(3000).build();
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).build()) {
 			HttpGet httpGet = new HttpGet(url + "/api/v1/health-check");
 			CloseableHttpResponse response = httpclient.execute(httpGet);
@@ -134,30 +131,20 @@ public class Worker {
 		return response.getStatusLine().getStatusCode() == 200;
 	}
 
-	public void sendProblemToWorker(long problemId, String zipFilePath) {
-		RestTemplate rest = new RestTemplate();
-		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-		parameters.add("file", new FileSystemResource(zipFilePath));
+	public void sendProblemToWorker(long problemId, String zipFilePath) throws IOException {
+		File problemFile = new File(zipFilePath);
+        HttpEntity entity = MultipartEntityBuilder.create()
+                .addBinaryBody("file", problemFile, ContentType.TEXT_PLAIN, problemFile.getName())
+                .build();
+		
+		HttpPost post = new HttpPost(url + "/api/v1/problems/" + problemId);
+		post.setEntity(entity);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Content-Type", "multipart/form-data");
+		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+			httpclient.execute(post);
+			httpclient.close();
+		} 
 
-		String endpointURL = url + "/api/v1/problems/" + problemId;
-		boolean exists;
-		try {
-			exists = HttpStatus.OK == rest.getForEntity(endpointURL, String.class).getStatusCode();
-		} catch (HttpClientErrorException e) {
-			exists = false;
-		}
-
-		System.out.println("problem exists last check");
-		org.springframework.http.HttpEntity<MultiValueMap<String, Object>> params = new org.springframework.http.HttpEntity<MultiValueMap<String, Object>>(parameters,
-				headers);
-		if (exists) {
-			rest.put(endpointURL, params);
-		} else {
-			rest.postForLocation(endpointURL, params);
-		}
 	}
 	
 	public void setFree(boolean isFree) {

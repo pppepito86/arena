@@ -1,5 +1,7 @@
 package com.olimpiici.arena.grader;
 
+import java.util.Optional;
+
 import org.pesho.grader.SubmissionScore;
 import org.pesho.grader.step.StepResult;
 import org.slf4j.Logger;
@@ -53,14 +55,24 @@ public class GraderTask {
 		
 		long submissionId = submission.getId();
 		long problemId = competitionProblemService.findOne(submission.getCompetitionProblemId()).get().getProblemId();
-		
-		String result = "";
+
+		SubmissionScore score = new SubmissionScore();
+		try {
+			score = worker.grade(problemId, submissionId, this);
+		} catch (Exception e) {
+			log.error("scoring failed for submission: " + submissionId, e);
+			score.addFinalScore("system error", 0);
+		} finally {
+			updateScore(submissionId, score);
+		}
+	}
+	
+	public void updateScore(long submissionId, SubmissionScore score) {
+		String verdict = "";
 		String details = "";
 		int points = 0;
 		double time = 0;
 		try {
-			SubmissionScore score = worker.grade(problemId, submissionId);
-		
 			details = mapper.writeValueAsString(score);
 			points = (int) (score.getScore()+0.5);
 			StepResult[] values = score.getScoreSteps().values().toArray(new StepResult[0]);
@@ -68,24 +80,29 @@ public class GraderTask {
 				for (int i = 1; i < values.length; i++) {
 					StepResult step = values[i];
 					if (i != 1)
-						result += ",";
-					result += step.getVerdict();
+						verdict += ",";
+					verdict += step.getVerdict();
 					if (step.getTime() != null) {
 						time = Math.max(time, step.getTime());
 					}
 				}
-			} else {
-				result = values[0].getVerdict().toString();
+			} else if (values.length == 1){
+				verdict = values[0].getVerdict().toString();
 				System.out.println("Submission <" + submissionId + "> failed with " + values[0].getReason());
 			}
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
-			result = "system error";
+			verdict = "system error";
 		} finally {
-			result = result.substring(0, Math.min(result.length(), 500));
+			verdict = verdict.substring(0, Math.min(verdict.length(), 500));
+			Optional<SubmissionDTO> maybeSubmission = submissionService.findOne(submissionId);
+			if (!maybeSubmission.isPresent()) return;
+			
+			SubmissionDTO submission = maybeSubmission.get();
 			submission.setDetails(details);
 			submission.setPoints(points);
-			submission.setVerdict(result);
+			if (score.isFinished()) submission.setVerdict(verdict);
+			else submission.setVerdict("judging");
 			submission.setTimeInMillis((int) (1000*time+0.5));
 			
 			try {
