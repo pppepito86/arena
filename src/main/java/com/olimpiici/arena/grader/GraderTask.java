@@ -1,5 +1,7 @@
 package com.olimpiici.arena.grader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.pesho.grader.SubmissionScore;
@@ -38,13 +40,18 @@ public class GraderTask {
     
 	@Scheduled(fixedDelay = 3000)
 	public void gradeTask() throws IOException {
+		List<SubmissionDTO> submissions = new ArrayList<>();
+		submissions.addAll(submissionService.findSubmissionByVerdict("judging"));
+		submissions.addAll(submissionService.findSubmissionByVerdict("waiting"));
+		
+		if (submissions.size() == 0) return;
+		
 		if (!worker.isAlive()) {
-			log.debug("worker is not alive: " + worker.getUrl());
+			log.warn("worker is not alive: " + worker.getUrl());
 			return;
 		}
 
-		submissionService.findSubmissionByVerdict("judging").forEach(s -> grade(s));
-		submissionService.findSubmissionByVerdict("waiting").forEach(s -> grade(s));
+		submissions.forEach(s -> grade(s));
 	}
 	
 	private void grade(SubmissionDTO submission) {
