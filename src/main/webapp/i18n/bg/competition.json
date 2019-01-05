@@ -2,7 +2,7 @@
     "arenaApp": {
         "competition": {
             "home": {
-                "title": "Съсетезания",
+                "title": "Състезания",
                 "createLabel": "Create a new Competition",
                 "createOrEditLabel": "Create or edit a Competition"
             },
@@ -17,7 +17,7 @@
             },
             "label": "Име",
             "description": "Описание",
-            "order": "Order",
+            "order": "Ред",
             "parent": "Parent",
             "submit": "Изпрати",
             "submissions": "Изпратени решения",
