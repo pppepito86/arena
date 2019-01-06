@@ -57,6 +57,7 @@ entity TagCollection {
 entity Tag {
 	title String
 	keywords String
+	public Boolean
 }
 
 entity TagCollectionTag {
