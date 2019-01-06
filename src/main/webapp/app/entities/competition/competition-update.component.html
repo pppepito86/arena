@@ -1,48 +1,96 @@
 <div class="row justify-content-center">
     <div class="col-8">
-        <form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
-            <h2 id="jhi-competition-heading" jhiTranslate="arenaApp.competition.home.createOrEditLabel">Create or edit a Competition</h2>
-            <div>
-                <jhi-alert-error></jhi-alert-error>
-                <div class="form-group" [hidden]="!competition.id">
-                    <label for="id" jhiTranslate="global.field.id">ID</label>
-                    <input type="text" class="form-control" id="id" name="id"
-                        [(ngModel)]="competition.id" readonly />
+        <h2 id="jhi-competition-heading" jhiTranslate="arenaApp.competition.home.createOrEditLabel">Create or edit a Competition</h2>
+        <div class="row">
+            <div class="col-6">
+                <form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+                    <div>
+                        <jhi-alert-error></jhi-alert-error>
+                        <div class="form-group" [hidden]="!competition.id">
+                            <label for="id" jhiTranslate="global.field.id">ID</label>
+                            <input type="text" class="form-control" id="id" name="id"
+                                [(ngModel)]="competition.id" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" jhiTranslate="arenaApp.competition.label" for="field_label">Label</label>
+                            <input type="text" class="form-control" name="label" id="field_label"
+                                [(ngModel)]="competition.label" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" jhiTranslate="arenaApp.competition.description" for="field_description">Description</label>
+                            <input type="text" class="form-control" name="description" id="field_description"
+                                [(ngModel)]="competition.description" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" jhiTranslate="arenaApp.competition.order" for="field_order">Order</label>
+                            <input type="number" class="form-control" name="order" id="field_order"
+                                [(ngModel)]="competition.order" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-control-label" jhiTranslate="arenaApp.competition.parent" for="field_parent">Parent</label>
+                            <input type="number" class="form-control" name="parent" id="field_parent"
+                                   [(ngModel)]="competition.parentId" />
+                            <!--<select class="form-control" id="field_parent" name="parent" [(ngModel)]="competition.parentId" >-->
+                                <!--<option [ngValue]="null"></option>-->
+                                <!--<option [ngValue]="competitionOption.id" *ngFor="let competitionOption of competitions; trackBy: trackCompetitionById">{{competitionOption.id}} {{competitionOption.label}}</option>-->
+                            <!--</select>-->
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                            <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                        </button>
+                        <button type="submit" id="save-entity" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+                            <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-6">
+                <div>
+                    <ngx-sortable [items]="children_competitions"
+                                  [name]="'Sub Competitions'"
+                                  listStyle = "{
+                                                    width:'50%',
+                                                    height: '250px',
+                                                    dropZoneHeight: '1em' // height of the dropzone indicator defaults to 50
+                                        }">
+                        <ng-template let-item>
+                            <div >
+                                {{item.label}} ({{item.id}})
+                            </div>
+                        </ng-template>
+                    </ngx-sortable>
+                    <br/>
+                    <input placeholder="id" class="form-control" type="number" [(ngModel)]="newSubCompetitionId"/>
+                    <button class="btn btn-primary" (click)="onSubCompetitionAdd(newSubCompetitionId)">Add</button>
+                    <button class="btn btn-primary" (click)="onSubCompetitionRemove(newSubCompetitionId)">Remove</button>
+                    <br/>
                 </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="arenaApp.competition.label" for="field_label">Label</label>
-                    <input type="text" class="form-control" name="label" id="field_label"
-                        [(ngModel)]="competition.label" />
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="arenaApp.competition.description" for="field_description">Description</label>
-                    <input type="text" class="form-control" name="description" id="field_description"
-                        [(ngModel)]="competition.description" />
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="arenaApp.competition.order" for="field_order">Order</label>
-                    <input type="number" class="form-control" name="order" id="field_order"
-                        [(ngModel)]="competition.order" />
+                <br/>
+                <div>
+                    <ngx-sortable [items]="children_problems"
+                                  [name]="'Sub Problems'"
+                                  listStyle = "{
+                                                    width:'50%',
+                                                    height: '250px',
+                                                    dropZoneHeight: '1em' // height of the dropzone indicator defaults to 50
+                                        }">
+                        <ng-template let-item>
+                            <div >
+                                {{item.title}} ({{item.id}})
+                            </div>
+                        </ng-template>
+                    </ngx-sortable>
+                    <br/>
+                    <input class="form-control" type="number" [(ngModel)]="newSubProblemId"/>
+                    <button class="btn btn-primary" (click)="onSubProblemAdded(newSubProblemId)">Add</button>
+                    <button class="btn btn-primary" (click)="onSubCompetitionRemove(newSubProblemId)">Remove</button>
+                    <br/>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="arenaApp.competition.parent" for="field_parent">Parent</label>
-                    <input type="number" class="form-control" name="parent" id="field_parent"
-                           [(ngModel)]="competition.parentId" />
-                    <!--<select class="form-control" id="field_parent" name="parent" [(ngModel)]="competition.parentId" >-->
-                        <!--<option [ngValue]="null"></option>-->
-                        <!--<option [ngValue]="competitionOption.id" *ngFor="let competitionOption of competitions; trackBy: trackCompetitionById">{{competitionOption.id}} {{competitionOption.label}}</option>-->
-                    <!--</select>-->
-                </div>
             </div>
-            <div>
-                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
-                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
-                </button>
-                <button type="submit" id="save-entity" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
-                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>

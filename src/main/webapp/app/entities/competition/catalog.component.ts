@@ -14,4 +14,12 @@ import { CompetitionService } from './competition.service';
     selector: 'jhi-catalog',
     templateUrl: './catalog.component.html'
 })
-export class CatalogComponent {}
+export class CatalogComponent implements OnInit {
+    id: number;
+
+    constructor(protected activatedRoute: ActivatedRoute) {}
+
+    ngOnInit() {
+        this.id = this.activatedRoute.snapshot.params['id'];
+    }
+}

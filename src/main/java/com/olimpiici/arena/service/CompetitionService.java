@@ -29,6 +29,9 @@ public interface CompetitionService {
      */
     CompetitionDTO save(CompetitionDTO competitionDTO);
 
+    void updateSubCompetitions(Long parentId, List<CompetitionDTO> newSubCompetitions);
+    void updateSubProblems(Long parentId, List<CompetitionProblemDTO> newSubProblems);
+    
     /**
      * Get all the competitions.
      *

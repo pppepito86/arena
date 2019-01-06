@@ -101,6 +101,28 @@ public class CompetitionResource {
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+    
+    @PostMapping("/competitions/{id}/subcompetitions")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<CompetitionDTO> updateSubCompetitions(@PathVariable Long id,
+    		@RequestBody List<CompetitionDTO> subCompetitions) throws URISyntaxException {
+        log.debug("REST request to set cubcompetitions: {}", id);
+        
+        competitionService.updateSubCompetitions(id, subCompetitions);;
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/competitions/{id}/subproblems")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<CompetitionDTO> updateSubProblems(@PathVariable Long id,
+    		@RequestBody List<CompetitionProblemDTO> subProblems) throws URISyntaxException {
+        log.debug("REST request to set subproblems: {}", id);
+        
+        competitionService.updateSubProblems(id, subProblems);
+        return ResponseEntity.ok().build();
+    }
 
     /**
      * PUT  /competitions : Updates an existing competition.

@@ -1,8 +1,10 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TagInputModule } from 'ngx-chips';
+import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgxSortableModule } from 'ngx-sortable';
 
 import { ArenaSharedModule } from 'app/shared';
 import {
@@ -25,11 +27,13 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
 
 @NgModule({
     imports: [
+        BrowserModule,
         ArenaSharedModule,
         TagInputModule,
         BrowserAnimationsModule,
         FormsModule,
         ReactiveFormsModule,
+        NgxSortableModule,
         RouterModule.forChild(ENTITY_STATES)
     ],
     declarations: [

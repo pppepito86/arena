@@ -27,6 +27,16 @@ export class CompetitionService {
         return this.http.put<ICompetition>(this.resourceUrl, competition, { observe: 'response' });
     }
 
+    updateSubCompetitions(parentId: number, subcompetitions: ICompetition[]): Observable<EntityResponseType> {
+        const url = this.resourceUrl + '/' + parentId + '/subcompetitions';
+        return this.http.post(url, subcompetitions, { observe: 'response' });
+    }
+
+    updateSubProblems(parentId: number, subproblems: ICompetitionProblem[]): Observable<EntityResponseType> {
+        const url = this.resourceUrl + '/' + parentId + '/subproblems';
+        return this.http.post(url, subproblems, { observe: 'response' });
+    }
+
     find(id: number): Observable<EntityResponseType> {
         return this.http.get<ICompetition>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }

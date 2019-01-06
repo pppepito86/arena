@@ -26,6 +26,7 @@ import com.olimpiici.arena.web.rest.UserResource;
 
 import liquibase.diff.compare.CompareControl;
 
+import org.aspectj.weaver.NewConstructorTypeMunger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +40,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -106,6 +109,8 @@ public class CompetitionServiceImpl implements CompetitionService {
         competition = competitionRepository.save(competition);
         return competitionMapper.toDto(competition);
     }
+    
+    
 
     /**
      * Get all the competitions.
@@ -364,5 +369,77 @@ public class CompetitionServiceImpl implements CompetitionService {
 			.map(submissionMapper::toDto);
 		return submissions;
 	}
-	
+
+	@Override
+	public void updateSubCompetitions(Long parentId, List<CompetitionDTO> newSubCompetitions) {
+		Competition parent = competitionRepository.getOne(parentId);
+		for (int i = 0; i < newSubCompetitions.size(); i++) {
+			newSubCompetitions.get(i).setOrder(i);
+		}
+		
+		Set<Long> childrenIds = new HashSet<>();
+		for (CompetitionDTO dto : newSubCompetitions) {
+			childrenIds.add(dto.getId());
+			Competition competition = competitionRepository.getOne(dto.getId());
+			boolean change = false;
+			
+			
+			if (competition.getParent().getId() != parent.getId()) {
+				change = true;
+				competition.setParent(parent);
+			}
+			
+			if (competition.getOrder() != dto.getOrder()) {
+				change = true;
+				competition.setOrder(dto.getOrder());
+			}
+			
+			if (change) {
+				competitionRepository.save(competition);
+			}
+		}
+		
+		competitionRepository.findByParent(parent, Pageable.unpaged())
+			.forEach(comp -> {
+				if (!childrenIds.contains(comp.getId())) {
+					comp.setParent(null);
+					competitionRepository.save(comp);
+				}
+			});
+	}
+
+	@Override
+	public void updateSubProblems(Long parentId, List<CompetitionProblemDTO> newSubProblems) {
+		Competition parent = competitionRepository.getOne(parentId);
+		for (int i = 0; i < newSubProblems.size(); i++) {
+			newSubProblems.get(i).setOrder(i);
+		}
+		Set<Long> childrenIds = new HashSet<>();
+		for (CompetitionProblemDTO dto : newSubProblems) {
+			childrenIds.add(dto.getId());
+			CompetitionProblem cp = competitionProblemRepository.getOne(dto.getId());
+			boolean change = false;
+			if(cp.getCompetition().getId() != parent.getId()) {
+				change = true;
+				cp.setCompetition(parent);
+			}
+			
+			if(cp.getOrder() != dto.getOrder()) {
+				change = true;
+				cp.setOrder(dto.getOrder());
+			}
+			
+			if (change) {
+				competitionProblemRepository.save(cp);
+			}
+		}
+		
+		competitionProblemRepository
+			.findByCompetition(parent, Pageable.unpaged())
+			.forEach(cp -> {
+				if (!childrenIds.contains(cp.getId())) {
+					competitionProblemRepository.delete(cp);
+				}
+			});
+	}
 }

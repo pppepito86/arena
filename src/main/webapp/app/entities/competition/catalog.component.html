@@ -1,6 +1,7 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.catalog.home.title">Catalog</span>
+
         <button class="btn btn-primary float-right"
                 [routerLink]="['submissions']">
             <span  jhiTranslate="arenaApp.competition.submissions">
@@ -12,6 +13,14 @@
                 [routerLink]="['standings']">
             <span  jhiTranslate="arenaApp.standings.title">
             Класиране
+            </span>
+        </button>
+        <button *jhiHasAnyAuthority="'ROLE_ADMIN'"
+                style="margin-right: 0.5em;"
+                class="btn btn-primary float-right"
+                [routerLink]="['/competition', id, 'edit']">
+            <span>
+            Edit
             </span>
         </button>
     </h2>
