@@ -24,6 +24,7 @@ entity Problem {
     title String
     directory String
     version Integer
+	tags TagCollection
 }
 
 entity CompetitionProblem {
@@ -47,6 +48,20 @@ entity Submission {
 	memoryInBytes Integer
     uploadDate ZonedDateTime
     securityKey String
+	tags	TagCollection
+}
+
+entity TagCollection {	
+}
+
+entity Tag {
+	title String
+	keywords String
+}
+
+entity TagCollectionTag {
+	collection TagCollection
+	tag Tag
 }
 
 relationship ManyToOne {

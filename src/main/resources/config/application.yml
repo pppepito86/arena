@@ -111,5 +111,5 @@ jhipster:
 # ===================================================================
 
 application:
-    work-dir: .
-    worker-url: localhost:8089
+    work-dir: /home/marin/dev/arena_workdir
+    worker-url: 18.196.185.86:8089

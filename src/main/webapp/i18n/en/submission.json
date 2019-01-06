@@ -29,7 +29,9 @@
             "solution": "Solution",
             "test": "Test",
             "output": "Output",
-            "expectedOutput": "Expected Output"
+            "expectedOutput": "Expected Output",
+            "pleaseTag": "Hey! Help us categorize the problems by adding tags to your solution!",
+            "tags": "Tags"
         }
     }
 }

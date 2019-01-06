@@ -8,6 +8,26 @@
             <div class="alert alert-warning"
                    *ngIf="!isJudged(submission)" jhiTranslate="arenaApp.submission.judging_warning">
             </div>
+            <div *ngIf="true">
+                <div *ngIf="submission?.points === 100">
+                    <div class="col-12">
+                        <label> <b><span jhiTranslate="arenaApp.submission.pleaseTag">Tag your solution: </span></b></label> <br/>
+                        <span jhiTranslate="arenaApp.submission.tags"> </span>:
+                        <tag-input [(ngModel)]='tags'
+                                   secondaryPlaceholder = "Например Дейкстра, Графи..."
+                                   placeholder=""
+                                   (onAdd)="onTagsChanged($event)"
+                                   (onRemove)="onTagsChanged($event)">
+                            <tag-input-dropdown
+                                    minimumTextLength="2"
+                                    [autocompleteItems]='autocompleteTags'>
+                            </tag-input-dropdown>
+                        </tag-input>
+                    </div>
+                    <br/>
+                </div>
+            </div>
+
             <table border="1">
                 <tr>
                     <th><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></th>

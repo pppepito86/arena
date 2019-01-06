@@ -18,7 +18,9 @@ export class ProblemInCompetitionComponent implements OnInit {
     competitionId: number;
     competitionProblemId: number;
     isSubmitting: boolean;
-    solution: string = '';
+    solution = '';
+    tags = [];
+    autocompleteTags = ['Basic / Рисуване на фигури', 'Basic / Дати и време', 'Basic / Мерни единици'];
 
     constructor(
         private router: Router,
@@ -62,5 +64,9 @@ export class ProblemInCompetitionComponent implements OnInit {
                 this.onError(res.message);
             }
         );
+    }
+
+    onTagsChanged() {
+        console.log('change');
     }
 }
