@@ -6,7 +6,6 @@
                 "createLabel": "Create a new Submission",
                 "createOrEditLabel": "Create or edit a Submission"
             },
-            "securityKey": "Security Key",
             "created": "A new Submission is created with identifier {{ param }}",
             "updated": "A Submission is updated with identifier {{ param }}",
             "deleted": "A Submission is deleted with identifier {{ param }}",
@@ -20,18 +19,13 @@
             "verdict": "Verdict",
             "details": "Details",
             "points": "Points",
-            "problem": "Problem",
-            "timeInMillis": "Time",
-            "memoryInBytes": "Memory",
-            "uploadDate": "Date",
+            "timeInMillis": "Time In Millis",
+            "memoryInBytes": "Memory In Bytes",
+            "uploadDate": "Upload Date",
+            "securityKey": "Security Key",
+            "tags": "Tags",
             "user": "User",
-            "competitionProblem": "Problem",
-            "solution": "Solution",
-            "test": "Test",
-            "output": "Output",
-            "expectedOutput": "Expected Output",
-            "pleaseTag": "Hey! Help us categorize the problems by adding tags to your solution!",
-            "tags": "Tags"
+            "competitionProblem": "Competition Problem"
         }
     }
 }

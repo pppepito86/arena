@@ -18,20 +18,7 @@
             "label": "Label",
             "description": "Description",
             "order": "Order",
-            "parent": "Parent",
-            "submit": "Submit",
-            "submissions": "Submissions",
-            "solution": "Solution"
-        },
-        "catalog": {
-            "home": {
-                "title": "Catalog"
-            }
-        },
-        "standings": {
-            "title": "Standings",
-            "user": "User",
-            "points": "Points"
+            "parent": "Parent"
         }
     }
 }

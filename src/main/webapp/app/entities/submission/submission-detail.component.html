@@ -1,98 +1,70 @@
 <div class="row justify-content-center">
     <div class="col-8">
-        <div *ngIf="submission != null">
-            <h2><span jhiTranslate="arenaApp.submission.detail.title">Submission</span></h2>
+        <div *ngIf="submission">
+            <h2><span jhiTranslate="arenaApp.submission.detail.title">Submission</span> {{submission.id}}</h2>
             <hr>
             <jhi-alert-error></jhi-alert-error>
-
-            <div class="alert alert-warning"
-                   *ngIf="!isJudged(submission)" jhiTranslate="arenaApp.submission.judging_warning">
-            </div>
-            <div *ngIf="true">
-                <div *ngIf="submission?.points === 100">
-                    <div class="col-12">
-                        <label> <b><span jhiTranslate="arenaApp.submission.pleaseTag">Tag your solution: </span></b></label> <br/>
-                        <span jhiTranslate="arenaApp.submission.tags"> </span>:
-                        <tag-input [(ngModel)]='tags'
-                                   secondaryPlaceholder = "Например Дейкстра, Графи..."
-                                   placeholder=""
-                                   (onAdd)="onTagsChanged($event)"
-                                   (onRemove)="onTagsChanged($event)">
-                            <tag-input-dropdown
-                                    minimumTextLength="2"
-                                    [autocompleteItems]='autocompleteTags'>
-                            </tag-input-dropdown>
-                        </tag-input>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="arenaApp.submission.file">File</span></dt>
+                <dd>
+                    <span>{{submission.file}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></dt>
+                <dd>
+                    <span>{{submission.verdict}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.details">Details</span></dt>
+                <dd>
+                    <span>{{submission.details}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.points">Points</span></dt>
+                <dd>
+                    <span>{{submission.points}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.timeInMillis">Time In Millis</span></dt>
+                <dd>
+                    <span>{{submission.timeInMillis}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory In Bytes</span></dt>
+                <dd>
+                    <span>{{submission.memoryInBytes}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span></dt>
+                <dd>
+                    <span>{{submission.uploadDate}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.securityKey">Security Key</span></dt>
+                <dd>
+                    <span>{{submission.securityKey}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.tags">Tags</span></dt>
+                <dd>
+                    <div *ngIf="submission.tagsId">
+                        <a [routerLink]="['/tag-collection', submission.tagsId, 'view']">{{submission.tagsId}}</a>
                     </div>
-                    <br/>
-                </div>
-            </div>
-
-            <table border="1">
-                <tr>
-                    <th><span jhiTranslate="arenaApp.submission.verdict">Verdict</span></th>
-                    <th><span jhiTranslate="arenaApp.submission.points">Points</span></th>
-                    <th><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span></th>
-                    <th><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span></th>
-                    <th><span jhiTranslate="arenaApp.submission.user">User</span></th>
-                    <th><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></th>
-                </tr>
-                <tr>
-                    <td style="max-width: 15em;"><span>{{submission.verdict}}</span></td>
-                    <td>
-                        <span>{{submission.points}}</span>
-                    </td>
-                    <td>
-                        <span>{{submission.timeInMillis}}</span> ms
-                    </td>
-                    <td>
-                        <span>{{submission.uploadDate  | date:'dd MMM y, EEE, HH:mm:ss'}}</span>
-                    </td>
-                    <td>
-                        {{submission.userFirstName}} {{submission.userLastName}}
-                    </td>
-                    <td>
-                        <div *ngIf="submission.competitionProblemId">
-                            <a [routerLink]="['/catalog', submission.competitionId, 'problem', submission.competitionProblemId]">{{submission.problemName}}</a>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            <br/>
-
-            <div *ngIf="submissionDetails?.scoreSteps?.Compile?.reason"
-                 class="alert alert-warning">
-                {{submissionDetails.scoreSteps.Compile.reason}}
-            </div>
-            <table *ngIf="testDetails && testDetails.length" border="1">
-                <tr>
-                    <th> <span jhiTranslate="arenaApp.submission.test">Test</span> </th>
-                    <th> <span jhiTranslate="arenaApp.submission.verdict">Verdict</span> </th>
-                    <th> <span jhiTranslate="arenaApp.submission.timeInMillis">Time</span> </th>
-                    <th> <span jhiTranslate="arenaApp.submission.output">Output</span> </th>
-                    <!--<th> <span jhiTranslate="arenaApp.submission.expectedOutput">Expected Output</span> </th>-->
-                </tr>
-
-                <tr *ngFor="let scoreStep of testDetails">
-                    <td> {{scoreStep.key}} </td>
-
-                    <td *ngIf="scoreStep.value.verdict == 'OK'" style="background-color: #00ff00"> {{scoreStep.value.verdict}} </td>
-                    <td *ngIf="scoreStep.value.verdict != 'OK'"  style="background-color: red; color:white; font-weight: bold;"> {{scoreStep.value.verdict}} </td>
-                    <td> {{scoreStep.value.time}} </td>
-                    <td style="max-width: 15em; text-align: left"> <pre>{{scoreStep.value.output}}</pre></td>
-                    <!--<td style="max-width: 15em;"> <pre>{{scoreStep.value.expectedOutput}}</pre> </td>-->
-                </tr>
-            </table>
-
-            <dt><span jhiTranslate="arenaApp.submission.solution">Solution</span></dt>
-            <dd>
-                <pre>{{submission.code}}</pre>
-            </dd>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.user">User</span></dt>
+                <dd>
+                    {{submission.userId}}
+                </dd>
+                <dt><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></dt>
+                <dd>
+                    <div *ngIf="submission.competitionProblemId">
+                        <a [routerLink]="['/competition-problem', submission.competitionProblemId, 'view']">{{submission.competitionProblemId}}</a>
+                    </div>
+                </dd>
+            </dl>
 
             <button type="submit"
                     (click)="previousState()"
                     class="btn btn-info">
                 <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/submission', submission.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
             </button>
         </div>
     </div>

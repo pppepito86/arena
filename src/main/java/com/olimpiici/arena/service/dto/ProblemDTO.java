@@ -16,10 +16,6 @@ public class ProblemDTO implements Serializable {
 
     private Integer version;
 
-    private Integer time;
-    
-    private Integer memory;
-    
     private Long tagsId;
 
     public Long getId() {
@@ -54,22 +50,6 @@ public class ProblemDTO implements Serializable {
         this.version = version;
     }
 
-    public Integer getTime() {
-		return time;
-	}
-    
-    public void setTime(Integer time) {
-		this.time = time;
-	}
-    
-    public Integer getMemory() {
-		return memory;
-	}
-    
-    public void setMemory(Integer memory) {
-		this.memory = memory;
-	}
-    
     public Long getTagsId() {
         return tagsId;
     }

@@ -17,21 +17,17 @@
 
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="arenaApp.competitionProblem.problem" for="field_problem">Problem</label>
-                    <input type="number" class="form-control" name="problem" id="field_problem"
-                           [(ngModel)]="competitionProblem.problemId" />
-                    <!--<select class="form-control" id="field_problem" name="problem" [(ngModel)]="competitionProblem.problemId" >-->
-                        <!--<option [ngValue]="null"></option>-->
-                        <!--<option [ngValue]="problemOption.id" *ngFor="let problemOption of problems; trackBy: trackProblemById">{{problemOption.title}}</option>-->
-                    <!--</select>-->
+                    <select class="form-control" id="field_problem" name="problem" [(ngModel)]="competitionProblem.problemId" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="problemOption.id" *ngFor="let problemOption of problems; trackBy: trackProblemById">{{problemOption.id}}</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="arenaApp.competitionProblem.competition" for="field_competition">Competition</label>
-                    <input type="number" class="form-control" name="competition" id="field_competition"
-                           [(ngModel)]="competitionProblem.competitionId" />
-                    <!--<select class="form-control" id="field_competition" name="competition" [(ngModel)]="competitionProblem.competitionId" >-->
-                        <!--<option [ngValue]="null"></option>-->
-                        <!--<option [ngValue]="competitionOption.id" *ngFor="let competitionOption of competitions; trackBy: trackCompetitionById">{{competitionOption.label}}</option>-->
-                    <!--</select>-->
+                    <select class="form-control" id="field_competition" name="competition" [(ngModel)]="competitionProblem.competitionId" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="competitionOption.id" *ngFor="let competitionOption of competitions; trackBy: trackCompetitionById">{{competitionOption.id}}</option>
+                    </select>
                 </div>
             </div>
             <div>

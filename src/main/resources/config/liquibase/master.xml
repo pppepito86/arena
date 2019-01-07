@@ -9,12 +9,14 @@
     <include file="config/liquibase/changelog/20181224184639_added_entity_Problem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181224184640_added_entity_CompetitionProblem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181224184641_added_entity_Submission.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190106221206_added_entity_TagCollection.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190106221207_added_entity_Tag.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190106221208_added_entity_TagCollectionTag.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20181224184638_added_entity_constraints_Competition.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20181224184639_added_entity_constraints_Problem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181224184640_added_entity_constraints_CompetitionProblem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20181224184641_added_entity_constraints_Submission.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20190106221208_added_entity_constraints_TagCollectionTag.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
-    <include file="config/liquibase/changelog/20181225184641_added_securityKey_Submission.xml" relativeToChangelogFile="false"/>
-	<include file="config/liquibase/changelog/20181227184641_added_indexes_submissions_verdict.xml" relativeToChangelogFile="false"/>
-	<include file="config/liquibase/changelog/20181228020000_change_verdict_and_details_types.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

@@ -12,11 +12,6 @@ import { CompetitionDetailComponent } from './competition-detail.component';
 import { CompetitionUpdateComponent } from './competition-update.component';
 import { CompetitionDeletePopupComponent } from './competition-delete-dialog.component';
 import { ICompetition } from 'app/shared/model/competition.model';
-import { CompetitionChildrenComponent } from './competition-children.component';
-import { CatalogComponent } from './catalog.component';
-import { ProblemInCompetitionComponent } from './problem-in-competition.component';
-import { StandingsComponent } from './standings.component';
-import { SubmissionComponent } from '../submission';
 
 @Injectable({ providedIn: 'root' })
 export class CompetitionResolve implements Resolve<ICompetition> {
@@ -49,65 +44,6 @@ export const competitionRoute: Routes = [
         canActivate: [UserRouteAccessService]
     },
     {
-        path: 'catalog',
-        redirectTo: 'catalog/1',
-        pathMatch: 'full'
-    },
-    {
-        path: 'catalog/:id',
-        component: CatalogComponent,
-        resolve: {
-            pagingParams: JhiResolvePagingParams,
-            parentCompetition: CompetitionResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            defaultSort: 'id,asc',
-            pageTitle: 'arenaApp.competition.home.title'
-        },
-        canActivate: [UserRouteAccessService],
-        runGuardsAndResolvers: 'always'
-    },
-    {
-        path: 'catalog/:id/submissions',
-        component: SubmissionComponent,
-        resolve: {
-            pagingParams: JhiResolvePagingParams
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            defaultSort: 'id,desc',
-            pageTitle: 'arenaApp.submission.home.title',
-            forCompetition: true
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'catalog/:id/problem/:compProb',
-        component: ProblemInCompetitionComponent,
-        resolve: {
-            competition: CompetitionResolve
-        },
-        data: {
-            authorities: ['ROLE_USER']
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'catalog/:id/problem/:compProb/submissions',
-        component: SubmissionComponent,
-        resolve: {
-            pagingParams: JhiResolvePagingParams
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            defaultSort: 'id,desc',
-            pageTitle: 'arenaApp.submission.home.title',
-            forProblem: true
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
         path: 'competition/:id/view',
         component: CompetitionDetailComponent,
         resolve: {
@@ -126,7 +62,7 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
+            authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -138,26 +74,8 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
-            pageTitle: 'arenaApp.competition.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    },
-    {
-        path: 'standings',
-        redirectTo: 'catalog/1/standings',
-        pathMatch: 'full'
-    },
-    {
-        path: 'catalog/:id/standings',
-        component: StandingsComponent,
-        resolve: {
-            parentCompetition: CompetitionResolve,
-            pagingParams: JhiResolvePagingParams
-        },
-        data: {
             authorities: ['ROLE_USER'],
-            pageTitle: 'arenaApp.standings.title'
+            pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService]
     }
@@ -171,7 +89,7 @@ export const competitionPopupRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
+            authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService],

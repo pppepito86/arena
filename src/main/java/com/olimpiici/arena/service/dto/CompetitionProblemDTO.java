@@ -15,28 +15,8 @@ public class CompetitionProblemDTO implements Serializable {
     private Long problemId;
 
     private Long competitionId;
-    
-    private String title;
-    
-    private Integer points;
-    
-    public Integer getPoints() {
-		return points;
-	}
 
-	public void setPoints(Integer points) {
-		this.points = points;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public Long getId() {
+    public Long getId() {
         return id;
     }
 

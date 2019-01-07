@@ -2,7 +2,6 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.domain.CompetitionProblem;
-import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
@@ -74,13 +73,8 @@ public class CompetitionProblemServiceImpl implements CompetitionProblemService 
     @Transactional(readOnly = true)
     public Optional<CompetitionProblemDTO> findOne(Long id) {
         log.debug("Request to get CompetitionProblem : {}", id);
-        Optional<CompetitionProblem> compProblem = competitionProblemRepository.findById(id);
-        if (!compProblem.isPresent()) return Optional.empty();
-        
-        Problem problem = compProblem.get().getProblem();
-        CompetitionProblemDTO dto = competitionProblemMapper.toDto(compProblem.get());
-        dto.setTitle(problem.getTitle());
-        return Optional.of(dto);
+        return competitionProblemRepository.findById(id)
+            .map(competitionProblemMapper::toDto);
     }
 
     /**

@@ -32,15 +32,9 @@ export class SubmissionService {
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
-    find(id: number, securityKey = ''): Observable<EntityResponseType> {
-        let securityKeyPart;
-        if (securityKey === '' || securityKey == null || securityKey === undefined) {
-            securityKeyPart = '';
-        } else {
-            securityKeyPart = `?securityKey=${securityKey}`;
-        }
+    find(id: number): Observable<EntityResponseType> {
         return this.http
-            .get<ISubmission>(`${this.resourceUrl}/${id}${securityKeyPart}`, { observe: 'response' })
+            .get<ISubmission>(`${this.resourceUrl}/${id}`, { observe: 'response' })
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
@@ -48,22 +42,6 @@ export class SubmissionService {
         const options = createRequestOption(req);
         return this.http
             .get<ISubmission[]>(this.resourceUrl, { params: options, observe: 'response' })
-            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
-    }
-
-    queryForCompetition(competitionId: number, req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        const url = `api/competitions/${competitionId}/submissions`;
-        return this.http
-            .get<ISubmission[]>(url, { params: options, observe: 'response' })
-            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
-    }
-
-    queryForProblem(competitionId: number, problemId: number, req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        const url = `api/competitions/${competitionId}/problem/${problemId}/submissions`;
-        return this.http
-            .get<ISubmission[]>(url, { params: options, observe: 'response' })
             .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
     }
 

@@ -62,7 +62,7 @@ export const problemRoute: Routes = [
             problem: ProblemResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
+            authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.problem.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -74,7 +74,7 @@ export const problemRoute: Routes = [
             problem: ProblemResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
+            authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.problem.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -89,7 +89,7 @@ export const problemPopupRoute: Routes = [
             problem: ProblemResolve
         },
         data: {
-            authorities: ['ROLE_ADMIN'],
+            authorities: ['ROLE_USER'],
             pageTitle: 'arenaApp.problem.home.title'
         },
         canActivate: [UserRouteAccessService],

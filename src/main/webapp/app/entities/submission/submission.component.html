@@ -1,7 +1,7 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.submission.home.title">Submissions</span>
-        <button *jhiHasAnyAuthority="'ROLE_ADMIN'" id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-submission" [routerLink]="['/submission/new']">
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-submission" [routerLink]="['/submission/new']">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="arenaApp.submission.home.createLabel">
             Create new Submission
@@ -14,28 +14,46 @@
         <table class="table table-striped">
             <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-                <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="verdict"><span jhiTranslate="arenaApp.submission.problem">Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="userId"><span jhiTranslate="arenaApp.submission.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="uploadDate"><span jhiTranslate="arenaApp.submission.uploadDate">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="timeInMillis"><span jhiTranslate="arenaApp.submission.timeInMillis">Time</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="verdict"><span jhiTranslate="arenaApp.submission.verdict">Verdict</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="points"><span jhiTranslate="arenaApp.submission.points">Points</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-
-                <th *jhiHasAnyAuthority="'ROLE_ADMIN'"></th>
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="file"><span jhiTranslate="arenaApp.submission.file">File</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="verdict"><span jhiTranslate="arenaApp.submission.verdict">Verdict</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="details"><span jhiTranslate="arenaApp.submission.details">Details</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="points"><span jhiTranslate="arenaApp.submission.points">Points</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="timeInMillis"><span jhiTranslate="arenaApp.submission.timeInMillis">Time In Millis</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="memoryInBytes"><span jhiTranslate="arenaApp.submission.memoryInBytes">Memory In Bytes</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="uploadDate"><span jhiTranslate="arenaApp.submission.uploadDate">Upload Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="securityKey"><span jhiTranslate="arenaApp.submission.securityKey">Security Key</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="tagsId"><span jhiTranslate="arenaApp.submission.tags">Tags</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="userId"><span jhiTranslate="arenaApp.submission.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="competitionProblemId"><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let submission of submissions ;trackBy: trackId">
-                <td><a [routerLink]="['/submission', submission.id, 'view' ]"
-                       [queryParams]="{securityKey: submission.securityKey}">{{submission.id}}</a></td>
-                <td>{{submission.problemName}}</td>
-                <td>{{submission.userFirstName}} {{submission.userLastName}}</td>
-                <td>{{submission.uploadDate | date:'dd MMM y HH:mm'}}</td>
-                <td>{{submission.timeInMillis}}</td>
-                <td style="max-width: 15em;">{{submission.verdict}}</td>
+                <td><a [routerLink]="['/submission', submission.id, 'view' ]">{{submission.id}}</a></td>
+                <td>{{submission.file}}</td>
+                <td>{{submission.verdict}}</td>
+                <td>{{submission.details}}</td>
                 <td>{{submission.points}}</td>
-                <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                <td>{{submission.timeInMillis}}</td>
+                <td>{{submission.memoryInBytes}}</td>
+                <td>{{submission.uploadDate | date:'medium'}}</td>
+                <td>{{submission.securityKey}}</td>
+                <td>
+                    <div *ngIf="submission.tagsId">
+                        <a [routerLink]="['../tag-collection', submission.tagsId , 'view' ]" >{{submission.tagsId}}</a>
+                    </div>
+                </td>
+                <td>
+                    {{submission.userId}}
+                </td>
+                <td>
+                    <div *ngIf="submission.competitionProblemId">
+                        <a [routerLink]="['../competition-problem', submission.competitionProblemId , 'view' ]" >{{submission.competitionProblemId}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
                                 [routerLink]="['/submission', submission.id, 'view' ]"

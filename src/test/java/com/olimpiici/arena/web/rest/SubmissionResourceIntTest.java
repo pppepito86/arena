@@ -4,7 +4,6 @@ import com.olimpiici.arena.ArenaApp;
 
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.repository.SubmissionRepository;
-import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
@@ -81,9 +80,6 @@ public class SubmissionResourceIntTest {
 
     @Autowired
     private SubmissionService submissionService;
-    
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -107,7 +103,7 @@ public class SubmissionResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final SubmissionResource submissionResource = new SubmissionResource(submissionService, userRepository);
+        final SubmissionResource submissionResource = new SubmissionResource(submissionService);
         this.restSubmissionMockMvc = MockMvcBuilders.standaloneSetup(submissionResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

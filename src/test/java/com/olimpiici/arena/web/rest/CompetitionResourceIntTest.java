@@ -83,7 +83,7 @@ public class CompetitionResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CompetitionResource competitionResource = new CompetitionResource(competitionService, null, null);
+        final CompetitionResource competitionResource = new CompetitionResource(competitionService);
         this.restCompetitionMockMvc = MockMvcBuilders.standaloneSetup(competitionResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

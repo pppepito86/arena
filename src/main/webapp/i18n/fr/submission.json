@@ -22,6 +22,8 @@
             "timeInMillis": "Time In Millis",
             "memoryInBytes": "Memory In Bytes",
             "uploadDate": "Upload Date",
+            "securityKey": "Security Key",
+            "tags": "Tags",
             "user": "User",
             "competitionProblem": "Competition Problem"
         }

@@ -17,7 +17,8 @@
             },
             "title": "Title",
             "directory": "Directory",
-            "version": "Version"
+            "version": "Version",
+            "tags": "Tags"
         }
     }
 }

@@ -1,35 +1,26 @@
 package com.olimpiici.arena.web.rest;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
-
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import io.github.jhipster.web.util.ResponseUtil;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing Problem.
@@ -57,7 +48,6 @@ public class ProblemResource {
      */
     @PostMapping("/problems")
     @Timed
-    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<ProblemDTO> createProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
         log.debug("REST request to save Problem : {}", problemDTO);
         if (problemDTO.getId() != null) {
@@ -80,7 +70,6 @@ public class ProblemResource {
      */
     @PutMapping("/problems")
     @Timed
-    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<ProblemDTO> updateProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
         log.debug("REST request to update Problem : {}", problemDTO);
         if (problemDTO.getId() == null) {
@@ -92,7 +81,6 @@ public class ProblemResource {
             .body(result);
     }
 
-    
     /**
      * GET  /problems : get all the problems.
      *
@@ -103,7 +91,6 @@ public class ProblemResource {
     @Timed
     public ResponseEntity<List<ProblemDTO>> getAllProblems(Pageable pageable) {
         log.debug("REST request to get a page of Problems");
-
         Page<ProblemDTO> page = problemService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/problems");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -131,7 +118,6 @@ public class ProblemResource {
      */
     @DeleteMapping("/problems/{id}")
     @Timed
-    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<Void> deleteProblem(@PathVariable Long id) {
         log.debug("REST request to delete Problem : {}", id);
         problemService.delete(id);

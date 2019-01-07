@@ -14,10 +14,6 @@ public interface SubmissionMapper extends EntityMapper<SubmissionDTO, Submission
     @Mapping(source = "tags.id", target = "tagsId")
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "competitionProblem.id", target = "competitionProblemId")
-    @Mapping(source = "competitionProblem.competition.id", target = "competitionId")
-    @Mapping(source = "user.firstName", target = "userFirstName")
-    @Mapping(source = "user.lastName", target = "userLastName")
-    @Mapping(source = "competitionProblem.problem.title", target = "problemName")
     SubmissionDTO toDto(Submission submission);
 
     @Mapping(source = "tagsId", target = "tags")
