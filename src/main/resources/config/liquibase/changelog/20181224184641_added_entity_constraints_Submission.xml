@@ -7,12 +7,6 @@
         Added the constraints for entity Submission.
     -->
     <changeSet id="20181224184641-2" author="jhipster">
-        
-        <addForeignKeyConstraint baseColumnNames="tags_id"
-                                 baseTableName="submission"
-                                 constraintName="fk_submission_tags_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="tag_collection"/>
 
         <addForeignKeyConstraint baseColumnNames="user_id"
                                  baseTableName="submission"

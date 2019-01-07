@@ -14,24 +14,18 @@
     <property name="floatType" value="float4" dbms="postgresql, h2"/>
     <property name="floatType" value="float" dbms="mysql, oracle, mssql"/>
 
-    <!--
-        Added the entity TagCollectionTag.
-    -->
-    <changeSet id="20190106221208-1" author="jhipster">
-        <createTable tableName="tag_collection_tag">
-            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="collection_id" type="bigint">
+    <changeSet id="20190107123900" author="jhipster">
+        <addColumn tableName="submission">
+	        <column name="tags_id" type="bigint">
                 <constraints nullable="true" />
             </column>
-
-            <column name="tag_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
-
-            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here, do not remove-->
-        </createTable>        
+	    </addColumn> 
+	    
+         <addForeignKeyConstraint baseColumnNames="tags_id"
+                             baseTableName="submission"
+                             constraintName="fk_submission_tags_id"
+                             referencedColumnNames="id"
+                             referencedTableName="tag_collection"/>    
     </changeSet>
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here, do not remove-->
 </databaseChangeLog>

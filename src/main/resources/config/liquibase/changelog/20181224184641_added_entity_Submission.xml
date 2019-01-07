@@ -50,14 +50,6 @@
                 <constraints nullable="true" />
             </column>
 
-            <column name="security_key" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-
-            <column name="tags_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
-
             <column name="user_id" type="bigint">
                 <constraints nullable="true" />
             </column>
