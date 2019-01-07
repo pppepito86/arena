@@ -43,4 +43,6 @@ public interface CompetitionProblemService {
      * @param id the id of the entity
      */
     void delete(Long id);
+    
+    Optional<CompetitionProblemDTO> findOneByProblem(Long id);
 }

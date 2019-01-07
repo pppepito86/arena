@@ -15,6 +15,7 @@ export class TagComponent implements OnInit, OnDestroy {
     tags: ITag[];
     currentAccount: any;
     eventSubscriber: Subscription;
+    searchText = '';
 
     constructor(
         protected tagService: TagService,

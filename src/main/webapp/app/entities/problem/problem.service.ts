@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { IProblem } from 'app/shared/model/problem.model';
+import { ITag } from 'app/shared/model/tag.model';
 
 type EntityResponseType = HttpResponse<IProblem>;
 type EntityArrayResponseType = HttpResponse<IProblem[]>;
@@ -34,5 +35,27 @@ export class ProblemService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    getTags(problemId: number): Observable<HttpResponse<ITag[]>> {
+        const url = `${this.resourceUrl}/${problemId}/tags`;
+        return this.http.get<ITag[]>(url, { observe: 'response' });
+    }
+
+    updateTags(problemId: number, tags: ITag[]): Observable<HttpResponse<any>> {
+        let tagsCopy: ITag[] = [];
+        for (let tag of tags) {
+            let tagCopy = {
+                id: tag.id,
+                title: tag.title
+            };
+            if (typeof tagCopy.id === 'string') {
+                tagCopy.id = null;
+            }
+            tagsCopy.push(tagCopy);
+        }
+
+        const url = `${this.resourceUrl}/${problemId}/tags`;
+        return this.http.post(url, tagsCopy, { observe: 'response' });
     }
 }

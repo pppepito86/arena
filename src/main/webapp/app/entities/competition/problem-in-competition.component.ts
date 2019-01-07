@@ -8,6 +8,9 @@ import { ICompetition } from '../../shared/model/competition.model';
 import { JhiAlertService } from 'ng-jhipster';
 import { Title } from '@angular/platform-browser';
 import { ISubmission } from '../../shared/model/submission.model';
+import { TagService } from '../tag';
+import { ProblemService } from '../problem';
+import { ITag } from '../../shared/model/tag.model';
 
 @Component({
     selector: 'jhi-problem-in-competition',
@@ -20,13 +23,17 @@ export class ProblemInCompetitionComponent implements OnInit {
     isSubmitting: boolean;
     solution = '';
     tags = [];
-    autocompleteTags = ['Basic / Рисуване на фигури', 'Basic / Дати и време', 'Basic / Мерни единици'];
+    autocompleteTags: ITag[] = [];
+    tagStatus = 0;
+    tagStatusTimeout;
 
     constructor(
         private router: Router,
         protected activatedRoute: ActivatedRoute,
         protected competitionService: CompetitionService,
         protected jhiAlertService: JhiAlertService,
+        protected tagService: TagService,
+        protected problemService: ProblemService,
         private titleService: Title,
         private http: HttpClient
     ) {}
@@ -40,9 +47,23 @@ export class ProblemInCompetitionComponent implements OnInit {
             (res: HttpResponse<IProblem>) => {
                 this.problem = res.body;
                 this.titleService.setTitle(this.problem.title);
+                this.loadTags();
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
+
+        this.tagService
+            .query(true)
+            .subscribe(
+                (res: HttpResponse<ITag[]>) => (this.autocompleteTags = res.body),
+                (res: HttpErrorResponse) => this.onError(res.message)
+            );
+    }
+
+    private loadTags() {
+        this.problemService
+            .getTags(this.problem.id)
+            .subscribe((res: HttpResponse<ITag[]>) => (this.tags = res.body), (res: HttpErrorResponse) => this.onError(res.message));
     }
 
     protected onError(errorMessage: string) {
@@ -67,6 +88,14 @@ export class ProblemInCompetitionComponent implements OnInit {
     }
 
     onTagsChanged() {
-        console.log('change');
+        clearTimeout(this.tagStatusTimeout);
+        this.tagStatus = 1;
+        this.problemService.updateTags(this.problem.id, this.tags).subscribe(
+            res => {
+                this.tagStatus = 2;
+                this.tagStatusTimeout = setTimeout(() => (this.tagStatus = 0), 3000);
+            },
+            err => (this.tagStatus = 3)
+        );
     }
 }

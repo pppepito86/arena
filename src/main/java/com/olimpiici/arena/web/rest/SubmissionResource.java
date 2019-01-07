@@ -31,6 +31,7 @@ import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.util.RandomUtil;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -178,5 +179,22 @@ public class SubmissionResource {
         log.debug("REST request to delete Submission : {}", id);
         submissionService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+    
+    @PostMapping("/submissions/{id}/tags")
+    @Timed
+    public ResponseEntity updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
+    		throws URISyntaxException {
+        log.debug("REST updating tags for: {} {}", id, tags);
+        submissionService.updateTags(id, tags);
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/submissions/{id}/tags")
+    @Timed
+    public List<TagDTO> getTags(@PathVariable Long id)
+    		throws URISyntaxException {
+        log.debug("REST getting tags for: {}", id);
+        return submissionService.findTags(id);
     }
 }

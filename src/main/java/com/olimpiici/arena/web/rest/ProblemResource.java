@@ -25,6 +25,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
@@ -121,6 +122,25 @@ public class ProblemResource {
         log.debug("REST request to get Problem : {}", id);
         Optional<ProblemDTO> problemDTO = problemService.findOne(id);
         return ResponseUtil.wrapOrNotFound(problemDTO);
+    }
+    
+    @PostMapping("/problems/{id}/tags")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
+    		throws URISyntaxException {
+        log.debug("REST updating tags for: {} {}", id, tags);
+        problemService.updateTags(id, tags);
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/problems/{id}/tags")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public List<TagDTO> getTags(@PathVariable Long id)
+    		throws URISyntaxException {
+        log.debug("REST getting tags for: {}", id);
+        return problemService.findTags(id);
     }
 
     /**

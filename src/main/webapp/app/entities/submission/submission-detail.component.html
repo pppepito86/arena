@@ -11,16 +11,27 @@
             <div *ngIf="true">
                 <div *ngIf="submission?.points === 100">
                     <div class="col-12">
-                        <label> <b><span jhiTranslate="arenaApp.submission.pleaseTag">Tag your solution: </span></b></label> <br/>
+                        <label> <b><span jhiTranslate="arenaApp.submission.pleaseTag">Tag your solution: </span></b></label>
+                        <span [ngSwitch]="tagStatus">
+                            <span *ngSwitchCase="0"></span>
+                            <span *ngSwitchCase="1">(<span jhiTranslate="arenaApp.tag.status.updating"></span>)</span>
+                            <span *ngSwitchCase="2">(<span jhiTranslate="arenaApp.tag.status.updated"></span>)</span>
+                            <span *ngSwitchCase="3">(<span jhiTranslate="arenaApp.tag.status.error"></span>)</span>
+                        </span>
+                        <br/>
                         <span jhiTranslate="arenaApp.submission.tags"> </span>:
                         <tag-input [(ngModel)]='tags'
                                    secondaryPlaceholder = "Например Дейкстра, Графи..."
                                    placeholder=""
                                    (onAdd)="onTagsChanged($event)"
-                                   (onRemove)="onTagsChanged($event)">
+                                   (onRemove)="onTagsChanged($event)"
+                                   [identifyBy]="'id'"
+                                   [displayBy]="'title'">
                             <tag-input-dropdown
                                     minimumTextLength="2"
-                                    [autocompleteItems]='autocompleteTags'>
+                                    [autocompleteItems]='autocompleteTags'
+                                    [identifyBy]="'id'"
+                                    [displayBy]="'title'">
                             </tag-input-dropdown>
                         </tag-input>
                     </div>

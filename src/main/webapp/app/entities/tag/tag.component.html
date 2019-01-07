@@ -10,6 +10,8 @@
     </h2>
     <jhi-alert></jhi-alert>
     <br/>
+    Search: <input type="text" [(ngModel)]="searchText"/>
+
     <div class="table-responsive" *ngIf="tags">
         <table class="table table-striped">
             <thead>
@@ -22,7 +24,8 @@
             </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let tag of tags ;trackBy: trackId">
+            <ng-container *ngFor="let tag of tags ;trackBy: trackId">
+            <tr *ngIf="tag.title.toLowerCase().includes(searchText.toLowerCase())">
                 <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.id}}</a></td>
                 <td>{{tag.title}}</td>
                 <td>{{tag.keywords}}</td>
@@ -52,6 +55,7 @@
                     </div>
                 </td>
             </tr>
+            </ng-container>
             </tbody>
         </table>
     </div>

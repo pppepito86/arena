@@ -1,10 +1,20 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.Tag;
+import com.olimpiici.arena.domain.TagCollection;
+import com.olimpiici.arena.domain.TagCollectionTag;
 import com.olimpiici.arena.repository.ProblemRepository;
+import com.olimpiici.arena.repository.TagCollectionRepository;
+import com.olimpiici.arena.repository.TagCollectionTagRepository;
+import com.olimpiici.arena.repository.TagRepository;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
+import com.olimpiici.arena.service.mapper.TagMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service Implementation for managing Problem.
@@ -27,10 +41,32 @@ public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
 
     private final ProblemMapper problemMapper;
+    
+    private final TagCollectionTagRepository tagCollectionTagRepository;
+    
+    private final TagCollectionRepository tagCollectionRepository;
 
-    public ProblemServiceImpl(ProblemRepository problemRepository, ProblemMapper problemMapper) {
+    private final TagRepository tagRepository;
+    
+    private final TagMapper tagMapper;
+    
+    private final TagService tagService;
+    
+    
+    public ProblemServiceImpl(ProblemRepository problemRepository, 
+    		ProblemMapper problemMapper, 
+    		TagCollectionTagRepository tagCollectionTagRepository,
+    		TagCollectionRepository tagCollectionRepository,
+    		TagRepository tagRepository,
+    		TagMapper tagMapper,
+    		TagService tagService) {
         this.problemRepository = problemRepository;
         this.problemMapper = problemMapper;
+        this.tagCollectionTagRepository = tagCollectionTagRepository;
+        this.tagCollectionRepository = tagCollectionRepository;
+        this.tagRepository = tagRepository;
+        this.tagMapper = tagMapper;
+        this.tagService = tagService;
     }
 
     /**
@@ -86,5 +122,25 @@ public class ProblemServiceImpl implements ProblemService {
     public void delete(Long id) {
         log.debug("Request to delete Problem : {}", id);
         problemRepository.deleteById(id);
+    }
+    
+    @Override
+    public List<TagDTO> findTags(Long id) {
+    	Problem problem = problemRepository.getOne(id);
+    	return tagService.findTagsForCollection(problem.getTags())
+	    	.map(tagMapper::toDto)
+			.collect(Collectors.toList());
+    }
+    
+    @Override
+    public void updateTags(Long id, List<TagDTO> newTags) {
+    	Problem problem = problemRepository.getOne(id);
+    	TagCollection newCollection	= 
+    			tagService.updateTagsForCollection(problem.getTags(), newTags);
+    	
+    	if (problem.getTags() == null) {
+	    	problem.setTags(newCollection);
+			problemRepository.save(problem);
+    	}
     }
 }

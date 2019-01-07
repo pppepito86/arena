@@ -1,10 +1,12 @@
 package com.olimpiici.arena.service;
 
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,4 +45,8 @@ public interface ProblemService {
      * @param id the id of the entity
      */
     void delete(Long id);
+    
+    public List<TagDTO> findTags(Long id);
+
+	void updateTags(Long id, List<TagDTO> newTags);
 }

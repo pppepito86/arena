@@ -1,9 +1,14 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
@@ -13,9 +18,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing Tag.
@@ -30,8 +37,12 @@ public class TagResource {
 
     private final TagService tagService;
 
-    public TagResource(TagService tagService) {
+    private final CompetitionProblemService competitionProblemService;
+    
+    public TagResource(TagService tagService,
+    		CompetitionProblemService competitionProblemService) {
         this.tagService = tagService;
+        this.competitionProblemService = competitionProblemService;
     }
 
     /**
@@ -83,9 +94,13 @@ public class TagResource {
      */
     @GetMapping("/tags")
     @Timed
-    public List<TagDTO> getAllTags() {
-        log.debug("REST request to get all Tags");
-        return tagService.findAll();
+    public List<TagDTO> getAllTags(@RequestParam("publicOnly") Optional<Boolean> publicOnly) {
+    	log.debug("REST request to get all Tags");
+    	if(publicOnly.isPresent() && publicOnly.get() == true) {
+    		return tagService.findAllPublic();
+    	} else {
+    		return tagService.findAll();
+    	}
     }
 
     /**
@@ -101,6 +116,36 @@ public class TagResource {
         Optional<TagDTO> tagDTO = tagService.findOne(id);
         return ResponseUtil.wrapOrNotFound(tagDTO);
     }
+    
+    @GetMapping("/tags/{id}/problems")
+    @Timed
+    public List<CompetitionProblemDTO> getTagProblem(@PathVariable Long id) {
+        log.debug("REST request to get Tag : {}", id);
+        
+        List<ProblemDTO> problems = tagService.problemsForTag(id);
+        Map<Long, ProblemDTO> idToProblem = new HashMap<>();;
+        problems.stream()
+        	.forEach(problem -> idToProblem.put(problem.getId(), problem));
+        
+        List<CompetitionProblemDTO> problemsDTO = problems  
+        		.stream()
+        		.map(cp -> competitionProblemService.findOneByProblem(cp.getId()))
+        		.filter(optional -> optional.isPresent())
+        		.map(optional -> optional.get())
+        		.map(dto -> {
+        			dto.setTitle(idToProblem.get(dto.getProblemId()).getTitle());
+        			return dto;
+        		}).collect(Collectors.toList());
+        
+        return problemsDTO;
+    }
+    @GetMapping("/tags/{id}/submissions")
+    @Timed
+    public List<SubmissionDTO> getTagSubmissions(@PathVariable Long id) {
+        log.debug("REST request to get Tag : {}", id);
+        return tagService.submissionsForTag(id);
+    }
+    
 
     /**
      * DELETE  /tags/:id : delete the "id" tag.

@@ -1,6 +1,9 @@
 package com.olimpiici.arena.repository;
 
 import com.olimpiici.arena.domain.Problem;
+
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +14,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
-
+	Optional<Problem> findByTagsId(Long tagsId);
 }

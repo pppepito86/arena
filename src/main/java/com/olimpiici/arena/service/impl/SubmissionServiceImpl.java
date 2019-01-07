@@ -2,17 +2,22 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
+import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
+import com.olimpiici.arena.service.mapper.TagMapper;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -50,19 +55,27 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final SubmissionMapper submissionMapper;
     
     private final ApplicationProperties applicationProperties;
+    
+    private final TagService tagService;
 
+    private final TagMapper tagMapper;
+    
     public SubmissionServiceImpl(SubmissionRepository submissionRepository, 
     		SubmissionMapper submissionMapper,
     		CompetitionProblemRepository competitionProblemRepository,
     		UserRepository userRepository,
     		CompetitionRepository competitionRepository,
-    		ApplicationProperties applicationProperties) {
+    		ApplicationProperties applicationProperties,
+    		TagService tagService,
+    		TagMapper tagMapper) {
         this.submissionRepository = submissionRepository;
         this.submissionMapper = submissionMapper;
         this.competitionProblemRepository = competitionProblemRepository;
         this.userRepository = userRepository;
         this.competitionRepository = competitionRepository;
         this.applicationProperties = applicationProperties;
+        this.tagService = tagService;
+        this.tagMapper = tagMapper;
     }
 
     /**
@@ -201,6 +214,24 @@ public class SubmissionServiceImpl implements SubmissionService {
 		
 	}
 
-	
+    @Override
+    public List<TagDTO> findTags(Long id) {
+    	Submission submission = submissionRepository.getOne(id);
+    	return tagService.findTagsForCollection(submission.getTags())
+	    	.map(tagMapper::toDto)
+			.collect(Collectors.toList());
+    }
+    
+    @Override
+    public void updateTags(Long id, List<TagDTO> newTags) {
+    	Submission submission = submissionRepository.getOne(id);
+    	TagCollection newCollection	= 
+    			tagService.updateTagsForCollection(submission.getTags(), newTags);
+    	
+    	if (submission.getTags() == null) {
+    		submission.setTags(newCollection);
+    		submissionRepository.save(submission);
+    	}
+    }
 
 }

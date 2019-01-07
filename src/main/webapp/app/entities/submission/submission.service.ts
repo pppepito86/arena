@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { ISubmission } from 'app/shared/model/submission.model';
+import { ITag } from '../../shared/model/tag.model';
 
 type EntityResponseType = HttpResponse<ISubmission>;
 type EntityArrayResponseType = HttpResponse<ISubmission[]>;
@@ -69,6 +70,28 @@ export class SubmissionService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    getTags(submissionId: number): Observable<HttpResponse<ITag[]>> {
+        const url = `${this.resourceUrl}/${submissionId}/tags`;
+        return this.http.get<ITag[]>(url, { observe: 'response' });
+    }
+
+    updateTags(submissionId: number, tags: ITag[]): Observable<HttpResponse<any>> {
+        let tagsCopy: ITag[] = [];
+        for (let tag of tags) {
+            let tagCopy = {
+                id: tag.id,
+                title: tag.title
+            };
+            if (typeof tagCopy.id === 'string') {
+                tagCopy.id = null;
+            }
+            tagsCopy.push(tagCopy);
+        }
+
+        const url = `${this.resourceUrl}/${submissionId}/tags`;
+        return this.http.post(url, tagsCopy, { observe: 'response' });
     }
 
     protected convertDateFromClient(submission: ISubmission): ISubmission {

@@ -19,9 +19,9 @@
             "keywords": "Keywords",
             "visible": "Visible",
             "status": {
-                "updating": "updating...",
-                "updated": "updated",
-                "error": "error"
+                "updating": "обновяване...",
+                "updated": "обновено",
+                "error": "грешка"
             }
         }
     }

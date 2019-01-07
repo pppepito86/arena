@@ -1,6 +1,8 @@
 package com.olimpiici.arena.service;
 
+import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.service.dto.TagCollectionTagDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,4 +42,5 @@ public interface TagCollectionTagService {
      * @param id the id of the entity
      */
     void delete(Long id);
+
 }

@@ -1,6 +1,7 @@
 package com.olimpiici.arena.repository;
 
 import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.User;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Spring Data  repository for the Submission entity.
@@ -49,4 +51,5 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     
     List<Submission> findByVerdict(String verdict);
     
+    Optional<Submission> findByTagsId(Long tagsId);
 }

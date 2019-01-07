@@ -5,6 +5,9 @@ import { Observable } from 'rxjs';
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { ITag } from 'app/shared/model/tag.model';
+import { IProblem } from '../../shared/model/problem.model';
+import { ISubmission } from '../../shared/model/submission.model';
+import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
 
 type EntityResponseType = HttpResponse<ITag>;
 type EntityArrayResponseType = HttpResponse<ITag[]>;
@@ -27,12 +30,24 @@ export class TagService {
         return this.http.get<ITag>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
 
-    query(req?: any): Observable<EntityArrayResponseType> {
+    query(publicOnly?: boolean, req?: any): Observable<EntityArrayResponseType> {
         const options = createRequestOption(req);
-        return this.http.get<ITag[]>(this.resourceUrl, { params: options, observe: 'response' });
+        let url = this.resourceUrl;
+        if (publicOnly == true) url += '?publicOnly=true';
+        return this.http.get<ITag[]>(url, { params: options, observe: 'response' });
     }
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    findProblems(id: number): Observable<HttpResponse<ICompetitionProblem[]>> {
+        const url = `${this.resourceUrl}/${id}/problems`;
+        return this.http.get<ICompetitionProblem[]>(url, { observe: 'response' });
+    }
+
+    findSubmissions(id: number): Observable<HttpResponse<ISubmission[]>> {
+        const url = `${this.resourceUrl}/${id}/submissions`;
+        return this.http.get<IProblem[]>(url, { observe: 'response' });
     }
 }

@@ -9,10 +9,13 @@
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
             "entities": {
                 "main": "Entities",
-                "competition": "Competition",
-                "problem": "Problem",
+                "competition": "Състезания",
+                "problem": "Задачи",
                 "competitionProblem": "Competition Problem",
-                "submission": "Submission",
+                "submission": "Решения",
+                "tagCollection": "Tag Collection",
+                "tag": "Тагове",
+                "tagCollectionTag": "Tag Collection Tag",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {
@@ -26,7 +29,7 @@
             },
             "admin": {
                 "main": "Администрация",
-                "userManagement": "User management",
+                "userManagement": "Потребители",
                 "tracker": "User tracker",
                 "metrics": "Metrics",
                 "health": "Health",

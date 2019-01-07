@@ -4,6 +4,7 @@ import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
+import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import org.slf4j.Logger;
@@ -93,4 +94,14 @@ public class CompetitionProblemServiceImpl implements CompetitionProblemService 
         log.debug("Request to delete CompetitionProblem : {}", id);
         competitionProblemRepository.deleteById(id);
     }
+
+	@Override
+	public Optional<CompetitionProblemDTO> findOneByProblem(Long id) {
+		Optional<CompetitionProblem> cp = competitionProblemRepository.findOneByProblemId(id);
+		if(cp.isPresent()) {
+			return Optional.of(competitionProblemMapper.toDto(cp.get()));
+		} else {
+			return Optional.empty();
+		}
+	}
 }

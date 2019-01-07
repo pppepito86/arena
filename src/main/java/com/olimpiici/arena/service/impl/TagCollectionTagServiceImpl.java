@@ -1,9 +1,11 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.TagCollectionTagService;
+import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.domain.TagCollectionTag;
 import com.olimpiici.arena.repository.TagCollectionTagRepository;
 import com.olimpiici.arena.service.dto.TagCollectionTagDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.TagCollectionTagMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,5 +89,5 @@ public class TagCollectionTagServiceImpl implements TagCollectionTagService {
     public void delete(Long id) {
         log.debug("Request to delete TagCollectionTag : {}", id);
         tagCollectionTagRepository.deleteById(id);
-    }
+    }  
 }

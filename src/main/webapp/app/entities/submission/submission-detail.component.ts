@@ -7,6 +7,8 @@ import { SubmissionService } from './submission.service';
 import { CompetitionProblemService } from '../competition-problem';
 import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
 import { JhiAlertService } from 'ng-jhipster';
+import { ITag } from '../../shared/model/tag.model';
+import { TagService } from '../tag';
 
 @Component({
     styleUrls: ['./submission-detail.css'],
@@ -23,116 +25,14 @@ export class SubmissionDetailComponent implements OnInit {
     testDetails: any;
     submissionDetails: any;
     tags = [];
-    autocompleteTags = [
-        'Basic / Рисуване на фигури',
-        'Basic / Дати и време',
-        'Basic / Мерни единици',
-        'Basic / Масиви',
-        'Basic / Цикли',
-        'Basic / Низове (string)',
-        'Basic / Char',
-        'Префиксни суми (prefix array)',
-        'Нестандартен вход / изход',
-        'Сортиране с броене (counting sort)',
-        'Броене с масив (counting)',
-        'Разделяне на последователности',
-        'Метод на показалките / 2-pointers',
-        'Сортиране (sorting)',
-        'Дълги числа (Big numbers)',
-        'Двумерни и многомерни масиви',
-        'Рекурсия (recursion)',
-        'Търсене с връщане (backtracking)',
-        'Сложна имплементация',
-        'Игри',
-        'Побитови операции',
-        'Двоично търсене (binary search)',
-        'Троично търсене (ternary search)',
-        'Двоичо дърво (binary tree)',
-        'Комбинаторни конфигурации и преброяване',
-        'Аритметчни изрази',
-        'Числа на Каталан',
-        'Биномни коефициенти',
-        'Редици на Грей',
-        'Математика',
-        'Математика / НОД - Алгоритъм на Евклид',
-        'Математика / Прости числа',
-        'Математика / Решето на Ератостен',
-        'Математика / Степенуване',
-        'Математика / Дроби',
-        'Математика / lg(N) Степенуване',
-        'Математика / Ератостен',
-        'Математика / Бройни системи',
-        'Математика / Разширен алгоритъм на Евклид',
-        'Математика / Теория на числата',
-        'Математика / Системи линейни уравнения',
-        'Математика / Матрици',
-        'Математика / Китайска теорема за остатъците',
-        'STL',
-        'STL / vector',
-        'STL / bitset',
-        'STL / Стек (queue)',
-        'STL / Опашка (queue)',
-        'STL / Приоритетна опашка (priority_queue)',
-        'STL / Set',
-        'STL / Map',
-        'Greedy',
-        'Bruteforce',
-        'Precomputing',
-        'Динамично програмиране (Dynamic programming)',
-        'Двоично търсене по отговора (binary search)',
-        'Разделяй и владей (divide and conquer)',
-        'Meet in the middle',
-        'Геометрия',
-        'Геометрия / Ориентирани лица',
-        'Геометрия / Изпъкнала обвивка',
-        'Геометрия / Пресичане на прави',
-        'Геометрия / Метяща права (sweep line)',
-        'Геометрия / Ротации',
-        'Графи',
-        'Графи / Търсене в ширина (BFS)',
-        'Графи / Търсене в дълбочина (DFS)',
-        'Графи / Дейкстра (Dijkstra)',
-        'Графи / Floyd Warshall',
-        'Графи / Bellman-Ford',
-        'Графи / Топологично сортиране',
-        'Графи / Потоци (Flow)',
-        'Графи / Планарни графи',
-        'Графи / Хамилтонови цикли',
-        'Графи / Ойлерови цикли',
-        'Графи / Силна свързаност',
-        'Графи / Matching / двойкосъчетания',
-        'Графи / Покриващо дърво (Spanning tree)',
-        'Advanced / Дърво на Фенуик (Fenwick, BIT)',
-        'Advanced / Сегментно дърво',
-        'Advanced / Интервално дърво',
-        'Advanced / Rabin Karp (hashing)',
-        'Advanced / KMP',
-        'Advanced / Z функция',
-        'Advanced / Aho Corasick',
-        'Advanced / Suffix Tree',
-        'Advanced / Kодове на Хафман',
-        'Advanced / Формални граматики, автомати',
-        'Advanced / Диаграми на Вороной',
-        'Advanced / SQRT Decomposition',
-        'Advanced / Непрекъснати задачи',
-        'Advanced / Рандомизиран алгоритъм',
-        'Advanced / Sparse Table',
-        'Advanced / Union Find / Disjoint Set Union',
-        'Advanced / Пирамида (heap)',
-        'Advanced / FFT, NTT',
-        'Advanced / 2-sat',
-        'Advanced / Trie',
-        'Advanced / Treap',
-        'Advanced / RMQ',
-        'Advanced / LCA',
-        'Advanced / Heavy-light decompozition',
-        'Динамично по профил (dynamic programming)',
-        'Advanced / Хеширане (hashing)'
-    ];
+    autocompleteTags: ITag[] = [];
+    tagStatus = 0;
+    tagStatusTimeout;
 
     constructor(
         protected activatedRoute: ActivatedRoute,
         private submissionService: SubmissionService,
+        private tagService: TagService,
         private competitionProblemService: CompetitionProblemService,
         protected jhiAlertService: JhiAlertService
     ) {}
@@ -147,6 +47,7 @@ export class SubmissionDetailComponent implements OnInit {
         this.submissionService.find(this.submissionId, this.securityKey).subscribe(
             res => {
                 this.submission = res.body;
+
                 this.submissionDetails = JSON.parse(res.body.details);
                 this.parseTestDetails();
                 this.submissionId = this.submission.id;
@@ -169,6 +70,20 @@ export class SubmissionDetailComponent implements OnInit {
                 this.jhiAlertService.error(res.message, null, null);
             }
         );
+
+        this.tagService
+            .query(true)
+            .subscribe(
+                (res: HttpResponse<ITag[]>) => (this.autocompleteTags = res.body),
+                error => this.jhiAlertService.error(error.message, null, null)
+            );
+
+        this.submissionService
+            .getTags(this.submissionId)
+            .subscribe(
+                (res: HttpResponse<ITag[]>) => (this.tags = res.body),
+                error => this.jhiAlertService.error(error.message, null, null)
+            );
     }
 
     parseTestDetails() {
@@ -208,6 +123,15 @@ export class SubmissionDetailComponent implements OnInit {
     }
 
     onTagsChanged() {
-        console.log('change');
+        clearTimeout(this.tagStatusTimeout);
+        this.tagStatus = 1;
+
+        this.submissionService.updateTags(this.submissionId, this.tags).subscribe(
+            res => {
+                this.tagStatus = 2;
+                this.tagStatusTimeout = setTimeout(() => (this.tagStatus = 0), 3000);
+            },
+            err => (this.tagStatus = 3)
+        );
     }
 }

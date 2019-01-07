@@ -1,7 +1,7 @@
 <div class="row justify-content-center">
     <div class="col-8">
         <div *ngIf="tag">
-            <h2><span jhiTranslate="arenaApp.tag.detail.title">Tag</span> {{tag.id}}</h2>
+            <h2><span jhiTranslate="arenaApp.tag.detail.title">Tag</span> {{tag.title}}</h2>
             <hr>
             <jhi-alert-error></jhi-alert-error>
             <dl class="row-md jh-entity-details">
@@ -16,6 +16,22 @@
                 <dt><span jhiTranslate="arenaApp.tag.visible">Visible</span></dt>
                 <dd>
                     <span>{{tag.visible}}</span>
+                </dd>
+                <dt>Problems</dt>
+                <dd>
+                    <ul>
+                        <li *ngFor="let problem of problems">
+                            <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
+                        </li>
+                    </ul>
+                </dd>
+                <dt>Submissions</dt>
+                <dd>
+                    <ul>
+                        <li *ngFor="let submission of submissions">
+                            <a [routerLink]="['/submission', submission.id, 'view']">{{submission.id}}</a>
+                        </li>
+                    </ul>
                 </dd>
             </dl>
 

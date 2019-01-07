@@ -3,6 +3,7 @@ package com.olimpiici.arena.service;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,4 +65,8 @@ public interface SubmissionService {
 	List<SubmissionDTO> findSubmissionByVerdict(String verdict);
     
     String findSubmissionCode(Long id);
+    
+    public List<TagDTO> findTags(Long id);
+
+	void updateTags(Long id, List<TagDTO> newTags);
 }

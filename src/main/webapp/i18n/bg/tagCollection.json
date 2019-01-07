@@ -1,0 +1,20 @@
+{
+    "arenaApp": {
+        "tagCollection": {
+            "home": {
+                "title": "Tag Collections",
+                "createLabel": "Create a new Tag Collection",
+                "createOrEditLabel": "Create or edit a Tag Collection"
+            },
+            "created": "A new Tag Collection is created with identifier {{ param }}",
+            "updated": "A Tag Collection is updated with identifier {{ param }}",
+            "deleted": "A Tag Collection is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Tag Collection {{ id }}?"
+            },
+            "detail": {
+                "title": "Tag Collection"
+            }
+        }
+    }
+}
