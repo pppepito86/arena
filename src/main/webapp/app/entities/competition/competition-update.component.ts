@@ -141,17 +141,21 @@ export class CompetitionUpdateComponent implements OnInit {
 
     onSubProblemAdded(subProblemId: number) {
         // console.log("addign ", this.newSubCompetitionId);
-        this.problemService
-            .find(subProblemId)
-            .subscribe(
-                (res: HttpResponse<IProblem>) => this.children_problems.push(res.body),
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
+        this.problemService.find(subProblemId).subscribe(
+            (res: HttpResponse<IProblem>) =>
+                this.children_problems.push({
+                    problemId: res.body.id,
+                    competitionId: this.competition.id,
+                    title: res.body.title
+                }),
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     onSubProblemRemove(subProblemId: number) {
+        console.log(this.children_problems);
         for (let i = 0; i < this.children_problems.length; i++) {
-            if (this.children_problems[i].id == subProblemId) {
+            if (this.children_problems[i].problemId === subProblemId) {
                 this.children_problems.splice(i, 1);
                 break;
             }

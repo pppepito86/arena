@@ -11,6 +11,7 @@ import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.CompetitionRepository;
+import com.olimpiici.arena.repository.ProblemRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
@@ -74,6 +75,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     private final SubmissionService submissionService;
     
     private final UserRepository userRepository;
+    
+    private final ProblemRepository problemRepository;
 
     public CompetitionServiceImpl(CompetitionRepository competitionRepository, 
     		CompetitionProblemRepository competitionProblemRepository, 
@@ -83,7 +86,8 @@ public class CompetitionServiceImpl implements CompetitionService {
     		SubmissionRepository submissionRepository,
     		SubmissionMapper submissionMapper,
     		SubmissionService submissionService,
-    		UserRepository userRepository) {
+    		UserRepository userRepository,
+    		ProblemRepository problemRepository) {
         this.competitionRepository = competitionRepository;
         this.competitionMapper = competitionMapper;
         this.problemMapper = problemMapper;
@@ -93,6 +97,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         this.submissionMapper = submissionMapper;
         this.submissionService = submissionService;
         this.userRepository = userRepository;
+        this.problemRepository = problemRepository;
     }
 
     /**
@@ -384,7 +389,7 @@ public class CompetitionServiceImpl implements CompetitionService {
 			boolean change = false;
 			
 			
-			if (competition.getParent().getId() != parent.getId()) {
+			if (competition.getParent() == null || competition.getParent().getId() != parent.getId()) {
 				change = true;
 				competition.setParent(parent);
 			}
@@ -416,22 +421,33 @@ public class CompetitionServiceImpl implements CompetitionService {
 		}
 		Set<Long> childrenIds = new HashSet<>();
 		for (CompetitionProblemDTO dto : newSubProblems) {
-			childrenIds.add(dto.getId());
-			CompetitionProblem cp = competitionProblemRepository.getOne(dto.getId());
+			
+			CompetitionProblem cp;
 			boolean change = false;
-			if(cp.getCompetition().getId() != parent.getId()) {
+			if (dto.getId() != null) {			
+				cp = competitionProblemRepository.getOne(dto.getId());
+			} else {
+				change = true;
+				cp = new CompetitionProblem();
+				cp.setCompetition(parent);
+				Problem problem = problemRepository.getOne(dto.getProblemId());
+				cp.setProblem(problem);
+			}
+
+			if (cp.getCompetition().getId() != parent.getId()) {
 				change = true;
 				cp.setCompetition(parent);
 			}
-			
-			if(cp.getOrder() != dto.getOrder()) {
+
+			if (cp.getOrder() != dto.getOrder()) {
 				change = true;
 				cp.setOrder(dto.getOrder());
 			}
 			
 			if (change) {
-				competitionProblemRepository.save(cp);
+				cp = competitionProblemRepository.save(cp);
 			}
+			childrenIds.add(cp.getId());
 		}
 		
 		competitionProblemRepository

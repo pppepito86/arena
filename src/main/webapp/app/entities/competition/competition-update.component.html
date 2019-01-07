@@ -79,14 +79,14 @@
                                         }">
                         <ng-template let-item>
                             <div >
-                                {{item.title}} ({{item.id}})
+                                {{item.title}} ({{item.problemId}})
                             </div>
                         </ng-template>
                     </ngx-sortable>
                     <br/>
                     <input class="form-control" type="number" [(ngModel)]="newSubProblemId"/>
                     <button class="btn btn-primary" (click)="onSubProblemAdded(newSubProblemId)">Add</button>
-                    <button class="btn btn-primary" (click)="onSubCompetitionRemove(newSubProblemId)">Remove</button>
+                    <button class="btn btn-primary" (click)="onSubProblemRemove(newSubProblemId)">Remove</button>
                     <br/>
                 </div>
 
