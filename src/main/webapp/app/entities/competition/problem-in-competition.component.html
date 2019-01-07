@@ -34,8 +34,8 @@
                     <tag-input [(ngModel)]='tags'
                                secondaryPlaceholder = "Например Дейкстра, Графи..."
                                placeholder=""
-                               (onAdd)="onTagsChanged($event)"
-                               (onRemove)="onTagsChanged($event)"
+                               (onAdd)="onTagsChanged()"
+                               (onRemove)="onTagsChanged()"
                                [identifyBy]="'id'"
                                [displayBy]="'title'">
                         <tag-input-dropdown

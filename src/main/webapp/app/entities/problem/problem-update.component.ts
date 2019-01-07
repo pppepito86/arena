@@ -17,8 +17,6 @@ export class ProblemUpdateComponent implements OnInit {
     problem: IProblem;
     isSaving: boolean;
 
-    tagcollections: ITagCollection[];
-
     constructor(
         protected jhiAlertService: JhiAlertService,
         protected problemService: ProblemService,
@@ -31,12 +29,6 @@ export class ProblemUpdateComponent implements OnInit {
         this.activatedRoute.data.subscribe(({ problem }) => {
             this.problem = problem;
         });
-        this.tagCollectionService.query().subscribe(
-            (res: HttpResponse<ITagCollection[]>) => {
-                this.tagcollections = res.body;
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-        );
     }
 
     previousState() {
