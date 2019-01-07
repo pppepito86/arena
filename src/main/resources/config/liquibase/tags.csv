@@ -1,0 +1,105 @@
+id;title;keywords;visible
+1;Basic / Рисуване на фигури;;true
+2;Basic / Дати и време;;true
+3;Basic / Мерни единици;;true
+4;Basic / Масиви;;true
+5;Basic / Цикли;;true
+6;Basic / Низове (string);;true
+7;Basic / Char;;true
+8;Префиксни суми (prefix array);;true
+9;Нестандартен вход / изход;;true
+10;Сортиране с броене (counting sort);;true
+11;Броене с масив (counting);;true
+12;Разделяне на последователности;;true
+13;Метод на показалките / 2-pointers;;true
+14;Сортиране (sorting);;true
+15;Дълги числа (Big numbers);;true
+16;Двумерни и многомерни масиви;;true
+17;Рекурсия (recursion);;true
+18;Търсене с връщане (backtracking);;true
+19;Сложна имплементация;;true
+20;Игри;;true
+21;Побитови операции;;true
+22;Двоично търсене (binary search);;true
+23;Троично търсене (ternary search);;true
+24;Двоичо дърво (binary tree);;true
+25;Комбинаторни конфигурации и преброяване;;true
+26;Аритметчни изрази;;true
+27;Числа на Каталан;;true
+28;Биномни коефициенти;;true
+29;Редици на Грей;;true
+30;Математика;;true
+31;Математика / НОД - Алгоритъм на Евклид;;true
+32;Математика / Прости числа;;true
+33;Математика / Решето на Ератостен;;true
+34;Математика / Степенуване;;true
+35;Математика / Дроби;;true
+36;Математика / lg(N) Степенуване;;true
+37;Математика / Ератостен;;true
+38;Математика / Бройни системи;;true
+39;Математика / Разширен алгоритъм на Евклид;;true
+40;Математика / Теория на числата;;true
+41;Математика / Системи линейни уравнения;;true
+42;Математика / Матрици;;true
+43;Математика / Китайска теорема за остатъците;;true
+44;STL;;true
+45;STL / vector;;true
+46;STL / bitset;;true
+47;STL / Стек (queue);;true
+48;STL / Опашка (queue);;true
+49;STL / Приоритетна опашка (priority_queue);;true
+50;STL / Set;;true
+51;STL / Map;;true
+52;Greedy;;true
+53;Bruteforce;;true
+54;Precomputing;;true
+55;Динамично програмиране (Dynamic programming);;true
+56;Двоично търсене по отговора (binary search);;true
+57;Разделяй и владей (divide and conquer);;true
+58;Meet in the middle;;true
+59;Геометрия;;true
+60;Геометрия / Ориентирани лица;;true
+61;Геометрия / Изпъкнала обвивка;;true
+62;Геометрия / Пресичане на прави;;true
+63;Геометрия / Метяща права (sweep line);;true
+64;Геометрия / Ротации;;true
+65;Графи;;true
+66;Графи / Търсене в ширина (BFS);;true
+67;Графи / Търсене в дълбочина (DFS);;true
+68;Графи / Дейкстра (Dijkstra);;true
+69;Графи / Floyd Warshall;;true
+70;Графи / Bellman-Ford;;true
+71;Графи / Топологично сортиране;;true
+72;Графи / Потоци (Flow);;true
+73;Графи / Планарни графи;;true
+74;Графи / Хамилтонови цикли;;true
+75;Графи / Ойлерови цикли;;true
+76;Графи / Силна свързаност;;true
+77;Графи / Matching / двойкосъчетания;;true
+78;Графи / Покриващо дърво (Spanning tree);;true
+79;Advanced / Дърво на Фенуик (Fenwick, BIT);;true
+80;Advanced / Сегментно дърво;;true
+81;Advanced / Интервално дърво;;true
+82;Advanced / Rabin Karp (hashing);;true
+83;Advanced / KMP;;true
+84;Advanced / Z функция;;true
+85;Advanced / Aho Corasick;;true
+86;Advanced / Suffix Tree;;true
+87;Advanced / Kодове на Хафман;;true
+88;Advanced / Формални граматики, автомати;;true
+89;Advanced / Диаграми на Вороной;;true
+90;Advanced / SQRT Decomposition;;true
+91;Advanced / Непрекъснати задачи;;true
+92;Advanced / Рандомизиран алгоритъм;;true
+93;Advanced / Sparse Table;;true
+94;Advanced / Union Find / Disjoint Set Union;;true
+95;Advanced / Пирамида (heap);;true
+96;Advanced / FFT, NTT;;true
+97;Advanced / 2-sat;;true
+98;Advanced / Trie;;true
+99;Advanced / Treap;;true
+100;Advanced / RMQ;;true
+101;Advanced / LCA;;true
+102;Advanced / Heavy-light decompozition;;true
+103;Динамично по профил (dynamic programming);;true
+104;Advanced / Хеширане (hashing);;true
