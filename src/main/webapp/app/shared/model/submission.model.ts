@@ -10,6 +10,7 @@ export interface ISubmission {
     memoryInBytes?: number;
     uploadDate?: Moment;
     securityKey?: string;
+    tagsId?: number;
     userId?: number;
     competitionProblemId?: number;
     code?: string;
@@ -31,6 +32,7 @@ export class Submission implements ISubmission {
         public memoryInBytes?: number,
         public uploadDate?: Moment,
         public securityKey?: string,
+        public tagsId?: number,
         public userId?: number,
         public competitionProblemId?: number,
         public code?: string,

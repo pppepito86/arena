@@ -13,6 +13,9 @@
                 "problem": "Problem",
                 "competitionProblem": "Competition Problem",
                 "submission": "Submission",
+                "tagCollection": "Tag Collection",
+                "tag": "Tag",
+                "tagCollectionTag": "Tag Collection Tag",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {

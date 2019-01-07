@@ -8,6 +8,8 @@ import { JhiAlertService } from 'ng-jhipster';
 
 import { ISubmission } from 'app/shared/model/submission.model';
 import { SubmissionService } from './submission.service';
+import { ITagCollection } from 'app/shared/model/tag-collection.model';
+import { TagCollectionService } from 'app/entities/tag-collection';
 import { IUser, UserService } from 'app/core';
 import { ICompetitionProblem } from 'app/shared/model/competition-problem.model';
 import { CompetitionProblemService } from 'app/entities/competition-problem';
@@ -20,6 +22,8 @@ export class SubmissionUpdateComponent implements OnInit {
     submission: ISubmission;
     isSaving: boolean;
 
+    tagcollections: ITagCollection[];
+
     users: IUser[];
 
     competitionproblems: ICompetitionProblem[];
@@ -28,6 +32,7 @@ export class SubmissionUpdateComponent implements OnInit {
     constructor(
         protected jhiAlertService: JhiAlertService,
         protected submissionService: SubmissionService,
+        protected tagCollectionService: TagCollectionService,
         protected userService: UserService,
         protected competitionProblemService: CompetitionProblemService,
         protected activatedRoute: ActivatedRoute
@@ -39,6 +44,12 @@ export class SubmissionUpdateComponent implements OnInit {
             this.submission = submission;
             this.uploadDate = this.submission.uploadDate != null ? this.submission.uploadDate.format(DATE_TIME_FORMAT) : null;
         });
+        this.tagCollectionService.query().subscribe(
+            (res: HttpResponse<ITagCollection[]>) => {
+                this.tagcollections = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
         this.userService.query().subscribe(
             (res: HttpResponse<IUser[]>) => {
                 this.users = res.body;
@@ -82,6 +93,10 @@ export class SubmissionUpdateComponent implements OnInit {
 
     protected onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
+    }
+
+    trackTagCollectionById(index: number, item: ITagCollection) {
+        return item.id;
     }
 
     trackUserById(index: number, item: IUser) {

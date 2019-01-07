@@ -26,6 +26,7 @@
             "constraints": "Constraints",
             "time": "Time",
             "memory": "Memory"
+            "tags": "Tags"
         }
     }
 }

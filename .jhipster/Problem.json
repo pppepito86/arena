@@ -14,7 +14,14 @@
             "fieldType": "Integer"
         }
     ],
-    "relationships": [],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "tags",
+            "otherEntityName": "tagCollection",
+            "otherEntityField": "id"
+        }
+    ],
     "changelogDate": "20181224184639",
     "entityTableName": "problem",
     "dto": "mapstruct",

@@ -27,6 +27,8 @@ public class SubmissionDTO implements Serializable {
 
     private String securityKey;
 
+    private Long tagsId;
+
     private Long userId;
 
     private Long competitionProblemId;
@@ -163,6 +165,14 @@ public class SubmissionDTO implements Serializable {
         this.securityKey = securityKey;
     }
 
+    public Long getTagsId() {
+        return tagsId;
+    }
+
+    public void setTagsId(Long tagCollectionId) {
+        this.tagsId = tagCollectionId;
+    }
+
     public Long getUserId() {
         return userId;
     }
@@ -212,6 +222,7 @@ public class SubmissionDTO implements Serializable {
             ", memoryInBytes=" + getMemoryInBytes() +
             ", uploadDate='" + getUploadDate() + "'" +
             ", securityKey='" + getSecurityKey() + "'" +
+            ", tags=" + getTagsId() +
             ", user=" + getUserId() +
             ", competitionProblem=" + getCompetitionProblemId() +
             "}";

@@ -32,5 +32,5 @@
         "jwtSecretKey": "NGQ0NmU0ZTAwNWZiMDY0NzA4ODM5MDBjYTkyNzE2M2ViODRiOGY3NWI1N2UwNDRjOWIzYTY4OTM2NjZiMzgyNzkzYmYzZDU5MTJkZDRlNTk0ODM0YTkxYzBlYWJhN2UzNzI5N2EwYjg3Njg4ZmJkYjE3ZTAxNzM2Zjk2NmQwMTM=",
         "otherModules": []
     },
-    "entities": ["Competition", "Problem", "CompetitionProblem", "Submission"]
+    "entities": ["Competition", "TagCollection", "Tag", "TagCollectionTag", "Problem", "CompetitionProblem", "Submission"]
 }

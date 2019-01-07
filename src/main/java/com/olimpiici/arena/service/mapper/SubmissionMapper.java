@@ -8,9 +8,10 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity Submission and its DTO SubmissionDTO.
  */
-@Mapper(componentModel = "spring", uses = {UserMapper.class, CompetitionProblemMapper.class})
+@Mapper(componentModel = "spring", uses = {TagCollectionMapper.class, UserMapper.class, CompetitionProblemMapper.class})
 public interface SubmissionMapper extends EntityMapper<SubmissionDTO, Submission> {
 
+    @Mapping(source = "tags.id", target = "tagsId")
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "competitionProblem.id", target = "competitionProblemId")
     @Mapping(source = "competitionProblem.competition.id", target = "competitionId")
@@ -19,6 +20,7 @@ public interface SubmissionMapper extends EntityMapper<SubmissionDTO, Submission
     @Mapping(source = "competitionProblem.problem.title", target = "problemName")
     SubmissionDTO toDto(Submission submission);
 
+    @Mapping(source = "tagsId", target = "tags")
     @Mapping(source = "userId", target = "user")
     @Mapping(source = "competitionProblemId", target = "competitionProblem")
     Submission toEntity(SubmissionDTO submissionDTO);

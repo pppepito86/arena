@@ -1,0 +1,35 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="tagCollectionTag">
+            <h2><span jhiTranslate="arenaApp.tagCollectionTag.detail.title">Tag Collection Tag</span> {{tagCollectionTag.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="arenaApp.tagCollectionTag.collection">Collection</span></dt>
+                <dd>
+                    <div *ngIf="tagCollectionTag.collectionId">
+                        <a [routerLink]="['/tag-collection', tagCollectionTag.collectionId, 'view']">{{tagCollectionTag.collectionId}}</a>
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.tagCollectionTag.tag">Tag</span></dt>
+                <dd>
+                    <div *ngIf="tagCollectionTag.tagId">
+                        <a [routerLink]="['/tag', tagCollectionTag.tagId, 'view']">{{tagCollectionTag.tagId}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/tag-collection-tag', tagCollectionTag.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

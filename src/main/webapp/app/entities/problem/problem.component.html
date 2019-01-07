@@ -18,6 +18,7 @@
             <th jhiSortBy="title"><span jhiTranslate="arenaApp.problem.title">Title</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="directory"><span jhiTranslate="arenaApp.problem.directory">Directory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th jhiSortBy="version"><span jhiTranslate="arenaApp.problem.version">Version</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="tagsId"><span jhiTranslate="arenaApp.problem.tags">Tags</span> <fa-icon [icon]="'sort'"></fa-icon></th>
             <th></th>
             </tr>
             </thead>
@@ -27,6 +28,11 @@
                 <td>{{problem.title}}</td>
                 <td>{{problem.directory}}</td>
                 <td>{{problem.version}}</td>
+                <td>
+                    <div *ngIf="problem.tagsId">
+                        <a [routerLink]="['../tag-collection', problem.tagsId , 'view' ]" >{{problem.tagsId}}</a>
+                    </div>
+                </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"

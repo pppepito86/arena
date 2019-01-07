@@ -1,0 +1,35 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="tag">
+            <h2><span jhiTranslate="arenaApp.tag.detail.title">Tag</span> {{tag.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="arenaApp.tag.title">Title</span></dt>
+                <dd>
+                    <span>{{tag.title}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.tag.keywords">Keywords</span></dt>
+                <dd>
+                    <span>{{tag.keywords}}</span>
+                </dd>
+                <dt><span jhiTranslate="arenaApp.tag.visible">Visible</span></dt>
+                <dd>
+                    <span>{{tag.visible}}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/tag', tag.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

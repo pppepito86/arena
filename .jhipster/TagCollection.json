@@ -1,0 +1,16 @@
+{
+    "name": "TagCollection",
+    "fields": [],
+    "relationships": [],
+    "changelogDate": "20190106221206",
+    "entityTableName": "tag_collection",
+    "dto": "mapstruct",
+    "pagination": "no",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": [
+        "arena"
+    ]
+}

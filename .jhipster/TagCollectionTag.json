@@ -1,0 +1,29 @@
+{
+    "name": "TagCollectionTag",
+    "fields": [],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "collection",
+            "otherEntityName": "tagCollection",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "tag",
+            "otherEntityName": "tag",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20190106221208",
+    "entityTableName": "tag_collection_tag",
+    "dto": "mapstruct",
+    "pagination": "no",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": [
+        "arena"
+    ]
+}

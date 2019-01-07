@@ -20,6 +20,8 @@ public class ProblemDTO implements Serializable {
     
     private Integer memory;
     
+    private Long tagsId;
+
     public Long getId() {
         return id;
     }
@@ -68,6 +70,14 @@ public class ProblemDTO implements Serializable {
 		this.memory = memory;
 	}
     
+    public Long getTagsId() {
+        return tagsId;
+    }
+
+    public void setTagsId(Long tagCollectionId) {
+        this.tagsId = tagCollectionId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -96,6 +106,7 @@ public class ProblemDTO implements Serializable {
             ", title='" + getTitle() + "'" +
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
+            ", tags=" + getTagsId() +
             "}";
     }
 }

@@ -20,11 +20,33 @@ relationship ManyToOne {
 	Competition{parent} to Competition
 }
 
+entity TagCollection {	
+}
+
+entity Tag {
+	title String
+	keywords String
+	visible Boolean
+}
+
+entity TagCollectionTag {
+}
+
+relationship ManyToOne {
+	TagCollectionTag{collection} to TagCollection
+}
+
+relationship ManyToOne {
+	TagCollectionTag{tag} to Tag
+}
+
 entity Problem {
     title String
     directory String
     version Integer
-	tags TagCollection
+}
+relationship ManyToOne {
+	Problem{tags} to TagCollection
 }
 
 entity CompetitionProblem {
@@ -48,22 +70,12 @@ entity Submission {
 	memoryInBytes Integer
     uploadDate ZonedDateTime
     securityKey String
-	tags	TagCollection
+}
+relationship ManyToOne {
+	Submission{tags} to TagCollection
 }
 
-entity TagCollection {	
-}
 
-entity Tag {
-	title String
-	keywords String
-	public Boolean
-}
-
-entity TagCollectionTag {
-	collection TagCollection
-	tag Tag
-}
 
 relationship ManyToOne {
 	Submission{user} to User

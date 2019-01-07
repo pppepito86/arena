@@ -50,6 +50,10 @@ public class Submission implements Serializable {
 
     @ManyToOne
     @JsonIgnoreProperties("")
+    private TagCollection tags;
+
+    @ManyToOne
+    @JsonIgnoreProperties("")
     private User user;
 
     @ManyToOne
@@ -167,6 +171,19 @@ public class Submission implements Serializable {
 
     public void setSecurityKey(String securityKey) {
         this.securityKey = securityKey;
+    }
+
+    public TagCollection getTags() {
+        return tags;
+    }
+
+    public Submission tags(TagCollection tagCollection) {
+        this.tags = tagCollection;
+        return this;
+    }
+
+    public void setTags(TagCollection tagCollection) {
+        this.tags = tagCollection;
     }
 
     public User getUser() {

@@ -1,5 +1,6 @@
 package com.olimpiici.arena.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -30,6 +31,10 @@ public class Problem implements Serializable {
 
     @Column(name = "version")
     private Integer version;
+
+    @ManyToOne
+    @JsonIgnoreProperties("")
+    private TagCollection tags;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -77,6 +82,19 @@ public class Problem implements Serializable {
 
     public void setVersion(Integer version) {
         this.version = version;
+    }
+
+    public TagCollection getTags() {
+        return tags;
+    }
+
+    public Problem tags(TagCollection tagCollection) {
+        this.tags = tagCollection;
+        return this;
+    }
+
+    public void setTags(TagCollection tagCollection) {
+        this.tags = tagCollection;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

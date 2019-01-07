@@ -42,6 +42,9 @@ public class CacheConfiguration {
             cm.createCache(com.olimpiici.arena.domain.Problem.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.CompetitionProblem.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.Submission.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.TagCollection.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.Tag.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.TagCollectionTag.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

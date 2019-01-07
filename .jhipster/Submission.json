@@ -29,12 +29,18 @@
             "fieldName": "uploadDate",
             "fieldType": "ZonedDateTime"
         },
-	{
+        {
             "fieldName": "securityKey",
             "fieldType": "String"
         }
     ],
     "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "tags",
+            "otherEntityName": "tagCollection",
+            "otherEntityField": "id"
+        },
         {
             "relationshipType": "many-to-one",
             "relationshipName": "user",
