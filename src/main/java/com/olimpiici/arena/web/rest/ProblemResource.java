@@ -136,7 +136,6 @@ public class ProblemResource {
     
     @GetMapping("/problems/{id}/tags")
     @Timed
-    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public List<TagDTO> getTags(@PathVariable Long id)
     		throws URISyntaxException {
         log.debug("REST getting tags for: {}", id);
