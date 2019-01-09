@@ -1,14 +1,21 @@
 package com.olimpiici.arena.web.rest;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,11 +32,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
+import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.util.RandomUtil;
@@ -38,6 +48,9 @@ import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 
 /**
  * REST controller for managing Submission.
@@ -50,13 +63,20 @@ public class SubmissionResource {
 
     private static final String ENTITY_NAME = "submission";
 
+    @Autowired
+    private ApplicationProperties applicationProperties;
+    
     private final SubmissionService submissionService;
+    
+    private final ProblemService problemService;
     
     private final UserRepository userRepository;
 
     public SubmissionResource(SubmissionService submissionService,
+    	    ProblemService problemService,
     		UserRepository userRepository) {
         this.submissionService = submissionService;
+        this.problemService = problemService;
         this.userRepository = userRepository;
     }
 
@@ -197,4 +217,64 @@ public class SubmissionResource {
         log.debug("REST getting tags for: {}", id);
         return submissionService.findTags(id);
     }
+    
+    @GetMapping("/competition-problem/{id}/author")
+    @Timed
+    public ResponseEntity<?> submitAuthors(@PathVariable Long id) throws Exception {
+    	log.debug("REST request to submit authors code");
+    
+    	File problemDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id).toFile();
+    	File author = Paths.get(problemDir.getAbsolutePath(), "problem", "author", "author.cpp").toFile();
+    	if (!author.exists()) return ResponseEntity.noContent().build();
+      	
+    	SubmissionDTO submission = new SubmissionDTO();
+    	submission.setCompetitionProblemId(id);
+    	submission.setUserId(4L);
+
+    	for (int i = 0; i < 3; i++) {
+    		SubmissionDTO s = submissionService.save(submission);        	
+    		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
+    		FileUtils.copyFile(author, submissionFile);
+    		s.setVerdict("waiting");
+    		submissionService.save(s);
+    	}
+      
+    	return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/competition-problem/{id}//times")
+    @Timed
+    public ResponseEntity<?> setTimes(@PathVariable Long id,
+    		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
+    	log.debug("REST request to get set time limits");
+      
+        PageRequest page = PageRequest.of(0, 10000);
+      	List<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(id, page).getContent();
+      	
+      	ProblemDTO problem = problemService.findOne(id).get();
+      	if (submissions.size() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
+      		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
+      		int max = times.stream().mapToInt(t -> t).max().getAsInt();
+      		
+      		int limit = (max*15/10)/100+1;
+
+      		log.debug("limit for problem<"+problem.getId()+"> with times "+times+" will be "+limit/10+"."+limit%10);
+      		
+      		if (set) {
+      			String timeProp = "time = "+limit/10+"."+limit%10;
+              	File propeties = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
+              	FileUtils.writeStringToFile(propeties, timeProp, StandardCharsets.UTF_8);
+              	
+              	ZipFile zip = new ZipFile(Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem.zip").toFile());
+              	
+              	ZipParameters parameters = new ZipParameters();
+              	parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+              	parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+              	zip.addFile(propeties, parameters);
+      		}
+      }
+      
+      return ResponseEntity.noContent().build();
+  }
+
 }

@@ -26,7 +26,8 @@
             "constraints": "Constraints",
             "time": "Time",
             "memory": "Memory",
-            "tags": "Tags"
+            "tags": "Tags",
+            "file": "File"
         }
     }
 }

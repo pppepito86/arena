@@ -120,7 +120,6 @@ public class PublicResource {
     @Timed
     public ResponseEntity<?> setTimeLimits() throws Exception {
         log.debug("REST request to get set time limits");
-    	
         
         File problemsDir = Paths.get(applicationProperties.getWorkDir(), "problems").toFile();
         for (File f: problemsDir.listFiles()) {

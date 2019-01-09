@@ -1,12 +1,16 @@
 package com.olimpiici.arena.web.rest;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -20,8 +24,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.dto.ProblemDTO;
@@ -31,6 +37,7 @@ import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
+import net.lingala.zip4j.core.ZipFile;
 
 /**
  * REST controller for managing Problem.
@@ -42,6 +49,9 @@ public class ProblemResource {
     private final Logger log = LoggerFactory.getLogger(ProblemResource.class);
 
     private static final String ENTITY_NAME = "problem";
+    
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
     private final ProblemService problemService;
 
@@ -124,10 +134,28 @@ public class ProblemResource {
         return ResponseUtil.wrapOrNotFound(problemDTO);
     }
     
+    @PostMapping("/problems/{id}/zip")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<?> updateZip(@PathVariable Long id, @RequestBody MultipartFile file)
+    		throws Exception {
+        log.debug("REST updating zip for: {} {}", id, file.getOriginalFilename());
+        
+        File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
+        FileUtils.copyInputStreamToFile(file.getInputStream(), zipFile);
+        ZipFile zipZipFole = new ZipFile(zipFile);
+
+        File zipDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem").toFile();
+        zipDir.mkdirs();
+        zipZipFole.extractAll(zipDir.getAbsolutePath());
+        
+        return ResponseEntity.ok().build();
+    }
+    
     @PostMapping("/problems/{id}/tags")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
+    public ResponseEntity<?> updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
     		throws URISyntaxException {
         log.debug("REST updating tags for: {} {}", id, tags);
         problemService.updateTags(id, tags);
