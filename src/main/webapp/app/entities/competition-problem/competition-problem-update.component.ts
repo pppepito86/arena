@@ -35,6 +35,11 @@ export class CompetitionProblemUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ competitionProblem }) => {
             this.competitionProblem = competitionProblem;
+
+            // override CompetitionID if a URL parameter is set
+            this.activatedRoute.queryParams.subscribe(params => {
+                this.competitionProblem.competitionId = params['competition'] || null;
+            });
         });
         this.problemService.query().subscribe(
             (res: HttpResponse<IProblem[]>) => {

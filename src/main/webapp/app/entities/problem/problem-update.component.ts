@@ -67,7 +67,6 @@ export class ProblemUpdateComponent implements OnInit {
 
     uploadFile(files: FileList) {
         if (files.length > 0) {
-            console.log(files[0]); // You will see the file
             this.problemService.uploadFile(this.problem.id, files[0]);
         }
     }

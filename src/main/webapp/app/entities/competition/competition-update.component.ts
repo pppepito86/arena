@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { JhiAlertService } from 'ng-jhipster';
@@ -29,14 +29,21 @@ export class CompetitionUpdateComponent implements OnInit {
         protected jhiAlertService: JhiAlertService,
         protected competitionService: CompetitionService,
         protected problemService: ProblemService,
-        protected activatedRoute: ActivatedRoute
+        protected activatedRoute: ActivatedRoute,
+        protected router: Router
     ) {}
 
     ngOnInit() {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ competition }) => {
             this.competition = competition;
+
+            // override ParentID if a URL parameter is set
+            this.activatedRoute.queryParams.subscribe(params => {
+                this.competition.parentId = params['parent'] || null;
+            });
         });
+
         this.competitionService.query().subscribe(
             (res: HttpResponse<ICompetition[]>) => {
                 this.competitions = res.body;
@@ -132,7 +139,7 @@ export class CompetitionUpdateComponent implements OnInit {
 
     onSubCompetitionRemove(subCompetitionId: number) {
         for (let i = 0; i < this.children_competitions.length; i++) {
-            if (this.children_competitions[i].id == subCompetitionId) {
+            if (this.children_competitions[i].id === subCompetitionId) {
                 this.children_competitions.splice(i, 1);
                 break;
             }
@@ -160,5 +167,13 @@ export class CompetitionUpdateComponent implements OnInit {
                 break;
             }
         }
+    }
+
+    onSubCompetitionCreate() {
+        this.router.navigate(['/competition', 'new'], { queryParams: { parent: this.competition.id } });
+    }
+
+    onSubProblemCreate() {
+        this.router.navigate(['/competition-problem', 'new'], { queryParams: { competition: this.competition.id } });
     }
 }
