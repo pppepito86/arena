@@ -5,6 +5,8 @@ import com.olimpiici.arena.ArenaApp;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.web.rest.errors.ExceptionTranslator;
@@ -54,6 +56,12 @@ public class CompetitionProblemResourceIntTest {
 
     @Autowired
     private CompetitionProblemService competitionProblemService;
+    
+    @Autowired
+    private SubmissionService submissionService;
+    
+    @Autowired
+    private ProblemService problemService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -77,7 +85,8 @@ public class CompetitionProblemResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CompetitionProblemResource competitionProblemResource = new CompetitionProblemResource(competitionProblemService);
+        final CompetitionProblemResource competitionProblemResource = new CompetitionProblemResource(
+        		competitionProblemService, submissionService, problemService);
         this.restCompetitionProblemMockMvc = MockMvcBuilders.standaloneSetup(competitionProblemResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

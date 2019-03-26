@@ -14,7 +14,7 @@
                    style="margin-right: 0.5em;"
                    href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
                         <span jhiTranslate="arenaApp.problem.downloadZip">
-                            Download
+                            Download ZIP
                         </span>
                 </a>
             </h2>
@@ -23,6 +23,23 @@
             <jhi-alert-error></jhi-alert-error>
 
             <div *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                <div class="col-12">
+                    <button class="btn"
+                            (click)="onSubmitAuthorSolution()">
+                        <span>
+                        Submit Author Solution
+                        </span>
+                    </button>
+
+                    <button class="btn"
+                            style="margin-right: 0.5em;"
+                            (click)="onAutoSetTimeLimit()">
+                        <span >
+                        Autoset Time Limit
+                        </span>
+                    </button>
+                </div>
+                <hr>
                 <div class="col-12">
                     <span jhiTranslate="arenaApp.submission.tags"> </span>:
                     <span [ngSwitch]="tagStatus">

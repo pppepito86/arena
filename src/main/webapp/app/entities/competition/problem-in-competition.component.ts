@@ -11,6 +11,7 @@ import { ISubmission } from '../../shared/model/submission.model';
 import { TagService } from '../tag';
 import { ProblemService } from '../problem';
 import { ITag } from '../../shared/model/tag.model';
+import { CompetitionProblemService } from '../competition-problem';
 
 @Component({
     selector: 'jhi-problem-in-competition',
@@ -35,7 +36,7 @@ export class ProblemInCompetitionComponent implements OnInit {
         protected tagService: TagService,
         protected problemService: ProblemService,
         private titleService: Title,
-        private http: HttpClient
+        private competitionProblemService: CompetitionProblemService
     ) {}
 
     ngOnInit() {
@@ -97,5 +98,19 @@ export class ProblemInCompetitionComponent implements OnInit {
             },
             err => (this.tagStatus = 3)
         );
+    }
+
+    onAutoSetTimeLimit() {
+        if (confirm('Are you sure? This will change the time limit.')) {
+            this.competitionProblemService
+                .autoSetTimeLimit(this.competitionProblemId)
+                .subscribe(value => console.log('OK'), (res: HttpErrorResponse) => this.onError(res.message));
+        }
+    }
+
+    onSubmitAuthorSolution() {
+        this.competitionProblemService
+            .submitAuthorSolution(this.competitionProblemId)
+            .subscribe(value => console.log('OK'), (res: HttpErrorResponse) => this.onError(res.message));
     }
 }

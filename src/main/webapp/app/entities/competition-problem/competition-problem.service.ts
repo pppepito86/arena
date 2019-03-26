@@ -35,4 +35,12 @@ export class CompetitionProblemService {
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
+
+    submitAuthorSolution(competitionProblemId: number) {
+        return this.http.get(`${this.resourceUrl}/${competitionProblemId}/author`);
+    }
+
+    autoSetTimeLimit(competitionProblemId: number) {
+        return this.http.get(`${this.resourceUrl}/${competitionProblemId}/times?set=true`);
+    }
 }
