@@ -13,7 +13,7 @@ import { StateStorageService } from 'app/core/auth/state-storage.service';
 export class JhiLoginModalComponent implements AfterViewInit {
     authenticationError: boolean;
     password: string;
-    rememberMe: boolean;
+    rememberMe: boolean = true;
     username: string;
     credentials: any;
 
