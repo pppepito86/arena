@@ -7,8 +7,9 @@ import { JhiAlertService } from 'ng-jhipster';
 import { ICompetition } from 'app/shared/model/competition.model';
 import { CompetitionService } from './competition.service';
 import { ProblemService } from '../problem/problem.service';
-import { IProblem } from '../../shared/model/problem.model';
-import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
+import { IProblem, Problem } from '../../shared/model/problem.model';
+import { CompetitionProblem, ICompetitionProblem } from '../../shared/model/competition-problem.model';
+import { CompetitionProblemService } from '../competition-problem';
 
 @Component({
     selector: 'jhi-competition-update',
@@ -28,6 +29,7 @@ export class CompetitionUpdateComponent implements OnInit {
     constructor(
         protected jhiAlertService: JhiAlertService,
         protected competitionService: CompetitionService,
+        protected competitionProblemService: CompetitionProblemService,
         protected problemService: ProblemService,
         protected activatedRoute: ActivatedRoute,
         protected router: Router
@@ -174,6 +176,23 @@ export class CompetitionUpdateComponent implements OnInit {
     }
 
     onSubProblemCreate() {
-        this.router.navigate(['/competition-problem', 'new'], { queryParams: { competition: this.competition.id } });
+        // 1. Creates Problem
+        this.problemService.create(new Problem()).subscribe(
+            (res: HttpResponse<IProblem>) => {
+                // 2. Creates Competition Problem
+                const problemId = res.body.id;
+                const competitionProblem = new CompetitionProblem();
+                competitionProblem.problemId = problemId;
+                competitionProblem.competitionId = this.competition.id;
+                this.competitionProblemService.create(competitionProblem).subscribe(
+                    value => {
+                        // 3. Redirects to the edit page of the created Problem
+                        this.router.navigate(['/problem', problemId, 'edit']);
+                    },
+                    (err: HttpErrorResponse) => this.onError(err.message)
+                );
+            },
+            (err: HttpErrorResponse) => this.onError(err.message)
+        );
     }
 }
