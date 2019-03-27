@@ -16,6 +16,7 @@ import { TagCollectionService } from 'app/entities/tag-collection';
 export class ProblemUpdateComponent implements OnInit {
     problem: IProblem;
     isSaving: boolean;
+    fileUploadStatus: string;
 
     constructor(
         protected jhiAlertService: JhiAlertService,
@@ -67,7 +68,10 @@ export class ProblemUpdateComponent implements OnInit {
 
     uploadFile(files: FileList) {
         if (files.length > 0) {
-            this.problemService.uploadFile(this.problem.id, files[0]);
+            this.fileUploadStatus = '(uploading...)';
+            this.problemService
+                .uploadFile(this.problem.id, files[0])
+                .subscribe(value => (this.fileUploadStatus = '(done)'), error => (this.fileUploadStatus = '(error)'));
         }
     }
 }

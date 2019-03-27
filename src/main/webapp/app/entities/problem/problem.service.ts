@@ -59,13 +59,11 @@ export class ProblemService {
         return this.http.post(url, tagsCopy, { observe: 'response' });
     }
 
-    uploadFile(problemId: number, file: File) {
+    uploadFile(problemId: number, file: File): Observable<any> {
         const formData: FormData = new FormData();
         formData.append('file', file, file.name);
         const url = `${this.resourceUrl}/${problemId}/zip`;
         console.log('****to upload ' + problemId + ' ' + url);
-        return this.http.post(url, formData).subscribe(event => {
-            console.log(event); // handle event here
-        });
+        return this.http.post(url, formData);
     }
 }
