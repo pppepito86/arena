@@ -42,7 +42,9 @@ export class CompetitionUpdateComponent implements OnInit {
 
             // override ParentID if a URL parameter is set
             this.activatedRoute.queryParams.subscribe(params => {
-                this.competition.parentId = params['parent'] || null;
+                if (params['parent'] !== undefined) {
+                    this.competition.parentId = params['parent'];
+                }
             });
         });
 
@@ -53,30 +55,32 @@ export class CompetitionUpdateComponent implements OnInit {
             (res: HttpErrorResponse) => this.onError(res.message)
         );
 
-        this.competitionService
-            .findChildren(this.competition.id, {
-                page: 0,
-                size: 10000
-            })
-            .subscribe(
-                (res: HttpResponse<ICompetition[]>) => {
-                    this.children_competitions = res.body;
-                    this.children_competitions.sort((a, b) => a.order - b.order);
-                },
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
-        this.competitionService
-            .findProblems(this.competition.id, {
-                page: 0,
-                size: 10000
-            })
-            .subscribe(
-                (res: HttpResponse<ICompetitionProblem[]>) => {
-                    this.children_problems = res.body;
-                    this.children_problems.sort((a, b) => a.order - b.order);
-                },
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
+        if (this.competition.id !== undefined) {
+            this.competitionService
+                .findChildren(this.competition.id, {
+                    page: 0,
+                    size: 10000
+                })
+                .subscribe(
+                    (res: HttpResponse<ICompetition[]>) => {
+                        this.children_competitions = res.body;
+                        this.children_competitions.sort((a, b) => a.order - b.order);
+                    },
+                    (res: HttpErrorResponse) => this.onError(res.message)
+                );
+            this.competitionService
+                .findProblems(this.competition.id, {
+                    page: 0,
+                    size: 10000
+                })
+                .subscribe(
+                    (res: HttpResponse<ICompetitionProblem[]>) => {
+                        this.children_problems = res.body;
+                        this.children_problems.sort((a, b) => a.order - b.order);
+                    },
+                    (res: HttpErrorResponse) => this.onError(res.message)
+                );
+        }
     }
 
     previousState() {
