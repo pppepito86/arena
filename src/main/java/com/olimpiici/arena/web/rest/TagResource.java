@@ -2,7 +2,10 @@ package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -10,10 +13,13 @@ import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
+import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
+
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -22,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -39,10 +46,18 @@ public class TagResource {
 
     private final CompetitionProblemService competitionProblemService;
     
+    private final ProblemService problemService;
+    
+    private final CompetitionProblemMapper competitionProblemMapper;
+    
     public TagResource(TagService tagService,
-    		CompetitionProblemService competitionProblemService) {
+    		CompetitionProblemService competitionProblemService,
+    		ProblemService problemService,
+    		CompetitionProblemMapper competitionProblemMapper) {
         this.tagService = tagService;
         this.competitionProblemService = competitionProblemService;
+        this.competitionProblemMapper = competitionProblemMapper;
+        this.problemService = problemService;
     }
 
     /**
@@ -52,6 +67,7 @@ public class TagResource {
      * @return the ResponseEntity with status 201 (Created) and with body the new tagDTO, or with status 400 (Bad Request) if the tag has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @PostMapping("/tags")
     @Timed
     public ResponseEntity<TagDTO> createTag(@RequestBody TagDTO tagDTO) throws URISyntaxException {
@@ -74,6 +90,7 @@ public class TagResource {
      * or with status 500 (Internal Server Error) if the tagDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @PutMapping("/tags")
     @Timed
     public ResponseEntity<TagDTO> updateTag(@RequestBody TagDTO tagDTO) throws URISyntaxException {
@@ -96,7 +113,8 @@ public class TagResource {
     @Timed
     public List<TagDTO> getAllTags(@RequestParam("publicOnly") Optional<Boolean> publicOnly) {
     	log.debug("REST request to get all Tags");
-    	if(publicOnly.isPresent() && publicOnly.get() == true) {
+    	boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
+    	if(!isAdmin || (publicOnly.isPresent() && publicOnly.get() == true)) {
     		return tagService.findAllPublic();
     	} else {
     		return tagService.findAll();
@@ -139,11 +157,31 @@ public class TagResource {
         
         return problemsDTO;
     }
+    
     @GetMapping("/tags/{id}/submissions")
     @Timed
     public List<SubmissionDTO> getTagSubmissions(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
         return tagService.submissionsForTag(id);
+    }
+    
+    /**
+     * Returns problem which don't have an official tag with id {id}, but 
+     * have a submission tagged with {id}. 
+     * @param id
+     * @return
+     */
+    @GetMapping("/tags/{id}/problems-tagged-by-users")
+    @Timed
+    public List<CompetitionProblemDTO> getProblemTaggedOnlyByUser(@PathVariable Long id) {
+        log.debug("REST request to get Tag : {}", id);
+        return tagService.problemsTaggedByUsers(id)
+        		.map(competitionProblem -> {
+        			CompetitionProblemDTO dto = competitionProblemMapper.toDto(competitionProblem);
+        			dto.setTitle(competitionProblem.getProblem().getTitle());
+        			return dto;
+        		})
+        		.collect(Collectors.toList());
     }
     
 
@@ -153,6 +191,7 @@ public class TagResource {
      * @param id the id of the tagDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @DeleteMapping("/tags/{id}")
     @Timed
     public ResponseEntity<Void> deleteTag(@PathVariable Long id) {

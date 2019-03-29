@@ -27,7 +27,8 @@
             "time": "Time",
             "memory": "Memory",
             "tags": "Tags",
-            "file": "File"
+            "file": "File",
+            "tags": "Tags"
         }
     }
 }

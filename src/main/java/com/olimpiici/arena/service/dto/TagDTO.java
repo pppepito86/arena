@@ -15,6 +15,8 @@ public class TagDTO implements Serializable {
     private String keywords;
 
     private Boolean visible;
+    
+    private Long popularity;
 
     public Long getId() {
         return id;
@@ -46,6 +48,15 @@ public class TagDTO implements Serializable {
 
     public void setVisible(Boolean visible) {
         this.visible = visible;
+    }
+    
+
+    public Long getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(Long popularity) {
+        this.popularity = popularity;
     }
 
     @Override

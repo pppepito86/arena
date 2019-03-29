@@ -1,6 +1,7 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.TagCollectionTagService;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -9,6 +10,7 @@ import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -41,6 +43,7 @@ public class TagCollectionTagResource {
      * @return the ResponseEntity with status 201 (Created) and with body the new tagCollectionTagDTO, or with status 400 (Bad Request) if the tagCollectionTag has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @PostMapping("/tag-collection-tags")
     @Timed
     public ResponseEntity<TagCollectionTagDTO> createTagCollectionTag(@RequestBody TagCollectionTagDTO tagCollectionTagDTO) throws URISyntaxException {
@@ -63,6 +66,7 @@ public class TagCollectionTagResource {
      * or with status 500 (Internal Server Error) if the tagCollectionTagDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @PutMapping("/tag-collection-tags")
     @Timed
     public ResponseEntity<TagCollectionTagDTO> updateTagCollectionTag(@RequestBody TagCollectionTagDTO tagCollectionTagDTO) throws URISyntaxException {
@@ -108,6 +112,7 @@ public class TagCollectionTagResource {
      * @param id the id of the tagCollectionTagDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     @DeleteMapping("/tag-collection-tags/{id}")
     @Timed
     public ResponseEntity<Void> deleteTagCollectionTag(@PathVariable Long id) {

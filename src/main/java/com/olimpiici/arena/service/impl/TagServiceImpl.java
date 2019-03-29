@@ -1,7 +1,9 @@
 package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.TagService;
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.Tag;
 import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.domain.TagCollectionTag;
@@ -24,8 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -98,16 +102,29 @@ public class TagServiceImpl implements TagService {
     @Transactional(readOnly = true)
     public List<TagDTO> findAll() {
         log.debug("Request to get all Tags");
+        
+        Map<Long, Long> tagsByPopularity = tagsByPopularity();
+        
         return tagRepository.findAll().stream()
-            .map(tagMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+        	.map(tagMapper::toDto)
+            .map(dto ->  {
+            	dto.setPopularity(tagsByPopularity.get(dto.getId()));
+            	return dto;
+            })
+            .collect(Collectors.toList());
     }
 
 	@Override
 	public List<TagDTO> findAllPublic() {
+		Map<Long, Long> tagsByPopularity = tagsByPopularity();
+		
 		return tagRepository.findByVisible(true).stream()
-	            .map(tagMapper::toDto)
-	            .collect(Collectors.toCollection(LinkedList::new));
+            .map(tagMapper::toDto)
+            .map(dto ->  {
+            	dto.setPopularity(tagsByPopularity.get(dto.getId()));
+            	return dto;
+            })
+            .collect(Collectors.toList());
 	}
 
     /**
@@ -199,8 +216,7 @@ public class TagServiceImpl implements TagService {
     	}
 	}
 
-	@Override
-	public List<SubmissionDTO> submissionsForTag(Long id) {
+	private Stream<Submission> submissionsForTagImpl(Long id) {
 		Tag tag = tagRepository.getOne(id);
 		return tagCollectionTagRepository
 			.findByTag(tag)
@@ -208,9 +224,33 @@ public class TagServiceImpl implements TagService {
 			.map(tgt -> tgt.getCollection().getId())
 			.map(collectionId -> submissionRepository.findByTagsId(collectionId))
 			.filter(optional -> optional.isPresent())
-			.map(optional -> optional.get())
+			.map(optional -> optional.get());
+	}
+	
+	@Override
+	public List<SubmissionDTO> submissionsForTag(Long id) {
+		return submissionsForTagImpl(id)
 			.map(submissionMapper::toDto)
 			.collect(Collectors.toList());
+	}
+
+	@Override
+	public Stream<CompetitionProblem> problemsTaggedByUsers(Long id) {
+		return submissionsForTagImpl(id)
+			.map(submission -> submission.getCompetitionProblem())
+			.distinct();
+	}
+
+	@Override
+	public Map<Long, Long> tagsByPopularity() {
+		List<Object[]> tagsByPopularity = tagCollectionTagRepository.tagsByPopularity();
+		Map<Long, Long> res = new HashMap<>();
+		for (Object[] o : tagsByPopularity) {
+			Long tagId = (Long) o[0];
+			Long popularity = (Long) o[1]; 
+			res.put(tagId, popularity);
+		}
+		return res;
 	}
 
 }

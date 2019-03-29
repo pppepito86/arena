@@ -15,6 +15,8 @@ import { ISubmission } from '../../shared/model/submission.model';
 export class TagDetailComponent implements OnInit {
     tag: ITag;
     problems: ICompetitionProblem[];
+    problemsWithOfficialTag: Set<number> = new Set<number>();
+    userTaggedProblems: ICompetitionProblem[];
     submissions: ISubmission[];
 
     constructor(protected activatedRoute: ActivatedRoute, private tagService: TagService) {}
@@ -27,7 +29,23 @@ export class TagDetailComponent implements OnInit {
     }
 
     loadData() {
-        this.tagService.findProblems(this.tag.id).subscribe((res: HttpResponse<ICompetitionProblem[]>) => (this.problems = res.body));
+        this.tagService.findProblems(this.tag.id).subscribe((res: HttpResponse<ICompetitionProblem[]>) => {
+            this.problems = res.body;
+            for (let problem of this.problems) {
+                this.problemsWithOfficialTag.add(problem.id);
+            }
+
+            // Get the problems tagged by users
+            this.tagService.findProblemsTaggedByUsers(this.tag.id).subscribe((res: HttpResponse<ICompetitionProblem[]>) => {
+                this.userTaggedProblems = [];
+                for (let problem of res.body) {
+                    if (!this.problemsWithOfficialTag.has(problem.id)) {
+                        this.userTaggedProblems.push(problem);
+                    }
+                }
+            });
+        });
+
         this.tagService.findSubmissions(this.tag.id).subscribe((res: HttpResponse<ICompetitionProblem[]>) => (this.submissions = res.body));
     }
 

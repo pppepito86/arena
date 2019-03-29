@@ -5,19 +5,22 @@
             <hr>
             <jhi-alert-error></jhi-alert-error>
             <dl class="row-md jh-entity-details">
-                <dt><span jhiTranslate="arenaApp.tag.title">Title</span></dt>
-                <dd>
-                    <span>{{tag.title}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.tag.keywords">Keywords</span></dt>
-                <dd>
-                    <span>{{tag.keywords}}</span>
-                </dd>
-                <dt><span jhiTranslate="arenaApp.tag.visible">Visible</span></dt>
-                <dd>
-                    <span>{{tag.visible}}</span>
-                </dd>
-                <dt>Problems</dt>
+                <div *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                    <dt><span jhiTranslate="arenaApp.tag.title">Title</span></dt>
+                    <dd>
+                        <span>{{tag.title}}</span>
+                    </dd>
+
+                    <dt><span jhiTranslate="arenaApp.tag.keywords">Keywords</span></dt>
+                    <dd>
+                        <span>{{tag.keywords}}</span>
+                    </dd>
+                    <dt><span jhiTranslate="arenaApp.tag.visible">Visible</span></dt>
+                    <dd>
+                        <span>{{tag.visible}}</span>
+                    </dd>
+                </div>
+                <dt jhiTranslate="arenaApp.tag.problems">Problems</dt>
                 <dd>
                     <ul>
                         <li *ngFor="let problem of problems">
@@ -25,14 +28,25 @@
                         </li>
                     </ul>
                 </dd>
-                <dt>Submissions</dt>
+                <dt jhiTranslate="arenaApp.tag.problemsTaggedByUsers">Problems tagged by users</dt>
                 <dd>
                     <ul>
-                        <li *ngFor="let submission of submissions">
-                            <a [routerLink]="['/submission', submission.id, 'view']">{{submission.id}}</a>
+                        <li *ngFor="let problem of userTaggedProblems">
+                            <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
                         </li>
                     </ul>
                 </dd>
+
+                <div *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                    <dt>Submissions</dt>
+                    <dd>
+                        <ul>
+                            <li *ngFor="let submission of submissions">
+                                <a [routerLink]="['/submission', submission.id, 'view']">{{submission.id}}</a>
+                            </li>
+                        </ul>
+                    </dd>
+                </div>
             </dl>
 
             <button type="submit"

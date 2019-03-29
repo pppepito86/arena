@@ -50,4 +50,9 @@ export class TagService {
         const url = `${this.resourceUrl}/${id}/submissions`;
         return this.http.get<IProblem[]>(url, { observe: 'response' });
     }
+
+    findProblemsTaggedByUsers(id: number): Observable<HttpResponse<ICompetitionProblem[]>> {
+        const url = `${this.resourceUrl}/${id}/problems-tagged-by-users`;
+        return this.http.get<ICompetitionProblem[]>(url, { observe: 'response' });
+    }
 }

@@ -2,27 +2,31 @@
     "arenaApp": {
         "tag": {
             "home": {
-                "title": "Tags",
-                "createLabel": "Create a new Tag",
-                "createOrEditLabel": "Create or edit a Tag"
+                "title": "Таг",
+                "createLabel": "Създай нов таг",
+                "createOrEditLabel": "Създай или редактирай таг"
             },
-            "created": "A new Tag is created with identifier {{ param }}",
-            "updated": "A Tag is updated with identifier {{ param }}",
-            "deleted": "A Tag is deleted with identifier {{ param }}",
+            "created": "Създаден е нов таг с id {{ param }}",
+            "updated": "Обновен е таг с id {{ param }}",
+            "deleted": "Изтрит е таг с id {{ param }}",
             "delete": {
-                "question": "Are you sure you want to delete Tag {{ id }}?"
+                "question": "Сигурни ли сте, че искате да изтриете таг {{ id }}?"
             },
             "detail": {
-                "title": "Tag"
+                "title": "Таг"
             },
-            "title": "Title",
-            "keywords": "Keywords",
-            "visible": "Visible",
+            "title": "Име",
+            "keywords": "Ключови думи",
+            "visible": "Видим публично",
             "status": {
                 "updating": "обновяване...",
                 "updated": "обновено",
                 "error": "грешка"
-            }
+            },
+            "problemsTaggedByUsers": "Задачи тагнати от потребители",
+            "problems": "Задачи",
+            "search": "Търси",
+            "popularity": "Популярност"
         }
     }
 }

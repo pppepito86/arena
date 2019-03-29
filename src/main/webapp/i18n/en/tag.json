@@ -22,7 +22,11 @@
                 "updating": "updating...",
                 "updated": "updated",
                 "error": "error"
-            }
+            },
+            "problemsTaggedByUsers": "Problems tagged by users",
+            "problems": "Problems",
+            "search": "Search",
+            "popularity": "Popularity"
         }
     }
 }

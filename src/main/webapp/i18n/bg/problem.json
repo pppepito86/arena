@@ -3,21 +3,21 @@
         "problem": {
             "home": {
                 "title": "Задачи",
-                "createLabel": "Create a new Problem",
-                "createOrEditLabel": "Create or edit a Problem"
+                "createLabel": "Създай нова задача",
+                "createOrEditLabel": "Създай или редактирай задача"
             },
-            "created": "A new Problem is created with identifier {{ param }}",
-            "updated": "A Problem is updated with identifier {{ param }}",
-            "deleted": "A Problem is deleted with identifier {{ param }}",
+            "created": "Създадена е задача с id {{ param }}",
+            "updated": "Обновена е задача с id {{ param }}",
+            "deleted": "Изтрита е задача с id {{ param }}",
             "delete": {
-                "question": "Are you sure you want to delete Problem {{ id }}?"
+                "question": "Сигурни ли сте, че искате да изтриете задача {{ id }}?"
             },
             "detail": {
                 "title": "Задача"
             },
             "title": "Име",
-            "directory": "Directory",
-            "version": "Version",
+            "directory": "Директория",
+            "version": "Версия",
             "statement": "Условие",
             "open": "Отвори",
             "download": "Свали",
@@ -26,7 +26,8 @@
             "constraints": "Ограничения",
             "time": "Време",
             "memory": "Памет",
-            "file": "Файл"
+            "file": "Файл",
+            "tags": "Тагове"
         }
     }
 }

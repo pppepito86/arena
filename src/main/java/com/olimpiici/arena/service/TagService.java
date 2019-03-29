@@ -1,5 +1,6 @@
 package com.olimpiici.arena.service;
 
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Tag;
 import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
@@ -8,6 +9,7 @@ import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -65,4 +67,8 @@ public interface TagService {
     		List<TagDTO> newTags);
 
 	List<SubmissionDTO> submissionsForTag(Long id);
+	
+	Stream<CompetitionProblem> problemsTaggedByUsers(Long id);
+	
+	Map<Long, Long> tagsByPopularity();
 }

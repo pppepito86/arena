@@ -19,7 +19,7 @@
             <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                 <a class="nav-link" routerLink="catalog" (click)="collapseNavbar()">
                     <span>
-                        <fa-icon icon="th-list"></fa-icon>
+                        <fa-icon icon="book"></fa-icon>
                         <span jhiTranslate="global.menu.catalog">Catalog</span>
                     </span>
                 </a>
@@ -30,6 +30,14 @@
                         <fa-icon icon="th-list"></fa-icon>
                     </span>
                     <span jhiTranslate="global.menu.standings">Standings</span>
+                </a>
+            </li>
+            <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <a class="nav-link" routerLink="tag" (click)="collapseNavbar()">
+                    <span>
+                        <fa-icon icon="th-list"></fa-icon>
+                    </span>
+                    <span jhiTranslate="global.menu.entities.tag">Tags</span>
                 </a>
             </li>
             <!-- jhipster-needle-add-element-to-menu - JHipster will add new menu items here -->
@@ -72,12 +80,6 @@
                         <a class="dropdown-item" routerLink="tag-collection" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.entities.tagCollection">Tag Collection</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" routerLink="tag" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
-                            <span jhiTranslate="global.menu.entities.tag">Tag</span>
                         </a>
                     </li>
                     <li>
