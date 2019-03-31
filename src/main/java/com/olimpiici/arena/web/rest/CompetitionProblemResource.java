@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.pesho.sandbox.SandboxExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
@@ -209,13 +211,16 @@ public class CompetitionProblemResource {
       			String timeProp = "time = "+limit/10+"."+limit%10;
               	File propeties = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
               	FileUtils.writeStringToFile(propeties, timeProp, StandardCharsets.UTF_8);
+
+              	ProcessExecutor executor = new ProcessExecutor()
+              			.command("zip", "-r", "problem.zip", ".")
+              			.directory(Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem").toFile());
+              	executor.execute();
               	
-              	ZipFile zip = new ZipFile(Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem.zip").toFile());
-              	
-              	ZipParameters parameters = new ZipParameters();
-              	parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-              	parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
-              	zip.addFile(propeties, parameters);
+              	File problemZipNew = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "problem.zip").toFile();
+              	File problemZipOrig = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem.zip").toFile();
+              	problemZipOrig.delete();
+              	problemZipNew.renameTo(problemZipOrig);
       		}
       }
       
