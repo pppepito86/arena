@@ -1,7 +1,6 @@
 package com.olimpiici.arena.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.CompetitionProblemService;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**

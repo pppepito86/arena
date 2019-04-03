@@ -3,9 +3,7 @@ package com.olimpiici.arena.service.impl;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.domain.Problem;
-import com.olimpiici.arena.domain.Tag;
 import com.olimpiici.arena.domain.TagCollection;
-import com.olimpiici.arena.domain.TagCollectionTag;
 import com.olimpiici.arena.repository.ProblemRepository;
 import com.olimpiici.arena.repository.TagCollectionRepository;
 import com.olimpiici.arena.repository.TagCollectionTagRepository;
@@ -23,11 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service Implementation for managing Problem.

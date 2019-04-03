@@ -2,7 +2,6 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.domain.CompetitionProblem;
-import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.Tag;
 import com.olimpiici.arena.domain.TagCollection;
@@ -12,7 +11,6 @@ import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.repository.TagCollectionRepository;
 import com.olimpiici.arena.repository.TagCollectionTagRepository;
 import com.olimpiici.arena.repository.TagRepository;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
@@ -27,11 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

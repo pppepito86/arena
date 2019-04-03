@@ -2,7 +2,6 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
-import com.google.common.collect.Comparators;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
@@ -23,11 +22,6 @@ import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.util.IntUtil;
-import com.olimpiici.arena.web.rest.UserResource;
-
-import liquibase.diff.compare.CompareControl;
-
-import org.aspectj.weaver.NewConstructorTypeMunger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;

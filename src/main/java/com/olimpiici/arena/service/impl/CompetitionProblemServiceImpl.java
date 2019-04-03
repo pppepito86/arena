@@ -4,7 +4,6 @@ import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
-import com.olimpiici.arena.repository.CompetitionRepository;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import org.slf4j.Logger;

@@ -1,21 +1,14 @@
 package com.olimpiici.arena.web.rest;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,7 +32,6 @@ import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.SubmissionService;
-import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.util.RandomUtil;
@@ -48,9 +40,6 @@ import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
 
 /**
  * REST controller for managing Submission.

@@ -3,7 +3,6 @@ package com.olimpiici.arena.service;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Tag;
 import com.olimpiici.arena.domain.TagCollection;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;

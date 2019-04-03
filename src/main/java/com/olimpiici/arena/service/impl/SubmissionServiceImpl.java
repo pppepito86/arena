@@ -1,12 +1,9 @@
 package com.olimpiici.arena.service.impl;
 
-import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.TagService;
 import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
-import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.TagCollection;
 import com.olimpiici.arena.domain.User;
