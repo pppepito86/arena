@@ -171,7 +171,7 @@ public class SubmissionResource {
         	ResponseUtil.wrapOrNotFound(submissionDTO); 
         }
         
-        boolean isSubmissionAuthor = submissionDTO.get().getUserId() == user.getId();
+        boolean isSubmissionAuthor = submissionDTO.get().getUserId().equals(user.getId());
         boolean goodSecurityCode; 
         if (submissionDTO.get().getSecurityKey() == null) { 
         	goodSecurityCode = false;
