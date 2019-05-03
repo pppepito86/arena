@@ -22,19 +22,35 @@
                 </div>
                 <dt jhiTranslate="arenaApp.tag.problems">Problems</dt>
                 <dd>
-                    <ul>
-                        <li *ngFor="let problem of problems">
-                            <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
-                        </li>
-                    </ul>
+                    <table>
+                        <tr *ngFor="let problem of problems">
+                            <td class="problem-cell">
+                                <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
+                            </td>
+                            <td>
+                                <span *ngFor="let ancestor of competitionIdToPath[problem.competitionId]; let i = index">
+                                    <span *ngIf="i != 0">, </span>
+                                    {{ancestor.label}}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
                 </dd>
                 <dt jhiTranslate="arenaApp.tag.problemsTaggedByUsers">Problems tagged by users</dt>
                 <dd>
-                    <ul>
-                        <li *ngFor="let problem of userTaggedProblems">
-                            <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
-                        </li>
-                    </ul>
+                    <table>
+                        <tr *ngFor="let problem of userTaggedProblems">
+                            <td class="problem-cell">
+                                <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
+                            </td>
+                            <td>
+                                <span *ngFor="let ancestor of competitionIdToPath[problem.competitionId]; let i = index">
+                                    <span *ngIf="i != 0">, </span>
+                                    {{ancestor.label}}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
                 </dd>
 
                 <div *jhiHasAnyAuthority="'ROLE_ADMIN'">

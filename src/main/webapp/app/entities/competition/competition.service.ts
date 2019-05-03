@@ -60,7 +60,7 @@ export class CompetitionService {
         return this.http.get<ICompetition[]>(`${this.resourceUrl}/${id}/problems`, { params: options, observe: 'response' });
     }
 
-    findPath(id: number): Observable<EntityArrayResponseType> {
+    findPath(id: number): Observable<HttpResponse<ICompetition[]>> {
         return this.http.get<ICompetition[]>(`${this.resourceUrl}/${id}/path`, { observe: 'response' });
     }
 
