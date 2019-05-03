@@ -6,8 +6,11 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Service Interface for managing Problem.
@@ -49,4 +52,12 @@ public interface ProblemService {
     public List<TagDTO> findTags(Long id);
 
 	void updateTags(Long id, List<TagDTO> newTags);
+	
+	void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception;
+	
+	void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception;
+	
+	Properties getProperties(Long problemId) throws Exception;
+	
+	ProblemDTO setLimitsToDto(ProblemDTO dto);
 }

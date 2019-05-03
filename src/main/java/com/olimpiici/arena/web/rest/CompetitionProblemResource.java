@@ -210,32 +210,12 @@ public class CompetitionProblemResource {
       		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
       		int max = times.stream().mapToInt(t -> t).max().getAsInt();
       		
-      		int limit = (max*15/10)/100+1;
+      		int timeLimitMs = 100 * ((max*15/10)/100+1);
 
-      		log.debug("limit for problem<"+problemId+"> with times "+times+" will be "+limit/10+"."+limit%10);
+      		log.debug("limit for problem<"+problemId+"> with times "+times+" will be "+ timeLimitMs + "ms");
       		
       		if (set) {
-      			String timeValue = limit/10+"."+limit%10;
-      			Properties props = new Properties();
-      			File gradePropertiesFile = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "grade.properties").toFile();
-      			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
-      				props.load(fis);
-      			}
-      			props.setProperty("time", timeValue);
-      			try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
-      				props.store(pw, null);
-      			}
-
-              	ProcessExecutor executor = new ProcessExecutor()
-              			.command("zip", "-r", "problem.zip", ".")
-              			.directory(Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem").toFile());
-              	executor.execute();
-              	
-              	File problemZipNew = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "problem.zip").toFile();
-              	File problemZipOrig = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem.zip").toFile();
-              	problemZipOrig.delete();
-              	problemZipNew.renameTo(problemZipOrig);
-              	
+      			problemService.updateTimeLimit(problemId, timeLimitMs);              	
               	workerPool.deleteProblem(problemId);
       		}
       }

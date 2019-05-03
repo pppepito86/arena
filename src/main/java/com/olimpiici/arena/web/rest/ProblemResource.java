@@ -91,19 +91,23 @@ public class ProblemResource {
      * @return the ResponseEntity with status 200 (OK) and with body the updated problemDTO,
      * or with status 400 (Bad Request) if the problemDTO is not valid,
      * or with status 500 (Internal Server Error) if the problemDTO couldn't be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
+     * @throws Exception 
      */
     @PutMapping("/problems")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<ProblemDTO> updateProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
+    public ResponseEntity<ProblemDTO> updateProblem(@RequestBody ProblemDTO problemDTO) throws Exception {
         log.debug("REST request to update Problem : {}", problemDTO);
-        if (problemDTO.getId() == null) {
+        Long problemId = problemDTO.getId();
+		if (problemId == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         ProblemDTO result = problemService.save(problemDTO);
+        problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
+        problemService.updateTimeLimit(problemId, problemDTO.getTime());
+        workerPool.deleteProblem(problemId);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
             .body(result);
     }
 
@@ -134,7 +138,8 @@ public class ProblemResource {
     @Timed
     public ResponseEntity<ProblemDTO> getProblem(@PathVariable Long id) {
         log.debug("REST request to get Problem : {}", id);
-        Optional<ProblemDTO> problemDTO = problemService.findOne(id);
+        Optional<ProblemDTO> problemDTO = problemService.findOne(id)
+        		.map(dto -> problemService.setLimitsToDto(dto));
         return ResponseUtil.wrapOrNotFound(problemDTO);
     }
     

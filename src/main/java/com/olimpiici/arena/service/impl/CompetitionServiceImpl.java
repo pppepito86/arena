@@ -446,7 +446,8 @@ public class CompetitionServiceImpl implements CompetitionService {
 			.findByCompetition(parent, Pageable.unpaged())
 			.forEach(cp -> {
 				if (!childrenIds.contains(cp.getId())) {
-					competitionProblemRepository.delete(cp);
+					cp.setCompetition(null);
+					competitionProblemRepository.save(cp);
 				}
 			});
 	}

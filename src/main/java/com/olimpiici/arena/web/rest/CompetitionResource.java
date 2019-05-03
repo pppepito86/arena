@@ -39,6 +39,7 @@ import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
 import com.olimpiici.arena.service.CompetitionService;
+import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.CompetitionDTO;
 import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
@@ -68,15 +69,19 @@ public class CompetitionResource {
 
     private final UserRepository userRepository;
 
+    private final ProblemService problemService;
+    
     @Autowired
     private ApplicationProperties applicationProperties;
     
     public CompetitionResource(CompetitionService competitionService,
     		UserRepository userRepository,
-    		SubmissionService submissionService) {
+    		SubmissionService submissionService,
+    		ProblemService problemService) {
         this.competitionService = competitionService;
         this.userRepository = userRepository;
         this.submissionService = submissionService;
+        this.problemService = problemService;
     }
 
     /**
@@ -248,30 +253,9 @@ public class CompetitionResource {
     		@PathVariable Long id, @PathVariable Long compProb) {
         log.debug("REST request to get Competition problems : {}", id);
         ProblemDTO problem = competitionService.findProblem(compProb);
-        setLimits(problem);
+        problemService.setLimitsToDto(problem);
         return ResponseEntity.ok(problem);
     }
-
-	private void setLimits(ProblemDTO problem) {
-        int time = 1000;
-		int memory = 256;
-		
-		File propertyFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
-		if (propertyFile.exists()) {
-       		try (InputStream is = new FileInputStream(propertyFile)) {
-       			Properties props = new Properties();
-	        	props.load(is);
-	        			
-	        	time = (int) (1000*Double.valueOf(props.getProperty("time", "1")) + 0.1);
-	        	memory = Integer.valueOf(props.getProperty("memory", ""+memory));
-	        } catch (Exception e) {
-	        	log.error("cannot read metadata for problem: " + problem.getId(), e);
-	        }
-		}
-		
-        problem.setTime(time);
-        problem.setMemory(memory);
-	}
     
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @Timed

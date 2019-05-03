@@ -24,10 +24,15 @@
                     <input type="number" class="form-control" name="version" id="field_version"
                         [(ngModel)]="problem.version" />
                 </div>
-                <div class="form-group" *ngIf = "problem.id !== undefined">
-                    <label class="form-control-label" jhiTranslate="arenaApp.problem.file" for="file">File</label> {{fileUploadStatus}}
-                    <input type="file" class="form-control" name="file" id="file" accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
-                    	(change)="uploadFile($event.target.files)" />
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="arenaApp.problem.memory" for="field_memory">Memory Limit</label> (KB)
+                    <input type="number" class="form-control" name="memory" id="field_memory"
+                        [(ngModel)]="problem.memory" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="arenaApp.problem.time" for="field_time">Memory Limit</label> (millisec)
+                    <input type="number" class="form-control" name="time" id="field_time"
+                        [(ngModel)]="problem.time" />
                 </div>
             </div>
             <div>
@@ -39,5 +44,13 @@
                 </button>
             </div>
         </form>
+        <hr>
+        <div class="form-group" *ngIf = "problem.id !== undefined">
+            <label class="form-control-label" jhiTranslate="arenaApp.problem.file" for="file">File</label> {{fileUploadStatus}}
+            <input type="file" class="form-control" name="file" 
+            		id="file" accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
+            		(change)="uploadFile($event.target.files)" />
+        </div>
+                
     </div>
 </div>

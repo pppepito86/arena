@@ -32,10 +32,15 @@
                     </button>
 
                     <button class="btn"
-                            style="margin-right: 0.5em;"
                             (click)="onAutoSetTimeLimit()">
                         <span >
                         Autoset Time Limit
+                        </span>
+                    </button>
+                    
+                    <button class="btn" [routerLink] = "['/problem', problem.id, 'edit']">
+                        <span jhiTranslate="entity.action.edit">
+                            Edit
                         </span>
                     </button>
                 </div>
