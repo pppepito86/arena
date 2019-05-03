@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -142,9 +143,16 @@ public class Worker {
 
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 			httpclient.execute(post);
-			httpclient.close();
 		} 
 
+	}
+	
+	public void deleteProblem(long problemId) throws IOException {
+		HttpDelete delete = new HttpDelete(url + "/api/v1/problems/" + problemId);
+		
+		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+			httpclient.execute(delete);
+		}
 	}
 	
 	public void setFree(boolean isFree) {

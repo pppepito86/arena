@@ -1,12 +1,15 @@
 package com.olimpiici.arena.web.rest;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -33,6 +36,7 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.ProblemService;
@@ -62,6 +66,9 @@ public class CompetitionProblemResource {
     
     @Autowired
     private ApplicationProperties applicationProperties;
+    
+    @Autowired 
+    private WorkerPool workerPool;
     
     private final CompetitionProblemService competitionProblemService;
     private final SubmissionService submissionService;
@@ -193,34 +200,43 @@ public class CompetitionProblemResource {
     @Timed
     public ResponseEntity<?> setTimes(@PathVariable Long id,
     		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
-    	log.debug("REST request to get set time limits");
+    	log.debug("REST request to set time limits");
       
         PageRequest page = PageRequest.of(0, 10000);
       	List<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(id, page).getContent();
       	
-      	ProblemDTO problem = problemService.findOne(id).get();
+      	long problemId = competitionProblemService.findOne(id).get().getProblemId();
       	if (submissions.size() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
       		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
       		int max = times.stream().mapToInt(t -> t).max().getAsInt();
       		
       		int limit = (max*15/10)/100+1;
 
-      		log.debug("limit for problem<"+problem.getId()+"> with times "+times+" will be "+limit/10+"."+limit%10);
+      		log.debug("limit for problem<"+problemId+"> with times "+times+" will be "+limit/10+"."+limit%10);
       		
       		if (set) {
-      			String timeProp = "time = "+limit/10+"."+limit%10;
-              	File propeties = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "grade.properties").toFile();
-              	FileUtils.writeStringToFile(propeties, timeProp, StandardCharsets.UTF_8);
+      			String timeValue = limit/10+"."+limit%10;
+      			Properties props = new Properties();
+      			File gradePropertiesFile = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "grade.properties").toFile();
+      			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
+      				props.load(fis);
+      			}
+      			props.setProperty("time", timeValue);
+      			try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
+      				props.store(pw, null);
+      			}
 
               	ProcessExecutor executor = new ProcessExecutor()
               			.command("zip", "-r", "problem.zip", ".")
-              			.directory(Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem").toFile());
+              			.directory(Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem").toFile());
               	executor.execute();
               	
-              	File problemZipNew = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem", "problem.zip").toFile();
-              	File problemZipOrig = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problem.getId(), "problem.zip").toFile();
+              	File problemZipNew = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "problem.zip").toFile();
+              	File problemZipOrig = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem.zip").toFile();
               	problemZipOrig.delete();
               	problemZipNew.renameTo(problemZipOrig);
+              	
+              	workerPool.deleteProblem(problemId);
       		}
       }
       

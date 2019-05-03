@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.dto.ProblemDTO;
@@ -53,6 +54,9 @@ public class ProblemResource {
     @Autowired
     private ApplicationProperties applicationProperties;
 
+    @Autowired
+    private WorkerPool workerPool;
+    
     private final ProblemService problemService;
 
     public ProblemResource(ProblemService problemService) {
@@ -148,6 +152,8 @@ public class ProblemResource {
         File zipDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem").toFile();
         zipDir.mkdirs();
         zipZipFole.extractAll(zipDir.getAbsolutePath());
+        
+        workerPool.deleteProblem(id);
         
         return ResponseEntity.ok().build();
     }
