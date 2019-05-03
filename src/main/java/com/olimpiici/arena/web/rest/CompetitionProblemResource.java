@@ -175,8 +175,10 @@ public class CompetitionProblemResource {
     @Timed
     public ResponseEntity<?> submitAuthors(@PathVariable Long id) throws Exception {
     	log.debug("REST request to submit authors code");
-    
-    	File problemDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id).toFile();
+    	
+    	CompetitionProblemDTO competitionProblemDTO = competitionProblemService.findOne(id).get();
+    	
+    	File problemDir = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(competitionProblemDTO.getProblemId())).toFile();
     	File author = Paths.get(problemDir.getAbsolutePath(), "problem", "author", "author.cpp").toFile();
     	if (!author.exists()) return ResponseEntity.noContent().build();
       	
