@@ -33,6 +33,10 @@ export class SubmissionService {
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
+    rejudge(submissionId: number) {
+        return this.http.post(`${this.resourceUrl}/${submissionId}/rejudge`, { observe: 'response' });
+    }
+
     find(id: number, securityKey = ''): Observable<EntityResponseType> {
         let securityKeyPart;
         if (securityKey === '' || securityKey == null || securityKey === undefined) {

@@ -69,4 +69,6 @@ public interface SubmissionService {
     public List<TagDTO> findTags(Long id);
 
 	void updateTags(Long id, List<TagDTO> newTags);
+
+	void rejudge(Long id);
 }

@@ -190,6 +190,15 @@ public class SubmissionResource {
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
     
+    @PostMapping("/submissions/{id}/rejudge")
+    @Timed
+    public ResponseEntity rejudge(@PathVariable Long id)
+    		throws URISyntaxException {
+        log.debug("REST rejudging: {} {}", id);
+        submissionService.rejudge(id);
+        return ResponseEntity.ok().build();
+    }
+    
     @PostMapping("/submissions/{id}/tags")
     @Timed
     public ResponseEntity updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)

@@ -231,4 +231,11 @@ public class SubmissionServiceImpl implements SubmissionService {
     	}
     }
 
+	@Override
+	public void rejudge(Long id) {
+		Submission submission = submissionRepository.getOne(id);
+		submission.setVerdict("waiting");
+		submissionRepository.save(submission);
+	}
+
 }

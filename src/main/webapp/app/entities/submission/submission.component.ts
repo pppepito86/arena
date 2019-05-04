@@ -168,6 +168,10 @@ export class SubmissionComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    public rejudge(submissionId: number) {
+        this.submissionService.rejudge(submissionId).subscribe(_ => {}, (error: HttpErrorResponse) => this.onError(error.message));
+    }
+
     protected paginateSubmissions(data: ISubmission[], headers: HttpHeaders) {
         this.links = this.parseLinks.parse(headers.get('link'));
         this.totalItems = parseInt(headers.get('X-Total-Count'), 10);
