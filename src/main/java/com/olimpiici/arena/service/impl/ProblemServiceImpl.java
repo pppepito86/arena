@@ -159,8 +159,13 @@ public class ProblemServiceImpl implements ProblemService {
 	public Properties getProperties(Long problemId) throws Exception {
     	Properties props = new Properties();
 		File gradePropertiesFile = getGradeProperties(problemId);
-		try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
-			props.load(fis);
+		if (!gradePropertiesFile.exists()) {
+			props.setProperty("time", "1");
+			props.setProperty("memory", "256");
+		} else {
+			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
+				props.load(fis);
+			}
 		}
 		return props;
 	}
@@ -190,6 +195,9 @@ public class ProblemServiceImpl implements ProblemService {
 	
 	private void writeGradeProperties(long problemId, Properties props) throws Exception {
 		File gradePropertiesFile = getGradeProperties(problemId);
+		if (!gradePropertiesFile.exists()) {
+			gradePropertiesFile.createNewFile();
+		}
 		try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
 			props.store(pw, null);
 		}
