@@ -44,7 +44,7 @@ public class Worker {
 		this.workDir = workDir;
 	}
 
-	public SubmissionScore grade(long problemId, long submissionId, GraderTask listener)
+	public SubmissionScore grade(long problemId, long submissionId, GraderTask listener, boolean isAuthor)
 			throws Exception {
 		
 		if (!isProblemUploaded(problemId)) {
@@ -59,7 +59,9 @@ public class Worker {
                 .addTextBody("metadata", "{\"problemId\":" + problemId + "}", ContentType.APPLICATION_JSON)
                 .build();
 		
-		HttpPost post = new HttpPost(url + "/api/v1/submissions/" + submissionId);
+        // if it's author solution run with a big TL
+        String authorParam = isAuthor ? "&tl=20" : "";
+		HttpPost post = new HttpPost(url + "/api/v1/submissions/" + submissionId + authorParam);
 		post.setEntity(entity);
 
 		CloseableHttpClient httpclient = HttpClients.createDefault();

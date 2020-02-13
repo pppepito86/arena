@@ -146,7 +146,7 @@ public class PublicResource {
 //    @GetMapping("/copy_submissions")
     @Timed
     public ResponseEntity<?> copySubmissions() throws Exception {
-        log.debug("REST request to get set time limits");
+        log.debug("REST request to copy submissions");
     	
         List<SubmissionDTO> byVerdict = submissionService.findSubmissionByVerdict("CE");
         for (SubmissionDTO s: byVerdict) {
@@ -165,7 +165,7 @@ public class PublicResource {
 //    @GetMapping("/fix_verdicts")
     @Timed
     public ResponseEntity<?> fixVerdicts() throws Exception {
-        log.debug("REST request to get set time limits");
+        log.debug("REST request to fix verdicts");
     	
         List<SubmissionDTO> byVerdict = submissionService.findSubmissionByVerdict("CE");
         for (SubmissionDTO s: byVerdict) {

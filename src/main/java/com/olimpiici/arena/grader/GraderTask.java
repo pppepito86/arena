@@ -65,7 +65,8 @@ public class GraderTask {
 
 		SubmissionScore score = new SubmissionScore();
 		try {
-			score = worker.grade(problemId, submissionId, this);
+			boolean isAuthor = submission.getUserId() == 4;
+			score = worker.grade(problemId, submissionId, this, isAuthor);
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
 			score.addFinalScore("system error", 0);
