@@ -202,25 +202,41 @@ public class CompetitionProblemResource {
     @Timed
     public ResponseEntity<?> setTimes(@PathVariable Long id,
     		@RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
-    	log.debug("REST request to set time limits");
-      
-        PageRequest page = PageRequest.of(0, 10000);
-      	List<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(id, page).getContent();
-      	
-      	long problemId = competitionProblemService.findOne(id).get().getProblemId();
-      	if (submissions.size() == 3 && submissions.stream().mapToInt(s -> s.getPoints()).allMatch(p -> p == 100)) {
-      		List<Integer> times = submissions.stream().map(s -> s.getTimeInMillis()).collect(Collectors.toList());
-      		int max = times.stream().mapToInt(t -> t).max().getAsInt();
-      		
-      		int timeLimitMs = 100 * ((max*15/10)/100+1);
+			log.debug("REST request to set time limits");
 
-      		log.debug("limit for problem<"+problemId+"> with times "+times+" will be "+ timeLimitMs + "ms");
-      		
-      		if (set) {
-      			problemService.updateTimeLimit(problemId, timeLimitMs);              	
-              	workerPool.deleteProblem(problemId);
-      		}
-      }
+			PageRequest page = PageRequest.of(0, 10000);
+			List<SubmissionDTO> submissions = submissionService.findSubmissionsByCompetitionProblem(id, page).getContent();
+
+			long problemId = competitionProblemService.findOne(id).get().getProblemId();
+
+			final int authorUserId = 4;
+			final int numSolutions = 3;
+
+			boolean hasEnoughGoodSubmitions = submissions
+								.stream()
+								.filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
+								.count() >= numSolutions;
+		
+			if (hasEnoughGoodSubmitions) {
+				List<Integer> times = submissions.stream()
+						.filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
+						.limit(numSolutions)
+						.map(s -> s.getTimeInMillis())
+						.collect(Collectors.toList());
+
+				int max = times.stream().mapToInt(t -> t).max().getAsInt();
+	
+				int timeLimitMs = 100 * ((max*15/10)/100+1);
+
+				log.debug("limit for problem<" + problemId + "> with times " + times + " will be " + timeLimitMs + "ms");
+	
+				if (set) {
+					problemService.updateTimeLimit(problemId, timeLimitMs);
+					workerPool.deleteProblem(problemId);
+				}
+			} else {
+				log.debug("can't find " + numSolutions + " good solutions for problemId = " + problemId);
+			}
       
       return ResponseEntity.noContent().build();
   }
