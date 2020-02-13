@@ -60,7 +60,7 @@ public class Worker {
                 .build();
 		
         // if it's author solution run with a big TL
-        String authorParam = isAuthor ? "&tl=20" : "";
+        String authorParam = isAuthor ? "?tl=20" : "";
 		HttpPost post = new HttpPost(url + "/api/v1/submissions/" + submissionId + authorParam);
 		post.setEntity(entity);
 
