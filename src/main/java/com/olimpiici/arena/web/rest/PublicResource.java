@@ -116,7 +116,7 @@ public class PublicResource {
     	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
     }
     
-    @GetMapping("/time_limits")
+//    @GetMapping("/time_limits")
     @Timed
     public ResponseEntity<?> autoSetTimeLimits() throws Exception {
         log.debug("REST to auto set time limits for all problems");

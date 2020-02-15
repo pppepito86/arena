@@ -188,7 +188,7 @@ public class ProblemServiceImpl implements ProblemService {
   
     @Override
     public void autoSetTimeLimits() throws Exception {
-       PageRequest page = PageRequest.of(1, 100_000);
+       PageRequest page = PageRequest.of(0, 100_000);
        List<ProblemDTO> problems = findAll(page).getContent();
        for (ProblemDTO problem : problems) {
            autoSetTimeLimits(problem.getId());

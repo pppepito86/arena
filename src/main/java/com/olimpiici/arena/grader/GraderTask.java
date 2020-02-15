@@ -96,7 +96,10 @@ public class GraderTask {
 				}
 			} else if (values.length == 1){
 				verdict = values[0].getVerdict().toString();
-				System.out.println("Submission <" + submissionId + "> failed with " + values[0].getReason());
+                if (!verdict.equals("OK")) {
+				    System.out.println("Submission <" + submissionId + "> failed with " 
+                        + values[0].getReason());
+                }
 			}
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
