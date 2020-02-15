@@ -56,7 +56,7 @@ public interface ProblemService {
     // Automaticaly sets the time limits for all problems
     void autoSetTimeLimits() throws Exception;
 
-    void autoSetTimeLimits(Long idp) throws Exception;
+    void autoSetTimeLimits(Long id) throws Exception;
 
     void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception;
 

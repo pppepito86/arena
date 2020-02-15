@@ -188,8 +188,9 @@ public class ProblemServiceImpl implements ProblemService {
   
     @Override
     public void autoSetTimeLimits() throws Exception {
-       PageRequest page = PageRequest.of(0, 100_000);
+       PageRequest page = PageRequest.of(0, 10000);
        List<ProblemDTO> problems = findAll(page).getContent();
+       log.debug("Setting time limit for " + problems.size() + " problems");
        for (ProblemDTO problem : problems) {
            autoSetTimeLimits(problem.getId());
        }
@@ -197,6 +198,8 @@ public class ProblemServiceImpl implements ProblemService {
 
 	@Override
 	public void autoSetTimeLimits(Long id) throws Exception { 
+        // TODO: use problem id, not comp problem id
+        log.debug("Setting automatic time limit for problem " + id);
         PageRequest page = PageRequest.of(0, 10000);
         List<SubmissionDTO> submissions = submissionService
             .findSubmissionsByCompetitionProblem(id, page)
@@ -223,12 +226,13 @@ public class ProblemServiceImpl implements ProblemService {
 
             int timeLimitMs = 100 * ((max*15/10)/100+1);
 
-            log.debug("limit for problem<" + problemId + "> with times " + times + " will be " + timeLimitMs + "ms");
+            log.info("limit for problem<" + problemId + "> with times " + 
+                    times + " will be " + timeLimitMs + "ms");
 
             updateTimeLimit(problemId, timeLimitMs);
             workerPool.deleteProblem(problemId);
         } else {
-            log.debug("can't find " + numSolutions + " good solutions for problemId = " + problemId);
+            log.info("can't find " + numSolutions + " good solutions for problemId = " + problemId);
         }
 	}
 
