@@ -103,8 +103,8 @@ public class PublicResource {
     @Timed
     public ResponseEntity<?> getProblemZip(@PathVariable Long id) throws Exception {
         log.debug("REST request to get Problem ZIP: {}", id);
-    	
-        File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
+        String workdir = applicationProperties.getWorkDir();
+        File zipFile = Paths.get(workdir, "problems", ""+id, "problem.zip").toFile();
         InputStreamResource isr = null;
         if (zipFile.exists()) {
         	isr = new InputStreamResource(new FileInputStream(zipFile));
@@ -115,10 +115,18 @@ public class PublicResource {
     	
     	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
     }
+    
+    @GetMapping("/time_limits")
+    @Timed
+    public ResponseEntity<?> autoSetTimeLimits() throws Exception {
+        log.debug("REST to auto set time limits for all problems");
+        problemService.autoSetTimeLimits();
+        return ResponseEntity.noContent().build();
+    }
 
 //    @GetMapping("/time_limits")
     @Timed
-    public ResponseEntity<?> setTimeLimits() throws Exception {
+    public ResponseEntity<?> submitAuthorSolutions() throws Exception {
         log.debug("REST request to get set time limits");
         
         File problemsDir = Paths.get(applicationProperties.getWorkDir(), "problems").toFile();
@@ -133,7 +141,10 @@ public class PublicResource {
 
         	for (int i = 0; i < 3; i++) {
         		SubmissionDTO s = submissionService.save(submission);        	
-        		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
+                String workdir = applicationProperties.getWorkDir();
+        		File submissionFile = Paths
+                    .get(workdir, "submissions", ""+s.getId(), "solution.cpp")
+                    .toFile();
         		FileUtils.copyFile(author, submissionFile);
         		s.setVerdict("waiting");
         		submissionService.save(s);
@@ -150,10 +161,18 @@ public class PublicResource {
     	
         List<SubmissionDTO> byVerdict = submissionService.findSubmissionByVerdict("CE");
         for (SubmissionDTO s: byVerdict) {
-        	long problemId = competitionProblemService.findOne(s.getCompetitionProblemId()).get().getProblemId();
+        	long problemId = competitionProblemService
+                .findOne(s.getCompetitionProblemId())
+                .get()
+                .getProblemId();
 
-        	File author = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, "problem", "author", "author.cpp").toFile();
-    		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
+            String workdir = applicationProperties.getWorkDir();
+        	File author = Paths
+                .get(workdir, "problems", ""+problemId, "problem", "author", "author.cpp")
+                .toFile();
+     		File submissionFile = Paths
+                .get(workdir, "submissions", ""+s.getId(), "solution.cpp")
+                .toFile();
     		FileUtils.copyFile(author, submissionFile);
         }
         

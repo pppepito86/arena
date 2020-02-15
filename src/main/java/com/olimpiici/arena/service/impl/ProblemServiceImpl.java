@@ -1,7 +1,10 @@
 package com.olimpiici.arena.service.impl;
 
+import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.TagService;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.SubmissionService;
 import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Problem;
@@ -11,6 +14,7 @@ import com.olimpiici.arena.repository.TagCollectionRepository;
 import com.olimpiici.arena.repository.TagCollectionTagRepository;
 import com.olimpiici.arena.repository.TagRepository;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
@@ -20,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zeroturnaround.exec.InvalidExitValueException;
@@ -50,7 +55,11 @@ public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
 
     private final ProblemMapper problemMapper;
-    
+
+    private final SubmissionService submissionService;
+
+    private final CompetitionProblemService competitionProblemService;
+
     private final TagCollectionTagRepository tagCollectionTagRepository;
     
     private final TagCollectionRepository tagCollectionRepository;
@@ -63,9 +72,14 @@ public class ProblemServiceImpl implements ProblemService {
     
     @Autowired
     private ApplicationProperties applicationProperties;
-    
-    public ProblemServiceImpl(ProblemRepository problemRepository, 
-    		ProblemMapper problemMapper, 
+   
+    @Autowired 
+    private WorkerPool workerPool;
+
+    public ProblemServiceImpl(CompetitionProblemService competitionProblemService,
+            ProblemRepository problemRepository, 
+    		ProblemMapper problemMapper,
+            SubmissionService submissionService,
     		TagCollectionTagRepository tagCollectionTagRepository,
     		TagCollectionRepository tagCollectionRepository,
     		TagRepository tagRepository,
@@ -73,6 +87,8 @@ public class ProblemServiceImpl implements ProblemService {
     		TagService tagService) {
         this.problemRepository = problemRepository;
         this.problemMapper = problemMapper;
+        this.competitionProblemService = competitionProblemService;
+        this.submissionService = submissionService;
         this.tagCollectionTagRepository = tagCollectionTagRepository;
         this.tagCollectionRepository = tagCollectionRepository;
         this.tagRepository = tagRepository;
@@ -169,7 +185,53 @@ public class ProblemServiceImpl implements ProblemService {
 		}
 		return props;
 	}
+  
+    @Override
+    public void autoSetTimeLimits() throws Exception {
+       PageRequest page = PageRequest.of(1, 100_000);
+       List<ProblemDTO> problems = findAll(page).getContent();
+       for (ProblemDTO problem : problems) {
+           autoSetTimeLimits(problem.getId());
+       }
+    }
+
+	@Override
+	public void autoSetTimeLimits(Long id) throws Exception { 
+        PageRequest page = PageRequest.of(0, 10000);
+        List<SubmissionDTO> submissions = submissionService
+            .findSubmissionsByCompetitionProblem(id, page)
+            .getContent();
+
+        long problemId = competitionProblemService.findOne(id).get().getProblemId();
+
+        final int authorUserId = 4;
+        final int numSolutions = 3;
+
+        boolean hasEnoughGoodSubmitions = submissions
+                            .stream()
+                            .filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
+                            .count() >= numSolutions;
     
+        if (hasEnoughGoodSubmitions) {
+            List<Integer> times = submissions.stream()
+                    .filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
+                    .limit(numSolutions)
+                    .map(s -> s.getTimeInMillis())
+                    .collect(Collectors.toList());
+
+            int max = times.stream().mapToInt(t -> t).max().getAsInt();
+
+            int timeLimitMs = 100 * ((max*15/10)/100+1);
+
+            log.debug("limit for problem<" + problemId + "> with times " + times + " will be " + timeLimitMs + "ms");
+
+            updateTimeLimit(problemId, timeLimitMs);
+            workerPool.deleteProblem(problemId);
+        } else {
+            log.debug("can't find " + numSolutions + " good solutions for problemId = " + problemId);
+        }
+	}
+
 	@Override
 	public void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception {
 		String timeValue = newTimeLimitMs/1000 + "." + newTimeLimitMs%1000;
@@ -189,7 +251,8 @@ public class ProblemServiceImpl implements ProblemService {
 	}
 
 	private File getGradeProperties(long problemId) {
-		return Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "grade.properties")
+        String workdir = applicationProperties.getWorkDir(); 
+		return Paths.get(workdir , "problems", String.valueOf(problemId), "problem", "grade.properties")
 				.toFile();
 	}
 	
@@ -204,13 +267,18 @@ public class ProblemServiceImpl implements ProblemService {
 	}
 	
 	private void recreateProblemZip(long problemId) throws Exception {
+        String workdir = applicationProperties.getWorkDir(); 
+        File problemsDir = Paths.get(workdir, "problems", String.valueOf(problemId), "problem").toFile();
 		ProcessExecutor executor = new ProcessExecutor()
       			.command("zip", "-r", "problem.zip", ".")
-      			.directory(Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem").toFile());
+      			.directory(problemsDir);
       	executor.execute();
-      	
-      	File problemZipNew = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem", "problem.zip").toFile();
-      	File problemZipOrig = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(problemId), "problem.zip").toFile();
+      	File problemZipNew = Paths
+            .get(workdir, "problems", String.valueOf(problemId), "problem", "problem.zip")
+            .toFile();
+      	File problemZipOrig = Paths
+            .get(workdir, "problems", String.valueOf(problemId), "problem.zip")
+            .toFile();
       	problemZipOrig.delete();
       	problemZipNew.renameTo(problemZipOrig);
 	}

@@ -53,11 +53,16 @@ public interface ProblemService {
 
 	void updateTags(Long id, List<TagDTO> newTags);
 	
-	void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception;
-	
-	void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception;
-	
-	Properties getProperties(Long problemId) throws Exception;
-	
-	ProblemDTO setLimitsToDto(ProblemDTO dto);
+    // Automaticaly sets the time limits for all problems
+    void autoSetTimeLimits() throws Exception;
+
+    void autoSetTimeLimits(Long idp) throws Exception;
+
+    void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception;
+
+    void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception;
+
+    Properties getProperties(Long problemId) throws Exception;
+
+    ProblemDTO setLimitsToDto(ProblemDTO dto);
 }
