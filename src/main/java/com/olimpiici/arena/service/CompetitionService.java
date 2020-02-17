@@ -12,6 +12,7 @@ import com.olimpiici.arena.service.dto.SubmissionDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,8 +75,10 @@ public interface CompetitionService {
     Integer findPointsForCompetition(User user, Long competitionId);
     
     Integer findTotalPoints(User user);
-    
+   
     Page<UserPoints> findStandings(Long competitionId, Pageable pageable);
+    
+    Page<UserPoints> findStandings(Long competitionId, Pageable pageable, ZonedDateTime from);
     
     Page<SubmissionDTO> findSubmissionsByCompetition(Long competitionId, Pageable pageable);
     

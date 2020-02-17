@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -310,14 +312,17 @@ public class CompetitionResource {
     
     @GetMapping("/competitions/{id}/standings")
     @Timed
-    public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, Pageable pageable) {
+    public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, 
+            Pageable pageable, 
+            @RequestParam(value = "w", defaultValue = "5200") Integer weeks) {
         log.debug("REST request to get standings for competition: {}", id);
-		Page<UserPoints> page = competitionService.findStandings(id, pageable);
+        ZonedDateTime from = ZonedDateTime.now().minus(Period.ofWeeks(weeks));
+		Page<UserPoints> page = competitionService.findStandings(id, pageable, from);
         String url = String.format("/api/competitions/{id}/standings", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+   
     /**
      * DELETE  /competitions/:id : delete the "id" competition.
      *

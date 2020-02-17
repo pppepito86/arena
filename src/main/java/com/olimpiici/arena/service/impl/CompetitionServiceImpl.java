@@ -2,6 +2,7 @@ package com.olimpiici.arena.service.impl;
 
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.Standings;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
@@ -31,6 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Period;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -254,62 +257,46 @@ public class CompetitionServiceImpl implements CompetitionService {
 				.reduce(0, IntUtil::safeSum);
 	}
 
+    
 	@Override
-	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {	
-		Map<Long, Map<Long, Integer>> userToPointsPerProblem 
-			= new HashMap<Long, Map<Long, Integer>>();
-		Map<Long, User> idToUser = new HashMap<>();
-		userRepository
-			.findAll()
-			.stream()
-			.forEach(user -> idToUser.put(user.getId(), user));
-		
-		Competition competition = competitionRepository.getOne(competitionId);
+	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {
+        ZonedDateTime from = ZonedDateTime.now().minus(Period.ofYears(100));
+        return findStandings(competitionId, pageable, from);
+    }
+
+	@Override
+	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable, 
+            ZonedDateTime from) {	
+        Standings oldStandings = new Standings(userRepository);
+		Standings fullStandings = new Standings(userRepository);
+        Competition competition = competitionRepository.getOne(competitionId);
 		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition);
-		
 		submissionRepository
 			.findByCompetitionProblemIn(problems)
 			.stream()
 			.forEach(submission -> {
-				Long userId = submission.getUser().getId();
-				if (!userToPointsPerProblem.containsKey(userId)) 
-					userToPointsPerProblem.put(userId, new HashMap<Long, Integer>());
-				Map<Long, Integer> pointsPerProblem = userToPointsPerProblem.get(userId);
-				Long problem = submission.getCompetitionProblem().getId();
-				Integer points = pointsPerProblem.getOrDefault(problem, 0);
-				points = IntUtil.safeMax(points, submission.getPoints());
-				pointsPerProblem.put(problem, points);
+                ZonedDateTime uploadDate = submission.getUploadDate();
+                if (uploadDate != null && uploadDate.isBefore(from)) {
+                    oldStandings.processSubmission(submission);
+                }
+                fullStandings.processSubmission(submission);
 			});
-		
-		List<UserPoints> standings = userToPointsPerProblem
-			.entrySet()
-			.stream()
-			.map(entry -> {
-				Integer points = entry.getValue()
-						.values()
-						.stream()
-						.mapToInt(Integer::intValue)
-						.sum();
-				User user = idToUser.get(entry.getKey());
-				return new UserPoints(user, points);
-			})
-			.filter(userPoints -> userPoints.user.getId() > 4)
-			.collect(Collectors.toList());
-		
 
-		Collections.sort(standings);
-		
+        fullStandings.minus(oldStandings);
+		List<UserPoints> standingsList = fullStandings.getStandings();
+
 		int fromIndex = (int)(pageable.getOffset());
-		int toIndex = Math.min(standings.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
+		int toIndex = Math.min(standingsList.size(), 
+                (int)(pageable.getOffset() + pageable.getPageSize()));
 		List<UserPoints> pageContent;
 		
-		if (fromIndex < standings.size()) {
-			pageContent = standings.subList(fromIndex, toIndex);
+		if (fromIndex < standingsList.size()) {
+			pageContent = standingsList.subList(fromIndex, toIndex);
 		} else {
 			pageContent = new ArrayList<>();
 		}
 		
-		return new PageImpl<>(pageContent, pageable, standings.size());
+		return new PageImpl<>(pageContent, pageable, standingsList.size());
 	}
 
 	@Override
