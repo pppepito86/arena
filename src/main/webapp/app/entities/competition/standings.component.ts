@@ -30,6 +30,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     predicate: any;
     previousPage: any;
     reverse: any;
+    weeks: number;
     parentCompetition: ICompetition;
 
     constructor(
@@ -59,7 +60,8 @@ export class StandingsComponent implements OnInit, OnDestroy {
             .getStandings(this.parentCompetition.id, {
                 page: this.page - 1,
                 size: this.itemsPerPage,
-                sort: this.sort()
+                sort: this.sort(),
+                w: this.weeks
             })
             .subscribe(
                 (res: HttpResponse<IUserPoints[]>) => this.paginateStandings(res.body, res.headers),
@@ -98,6 +100,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        console.log('activated route:', this.activatedRoute);
+        // this.weeks = Number(this.activatedRoute.snapshot.queryParams['w']);
+        // console.log("weeks ", this.weeks);
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;

@@ -75,7 +75,7 @@ export class CompetitionService {
 
     getStandings(competitionId: number, req?: any): Observable<HttpResponse<IUserPoints[]>> {
         const options = createRequestOption(req);
-        const url = `${this.resourceUrl}/${competitionId}/standings`;
+        const url = `${this.resourceUrl}/${competitionId}/standings?w=52`;
         return this.http.get<IUserPoints[]>(url, { params: options, observe: 'response' });
     }
 }
