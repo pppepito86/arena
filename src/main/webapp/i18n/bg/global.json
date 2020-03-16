@@ -142,5 +142,5 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "Направено с <3 от Пешо и Марин в школа Олимпийци."
+    "footer": "Направено с ❤️  от Пешо и Марин в <a href='http://olimpiici.com/'>школа Олимпийци</a>"
 }

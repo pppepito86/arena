@@ -142,5 +142,5 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID"
     },
-    "footer": "Made with <3 by Pesho and Marin at Olimpiici."
+    "footer": "Made with ❤️  by Pesho and Marin at <a href='http://olimpiici.com/'> Olimpiici</a>"
 }
