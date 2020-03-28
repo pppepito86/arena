@@ -79,7 +79,7 @@ public class ProblemDTO implements Serializable {
         this.tagsId = tagCollectionId;
     }
 
-    @Override
+    
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -95,12 +95,12 @@ public class ProblemDTO implements Serializable {
         return Objects.equals(getId(), problemDTO.getId());
     }
 
-    @Override
+    
     public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    @Override
+    
     public String toString() {
         return "ProblemDTO{" +
             "id=" + getId() +

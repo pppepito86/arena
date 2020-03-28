@@ -38,7 +38,7 @@ public class TagCollectionTagDTO implements Serializable {
         this.tagId = tagId;
     }
 
-    @Override
+    
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -54,12 +54,12 @@ public class TagCollectionTagDTO implements Serializable {
         return Objects.equals(getId(), tagCollectionTagDTO.getId());
     }
 
-    @Override
+    
     public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    @Override
+    
     public String toString() {
         return "TagCollectionTagDTO{" +
             "id=" + getId() +

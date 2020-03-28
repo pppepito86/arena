@@ -189,7 +189,7 @@ public class SubmissionDTO implements Serializable {
         this.competitionProblemId = competitionProblemId;
     }
 
-    @Override
+    
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -205,12 +205,12 @@ public class SubmissionDTO implements Serializable {
         return Objects.equals(getId(), submissionDTO.getId());
     }
 
-    @Override
+    
     public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    @Override
+    
     public String toString() {
         return "SubmissionDTO{" +
             "id=" + getId() +

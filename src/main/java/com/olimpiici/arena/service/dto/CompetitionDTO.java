@@ -58,7 +58,7 @@ public class CompetitionDTO implements Serializable {
         this.parentId = competitionId;
     }
 
-    @Override
+    
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -74,12 +74,12 @@ public class CompetitionDTO implements Serializable {
         return Objects.equals(getId(), competitionDTO.getId());
     }
 
-    @Override
+    
     public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    @Override
+    
     public String toString() {
         return "CompetitionDTO{" +
             "id=" + getId() +

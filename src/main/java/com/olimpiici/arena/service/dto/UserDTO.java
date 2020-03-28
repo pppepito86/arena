@@ -179,7 +179,7 @@ public class UserDTO {
         this.authorities = authorities;
     }
 
-    @Override
+    
     public String toString() {
         return "UserDTO{" +
             "login='" + login + '\'' +
