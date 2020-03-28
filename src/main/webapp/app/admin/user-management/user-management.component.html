@@ -7,73 +7,95 @@
     </h2>
     <jhi-alert></jhi-alert>
     <div class="table-responsive" *ngIf="users">
-        <table class="table table-striped">
-            <thead>
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-                <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="login"><span jhiTranslate="userManagement.login">Login</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="email"><span jhiTranslate="userManagement.email">Email</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th></th>
-                <th jhiSortBy="langKey"> <span jhiTranslate="userManagement.langKey">Lang Key</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th><span jhiTranslate="userManagement.profiles">Profiles</span></th>
-                <th jhiSortBy="createdDate"><span jhiTranslate="userManagement.createdDate">Created Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="lastModifiedBy"><span jhiTranslate="userManagement.lastModifiedBy">Last Modified By</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th jhiSortBy="lastModifiedDate"><span jhiTranslate="userManagement.lastModifiedDate">Last Modified Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody *ngIf ="users">
-            <tr *ngFor="let user of users; trackBy: trackIdentity">
-                <td><a [routerLink]="['./', user.login, 'view']">{{user.id}}</a></td>
-                <td>{{user.login}}</td>
-                <td>{{user.email}}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm" (click)="setActive(user, true)" *ngIf="!user.activated"
-                            jhiTranslate="userManagement.deactivated">Deactivated</button>
-                    <button class="btn btn-success btn-sm" (click)="setActive(user, false)" *ngIf="user.activated"
-                            [disabled]="currentAccount.login === user.login" jhiTranslate="userManagement.activated">Activated</button>
+        <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium">
+        </mat-form-field>
+
+        <table style="width:100%" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Id </th>
+                <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            </ng-container>
+            <ng-container matColumnDef="login">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Login </th>
+                <td mat-cell *matCellDef="let element"> {{element.login}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                <td mat-cell *matCellDef="let element"> {{element.firstName}}
+                    {{element.lastName}} </td>
+            </ng-container>
+            <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+                <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+            </ng-container>
+            <ng-container matColumnDef="activated">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Active </th>
+                <td mat-cell *matCellDef="let element"> 
+                    <button class="btn btn-danger btn-sm" 
+                            (click)="setActive(element, true)" 
+                            *ngIf="!element.activated"
+                            jhiTranslate="userManagement.deactivated">
+                        Deactivated
+                    </button>
+                    <button class="btn btn-success btn-sm" 
+                            (click)="setActive(element, false)" 
+                            *ngIf="element.activated"
+                            [disabled]="currentAccount.login === element.login" 
+                            jhiTranslate="userManagement.activated">
+                        Activated
+                    </button>
                 </td>
-                <td>{{user.langKey}}</td>
-                <td>
-                    <div *ngFor="let authority of user.authorities">
+            </ng-container>
+            <ng-container matColumnDef="lang">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Lang </th>
+                <td mat-cell *matCellDef="let element"> {{element.langKey}} </td>
+            </ng-container>
+            <ng-container matColumnDef="roles">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Roles </th>
+                <td mat-cell *matCellDef="let element"> 
+                    <div *ngFor="let authority of element.authorities">
                         <span class="badge badge-info">{{ authority }}</span>
                     </div>
                 </td>
-                <td>{{user.createdDate | date:'dd/MM/yy HH:mm'}}</td>
-                <td>{{user.lastModifiedBy}}</td>
-                <td>{{user.lastModifiedDate | date:'dd/MM/yy HH:mm'}}</td>
-                <td class="text-right">
+            </ng-container>
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Actions </th>
+                <td mat-cell *matCellDef="let user"> 
                     <div class="btn-group flex-btn-group-container">
-                        <button type="submit"
-                                [routerLink]="['./', user.login, 'view']"
-                                class="btn btn-info btn-sm">
-                            <fa-icon [icon]="'eye'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                        </button>
-                        <button type="submit"
-                                [routerLink]="['./', user.login, 'edit']"
-                                queryParamsHandling="merge"
-                                class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                        </button>
-                        <button type="button" (click)="deleteUser(user)"
-                                class="btn btn-danger btn-sm" [disabled]="currentAccount.login === user.login">
-                            <fa-icon [icon]="'times'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
-                        </button>
-                    </div>
+                            <button type="submit"
+                                    [routerLink]="['./', user.login, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon [icon]="'eye'"></fa-icon>
+                                <span class="d-none d-md-inline" 
+                                    jhiTranslate="entity.action.view">View</span>
+                            </button>
+                            <button type="submit"
+                                    [routerLink]="['./', user.login, 'edit']"
+                                    queryParamsHandling="merge"
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                                <span class="d-none d-md-inline" 
+                                    jhiTranslate="entity.action.edit">Edit</span>
+                            </button>
+                            <button type="button" (click)="deleteUser(user)"
+                                    class="btn btn-danger btn-sm" 
+                                    [disabled]="currentAccount.login === user.login">
+                                <fa-icon [icon]="'times'"></fa-icon>
+                                <span class="d-none d-md-inline" 
+                                    jhiTranslate="entity.action.delete">Delete</span>
+                            </button>
+                        </div>
                 </td>
-            </tr>
-            </tbody>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
+        <mat-paginator [pageSizeOptions]="[20, 50, 100]"
+            showFirstLastButtons></mat-paginator>
     </div>
-    <div *ngIf="users">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="queryCount" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
-        </div>
-    </div>
+
 </div>

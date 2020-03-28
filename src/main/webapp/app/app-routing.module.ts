@@ -12,7 +12,7 @@ const LAYOUT_ROUTES = [navbarRoute, ...errorRoute];
                 ...LAYOUT_ROUTES,
                 {
                     path: 'admin',
-                    loadChildren: './admin/admin.module#ArenaAdminModule'
+                    loadChildren: () => import('./admin/admin.module').then(m => m.ArenaAdminModule)
                 }
             ],
             { useHash: true, enableTracing: DEBUG_INFO_ENABLED }

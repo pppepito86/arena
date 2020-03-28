@@ -18,22 +18,22 @@
         "@schematics/angular:component": {
             "inlineStyle": true,
             "inlineTemplate": false,
-            "spec": false,
+            "skipTests": true,
             "prefix": "jhi",
             "styleExt": "scss"
         },
         "@schematics/angular:directive": {
-            "spec": false,
+            "skipTests": true,
             "prefix": "jhi"
         },
         "@schematics/angular:guard": {
-            "spec": false
+            "skipTests": true
         },
         "@schematics/angular:pipe": {
-            "spec": false
+            "skipTests": true
         },
         "@schematics/angular:service": {
-            "spec": false
+            "skipTests": true
         }
     }
 }

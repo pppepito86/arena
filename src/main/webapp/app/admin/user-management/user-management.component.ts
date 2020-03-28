@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -8,6 +8,9 @@ import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { AccountService, UserService, User } from 'app/core';
 import { UserMgmtDeleteDialogComponent } from 'app/admin';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 @Component({
     selector: 'jhi-user-mgmt',
@@ -22,11 +25,15 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
     links: any;
     totalItems: any;
     queryCount: any;
-    itemsPerPage: any;
+    numItemsToFetch = 100000;
     page: any;
     predicate: any;
     previousPage: any;
     reverse: any;
+    displayedColumns: string[] = ['id', 'login', 'name', 'email', 'activated', 'lang', 'roles', 'actions'];
+    dataSource: any;
+    @ViewChild(MatPaginator) paginator: MatPaginator;
+    @ViewChild(MatSort) sort: MatSort;
 
     constructor(
         private userService: UserService,
@@ -38,7 +45,6 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
         private eventManager: JhiEventManager,
         private modalService: NgbModal
     ) {
-        this.itemsPerPage = ITEMS_PER_PAGE;
         this.routeData = this.activatedRoute.data.subscribe(data => {
             this.page = data['pagingParams'].page;
             this.previousPage = data['pagingParams'].page;
@@ -82,8 +88,8 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
         this.userService
             .query({
                 page: this.page - 1,
-                size: this.itemsPerPage,
-                sort: this.sort()
+                size: this.numItemsToFetch
+                // sort: this.sort()
             })
             .subscribe(
                 (res: HttpResponse<User[]>) => this.onSuccess(res.body, res.headers),
@@ -94,7 +100,7 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
     trackIdentity(index, item: User) {
         return item.id;
     }
-
+    /*
     sort() {
         const result = [this.predicate + ',' + (this.reverse ? 'asc' : 'desc')];
         if (this.predicate !== 'id') {
@@ -102,7 +108,7 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
         }
         return result;
     }
-
+         */
     loadPage(page: number) {
         if (page !== this.previousPage) {
             this.previousPage = page;
@@ -138,6 +144,16 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
         this.totalItems = headers.get('X-Total-Count');
         this.queryCount = this.totalItems;
         this.users = data;
+        this.dataSource = new MatTableDataSource(data);
+        setTimeout(() => {
+            this.dataSource.paginator = this.paginator;
+            this.dataSource.sort = this.sort;
+        });
+    }
+
+    applyFilter(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSource.filter = filterValue.trim().toLowerCase();
     }
 
     private onError(error) {

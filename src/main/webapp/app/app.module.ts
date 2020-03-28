@@ -18,12 +18,17 @@ import { ArenaHomeModule } from './home/home.module';
 import { ArenaAccountModule } from './account/account.module';
 import { ArenaEntityModule } from './entities/entity.module';
 import * as moment from 'moment';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import 'hammerjs';
 // jhipster-needle-angular-add-module-import JHipster will add new module here
 import { JhiMainComponent, NavbarComponent, FooterComponent, PageRibbonComponent, ActiveMenuDirective, ErrorComponent } from './layouts';
 
 @NgModule({
     imports: [
         BrowserModule,
+        BrowserAnimationsModule,
+        FlexLayoutModule,
         ArenaAppRoutingModule,
         Ng2Webstorage.forRoot({ prefix: 'jhi', separator: '-' }),
         NgJhipsterModule.forRoot({
