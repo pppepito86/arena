@@ -28,7 +28,7 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
     itemsPerPage: any;
     page: any;
     previousPage: any;
-    parentCompetoition: ICompetition;
+    parentCompetition: ICompetition;
     grandChildrenCompetitions = {};
     grandChildrenProblems = {};
 
