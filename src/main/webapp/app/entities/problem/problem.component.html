@@ -10,30 +10,46 @@
     </h2>
     <jhi-alert></jhi-alert>
     <br/>
-    <div class="table-responsive" *ngIf="problems">
-        <table class="table table-striped">
-            <thead>
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="title"><span jhiTranslate="arenaApp.problem.title">Title</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="directory"><span jhiTranslate="arenaApp.problem.directory">Directory</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="version"><span jhiTranslate="arenaApp.problem.version">Version</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="tagsId"><span jhiTranslate="arenaApp.problem.tags">Tags</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let problem of problems ;trackBy: trackId">
-                <td><a [routerLink]="['/problem', problem.id, 'view' ]">{{problem.id}}</a></td>
-                <td>{{problem.title}}</td>
-                <td>{{problem.directory}}</td>
-                <td>{{problem.version}}</td>
-                <td>
+    <div class="table-responsive" *ngIf="dataSource">
+        <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium">
+        </mat-form-field>
+
+        <table style="width:100%" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    <span jhiTranslate="global.field.id">ID</span> </th>
+                <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            </ng-container>
+            <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                    <span jhiTranslate="arenaApp.problem.title">Title</span>
+                </th>
+                <td mat-cell *matCellDef="let element"> {{element.title}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="version">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                    <span jhiTranslate="arenaApp.problem.version">Version</span>
+                </th>
+                <td mat-cell *matCellDef="let element">{{element.version}} </td>
+            </ng-container>
+            <ng-container matColumnDef="tags">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                    <span jhiTranslate="arenaApp.problem.tags">Tags</span> 
+                </th>
+                <td mat-cell *matCellDef="let problem"> 
                     <div *ngIf="problem.tagsId">
-                        <a [routerLink]="['../tag-collection', problem.tagsId , 'view' ]" >{{problem.tagsId}}</a>
-                    </div>
+                        <a [routerLink]="['../tag-collection', problem.tagsId , 'view' ]" >
+                            {{problem.tagsId}}
+                        </a>
+                    </div>      
                 </td>
-                <td class="text-right">
+            </ng-container>
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Actions </th>
+                <td mat-cell *matCellDef="let problem"> 
                     <div class="btn-group flex-btn-group-container">
                         <button type="submit"
                                 [routerLink]="['/problem', problem.id, 'view' ]"
@@ -57,16 +73,12 @@
                         </button>
                     </div>
                 </td>
-            </tr>
-            </tbody>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
-    </div>
-    <div *ngIf="problems && problems.length">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
-        </div>
+        <mat-paginator [pageSizeOptions]="[20, 50, 100]"
+            showFirstLastButtons></mat-paginator>
     </div>
 </div>

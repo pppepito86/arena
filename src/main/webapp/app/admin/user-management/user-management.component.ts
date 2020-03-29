@@ -5,7 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
-import { ITEMS_PER_PAGE } from 'app/shared';
+import { NUM_FETCH_ITEMS } from 'app/shared';
 import { AccountService, UserService, User } from 'app/core';
 import { UserMgmtDeleteDialogComponent } from 'app/admin';
 import { MatPaginator } from '@angular/material/paginator';
@@ -25,7 +25,6 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
     links: any;
     totalItems: any;
     queryCount: any;
-    numItemsToFetch = 100000;
     page: any;
     predicate: any;
     previousPage: any;
@@ -88,7 +87,7 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
         this.userService
             .query({
                 page: this.page - 1,
-                size: this.numItemsToFetch
+                size: NUM_FETCH_ITEMS
                 // sort: this.sort()
             })
             .subscribe(
@@ -100,15 +99,7 @@ export class UserMgmtComponent implements OnInit, OnDestroy {
     trackIdentity(index, item: User) {
         return item.id;
     }
-    /*
-    sort() {
-        const result = [this.predicate + ',' + (this.reverse ? 'asc' : 'desc')];
-        if (this.predicate !== 'id') {
-            result.push('id');
-        }
-        return result;
-    }
-         */
+
     loadPage(page: number) {
         if (page !== this.previousPage) {
             this.previousPage = page;
