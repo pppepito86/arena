@@ -4,13 +4,30 @@
             <thead>
             <tr>
                 <th><span jhiTranslate="arenaApp.competition.label">Label</span></th>
-                <th><span jhiTranslate="arenaApp.competition.description">Description</span></th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let competition of competitions ;trackBy: trackId">
-                <td><a [routerLink]="['/catalog', competition.id]">{{competition.label}}</a></td>
-                <td>{{competition.description}}</td>
+                <td>
+                    <a [routerLink]="['/catalog', competition.id]">
+                        {{competition.label}}
+                    </a>
+                </td>
+                <td>
+                 <div *ngIf="grandChildrenCompetitions[competition.id]">
+                     <a *ngFor="let child of grandChildrenCompetitions[competition.id]" 
+                         [routerLink]="['/catalog', child.id]"
+                         style="margin-right:1em">
+                         {{child.label}}</a>
+                 </div>
+                 <div *ngIf="grandChildrenProblems[competition.id]">
+                     <a *ngFor="let problem of grandChildrenProblems[competition.id]" 
+                         [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]"
+                         style="width:6em; display:inline-block">
+                         {{problem.title}}</a>
+                 </div>
+                </td>
             </tr>
             </tbody>
         </table>

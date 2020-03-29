@@ -9,6 +9,7 @@ import { AccountService } from 'app/core';
 
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { CompetitionService } from './competition.service';
+import { CompetitionProblemService } from '../competition-problem/competition-problem.service';
 
 @Component({
     selector: 'jhi-competition-children',
@@ -27,12 +28,15 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
     itemsPerPage: any;
     page: any;
     previousPage: any;
-    parentCompetition: ICompetition;
+    parentCompetoition: ICompetition;
+    grandChildrenCompetitions = {};
+    grandChildrenProblems = {};
 
     DEFAULT_SORT = 'order,asc';
 
     constructor(
         protected competitionService: CompetitionService,
+        protected competitionProblemService: CompetitionProblemService,
         protected parseLinks: JhiParseLinks,
         protected jhiAlertService: JhiAlertService,
         protected accountService: AccountService,
@@ -59,7 +63,39 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
                 sort: [this.DEFAULT_SORT]
             })
             .subscribe(
-                (res: HttpResponse<ICompetition[]>) => this.paginateCompetitions(res.body, res.headers),
+                (res: HttpResponse<ICompetition[]>) => {
+                    this.paginateCompetitions(res.body, res.headers);
+                    for (let child of res.body) {
+                        this.loadGrandChildrenCompetitions(child);
+                        this.loadGrandChildrenProblems(child);
+                    }
+                },
+                (res: HttpErrorResponse) => this.onError(res.message)
+            );
+    }
+
+    loadGrandChildrenCompetitions(child: any) {
+        this.competitionService
+            .findChildren(child.id, {
+                size: this.itemsPerPage
+            })
+            .subscribe(
+                (res: HttpResponse<ICompetition[]>) => {
+                    this.grandChildrenCompetitions[child.id] = res.body;
+                },
+                (res: HttpErrorResponse) => this.onError(res.message)
+            );
+    }
+
+    loadGrandChildrenProblems(child: any) {
+        this.competitionService
+            .findProblems(child.id, {
+                size: this.itemsPerPage
+            })
+            .subscribe(
+                (res: HttpResponse<ICompetition[]>) => {
+                    this.grandChildrenProblems[child.id] = res.body;
+                },
                 (res: HttpErrorResponse) => this.onError(res.message)
             );
     }
