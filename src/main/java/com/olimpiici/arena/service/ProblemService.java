@@ -327,22 +327,15 @@ public class ProblemService {
         return dto;
 	}
 	
-	// @Scheduled(fixedDelay = 100*60*60*1000)
+	@Scheduled(fixedDelay = 24*60*60*1000)
     public void populateCompetitionInfo() {
     	log.info("Starting job for populating competition info in problem.");
     	for (CompetitionProblem cp : competitionProblemRepository.findAll()) {
 			Problem problem = cp.getProblem();
-			if (problem.getYear() != null && problem.getCompetition() != null && problem.getGroup() != null) {
+			if (problem.getYear() != null 
+                    && problem.getCompetition() != null 
+                    && problem.getGroup() != null) {
 				continue;
-			}
-			if (problem.getYear() == null) {
-				log.info("year is null");
-			}
-			if (problem.getCompetition() == null) {
-				log.info("comp is null");
-			}
-			if (problem.getGroup() == null) {
-				log.info("gruo is null");
 			}
 			log.info("Populating competition info for problem " + problem.toString());
 			List<Competition> path = getPath(cp);
