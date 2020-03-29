@@ -1,4 +1,4 @@
-p' () => import('./admin/admin.module').then(m => m.ArenaAdminModuleiackage com.olimpiici.arena.service;
+package com.olimpiici.arena.service
 
 import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.service.ProblemService;
