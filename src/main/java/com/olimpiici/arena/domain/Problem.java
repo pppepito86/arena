@@ -175,7 +175,7 @@ public class Problem implements Serializable {
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
             ", year=" + getYear() + 
-            ", competition=" + getCompetition() ? getCompetition().getId() : "" + 
+            ", competition=" + (getCompetition() != null ? getCompetition().getId() : "") + 
             ", group=" + getGroup() +
             "}";
     }
