@@ -7,8 +7,11 @@ import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop;
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.TagCollection;
+import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.ProblemRepository;
 import com.olimpiici.arena.repository.TagCollectionRepository;
 import com.olimpiici.arena.repository.TagCollectionTagRepository;
@@ -18,12 +21,16 @@ import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
+import com.olimpiici.arena.service.util.HomographTranslator;
+
+import ch.qos.logback.core.util.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +44,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -59,6 +68,9 @@ public class ProblemService {
     private final SubmissionService submissionService;
 
     private final CompetitionProblemService competitionProblemService;
+    
+    @Autowired
+    private CompetitionProblemRepository competitionProblemRepository;
 
     private final TagCollectionTagRepository tagCollectionTagRepository;
     
@@ -121,8 +133,10 @@ public class ProblemService {
     @Transactional(readOnly = true)
     public Page<ProblemDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Problems");
-        return problemRepository.findAll(pageable)
+        Page<ProblemDTO> page = problemRepository.findAll(pageable)
             .map(problemMapper::toDto);
+               
+        return page;
     }
 
 
@@ -145,7 +159,6 @@ public class ProblemService {
      *
      * @param id the id of the entity
      */
-    
     public void delete(Long id) {
         log.debug("Request to delete Problem : {}", id);
         problemRepository.deleteById(id);
@@ -154,7 +167,11 @@ public class ProblemService {
     
     public List<TagDTO> findTags(Long id) {
     	Problem problem = problemRepository.getOne(id);
-    	return tagService.findTagsForCollection(problem.getTags())
+    	return findTags(problem.getTags());
+    }
+    
+    public List<TagDTO> findTags(TagCollection tagCollection) {
+    	return tagService.findTagsForCollection(tagCollection)
 	    	.map(tagMapper::toDto)
 			.collect(Collectors.toList());
     }
@@ -309,4 +326,61 @@ public class ProblemService {
         dto.setMemory(memory);
         return dto;
 	}
+	
+	// @Scheduled(fixedDelay = 100*60*60*1000)
+    public void populateCompetitionInfo() {
+    	log.info("Starting job for populating competition info in problem.");
+    	for (CompetitionProblem cp : competitionProblemRepository.findAll()) {
+			Problem problem = cp.getProblem();
+			if (problem.getYear() != null && problem.getCompetition() != null && problem.getGroup() != null) {
+				continue;
+			}
+			if (problem.getYear() == null) {
+				log.info("year is null");
+			}
+			if (problem.getCompetition() == null) {
+				log.info("comp is null");
+			}
+			if (problem.getGroup() == null) {
+				log.info("gruo is null");
+			}
+			log.info("Populating competition info for problem " + problem.toString());
+			List<Competition> path = getPath(cp);
+			for (Competition competition : path) {
+				String name = competition.getLabel();
+				name = name.trim();
+				if (isYear(name)) {
+					problem.setYear(Integer.parseInt(name));
+				} else if (name.length() == 1) { // assume it's group
+					String groupName = new HomographTranslator().translate(name);
+					problem.setGroup(groupName);
+				} else { // assume it's competition name
+					problem.setCompetition(competition);
+				}
+			}
+			problemRepository.save(problem);
+		}
+    }
+
+	private List<Competition> getPath(CompetitionProblem cp) {
+		List<Competition> path = new ArrayList<>();
+		Competition competition = cp.getCompetition();
+		
+		while (competition != null && competition.getId() != 1) {
+			path.add(competition);
+			competition = competition.getParent();
+		};
+		return path;
+	}
+	
+	private boolean isYear(String name) {
+		if(name.length() != 4) return false;
+		try {
+			Integer.parseInt(name);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 }

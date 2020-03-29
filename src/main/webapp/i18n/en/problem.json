@@ -28,7 +28,10 @@
             "memory": "Memory",
             "tags": "Tags",
             "file": "File",
-            "tags": "Tags"
+            "tags": "Tags",
+            "competition": "Competition",
+            "year": "Year",
+            "group": "Group"
         }
     }
 }

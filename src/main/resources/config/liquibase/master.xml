@@ -26,4 +26,6 @@
 	<include file="config/liquibase/changelog/20190107123900_added_tags_Submission.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/20190107123901_added_tags_Problem.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/20190107133100_initial_tags.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/202003291020_add_competition_info_to_Problem.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>

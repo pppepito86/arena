@@ -1,8 +1,8 @@
 package com.olimpiici.arena.service.dto;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
-
 
 /**
  * A DTO for the Problem entity.
@@ -22,7 +22,17 @@ public class ProblemDTO implements Serializable {
     private Integer memory;
     
     private Long tagsId;
+    
+    private Integer year;
 
+    private String group;
+
+    private String competitionLabel;
+    
+    private Integer competitionId;
+    
+    public List<TagDTO> allTags;
+    
     public Long getId() {
         return id;
     }
@@ -79,7 +89,30 @@ public class ProblemDTO implements Serializable {
         this.tagsId = tagCollectionId;
     }
 
+     public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
     
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public Integer getCompetitionId() {
+        return competitionId;
+    }
+
+    public void setCompetitionId(Integer competitionId) {
+        this.competitionId = competitionId;
+    }
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -108,6 +141,18 @@ public class ProblemDTO implements Serializable {
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
             ", tags=" + getTagsId() +
+            ", competitionLabel=" + getCompetitionLabel() + 
+            ", competitionId=" + getCompetitionId() + 
+            ", group=" + getGroup() + 
+            ", year=" + getYear() +
             "}";
     }
+
+	public String getCompetitionLabel() {
+		return competitionLabel;
+	}
+
+	public void setCompetitionLabel(String competitionLabel) {
+		this.competitionLabel = competitionLabel;
+	}
 }

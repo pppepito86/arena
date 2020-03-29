@@ -124,6 +124,9 @@ public class ProblemResource {
         log.debug("REST request to get a page of Problems");
 
         Page<ProblemDTO> page = problemService.findAll(pageable);
+        for (ProblemDTO problemDTO : page) {
+			problemDTO.allTags = problemService.findTags(problemDTO.getId());
+		}
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/problems");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

@@ -29,7 +29,7 @@ export class ProblemComponent implements OnInit, OnDestroy {
     queryCount: any;
     predicate: any;
     reverse: any;
-    displayedColumns: string[] = ['id', 'title', 'version', 'tags', 'actions'];
+    displayedColumns: string[] = ['id', 'title', 'competition', 'year', 'group', 'version', 'tags', 'actions'];
     dataSource: any;
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -58,6 +58,7 @@ export class ProblemComponent implements OnInit, OnDestroy {
                 (res: HttpResponse<IProblem[]>) => {
                     this.dataSource = new MatTableDataSource(res.body);
                     setTimeout(() => {
+                        this.dataSource.filterPredicate = this.filterFunction;
                         this.dataSource.paginator = this.paginator;
                         this.dataSource.sort = this.sort;
                     });
@@ -92,5 +93,48 @@ export class ProblemComponent implements OnInit, OnDestroy {
     applyFilter(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
+    }
+
+    filterFunction(problem: any, filter: string) {
+        let tagsStr = '';
+        if (problem.allTags) {
+            for (let tag of problem.allTags) {
+                tagsStr += '|' + tag.title;
+            }
+        }
+        tagsStr = tagsStr.toLowerCase();
+        let problemStr =
+            problem.id + '|' + problem.title + '|' + problem.competitionLabel + '|' + problem.year + '|' + problem.group + '|' + tagsStr;
+        problemStr = problemStr.toLowerCase();
+        const filterParts = filter.split(/\s+/);
+        for (const part of filterParts) {
+            const ind = part.indexOf(':');
+            if (ind > 0) {
+                const key = part.substring(0, ind);
+                let val = part.substring(ind + 1);
+                if (key.startsWith('g') || key.startsWith('г')) {
+                    val = val.toLowerCase();
+                    if (val === 'а') val = 'a';
+                    if (val === 'б' || val === 'в') val = 'b';
+                    if (val === 'с' || val === 'ц') val = 'c';
+                    if (val === 'д') val = 'd';
+                    if (val === 'е') val = 'e';
+                    if (!problem.group || !problem.group.toLowerCase().includes(val)) {
+                        return false;
+                    }
+                } else if (key.startsWith('t') || key.startsWith('т')) {
+                    if (!tagsStr.includes(val)) {
+                        return false;
+                    }
+                } else if (key.startsWith('c') || key.startsWith('с')) {
+                    if (!problem.competitionLabel.toLowerCase().includes(val)) {
+                        return false;
+                    }
+                }
+            } else if (!problemStr.includes(part)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

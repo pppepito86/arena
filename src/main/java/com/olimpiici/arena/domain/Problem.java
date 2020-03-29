@@ -32,6 +32,16 @@ public class Problem implements Serializable {
     @Column(name = "version")
     private Integer version;
 
+    @Column(name = "year")
+    private Integer year;
+
+    @Column(name = "group_name")
+    private String group;
+
+    @ManyToOne
+    @JsonIgnoreProperties("")
+    private Competition competition;
+
     @ManyToOne
     @JsonIgnoreProperties("")
     private TagCollection tags;
@@ -96,6 +106,45 @@ public class Problem implements Serializable {
     public void setTags(TagCollection tagCollection) {
         this.tags = tagCollection;
     }
+   
+    public String getGroup() {
+        return group;
+    }
+
+    public Problem group(String group) {
+        this.group = group;
+        return this;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
+    public Integer getYear() {
+        return year;
+    }
+
+    public Problem group(Integer year) {
+        this.year = year;
+        return this;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public Competition getCompetition() {
+        return competition;
+    }
+
+    public Problem competition(Competition competition) {
+        this.competition = competition;
+        return this;
+    }
+
+    public void setCompetition(Competition competition) {
+        this.competition = competition;
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
     @Override
@@ -125,6 +174,9 @@ public class Problem implements Serializable {
             ", title='" + getTitle() + "'" +
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
+            ", year=" + getYear() + 
+            ", competition=" + getCompetition().getId() + 
+            ", group=" + getGroup() +
             "}";
     }
 }
