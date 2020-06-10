@@ -61,7 +61,7 @@ export const competitionRoute: Routes = [
             parentCompetition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             defaultSort: 'id,asc',
             pageTitle: 'arenaApp.competition.home.title'
         },
@@ -75,7 +75,7 @@ export const competitionRoute: Routes = [
             pagingParams: JhiResolvePagingParams
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             defaultSort: 'id,desc',
             pageTitle: 'arenaApp.submission.home.title',
             forCompetition: true
@@ -89,7 +89,7 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER']
+            authorities: []
         },
         canActivate: [UserRouteAccessService]
     },
@@ -100,7 +100,7 @@ export const competitionRoute: Routes = [
             pagingParams: JhiResolvePagingParams
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             defaultSort: 'id,desc',
             pageTitle: 'arenaApp.submission.home.title',
             forProblem: true
@@ -114,7 +114,7 @@ export const competitionRoute: Routes = [
             competition: CompetitionResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             pageTitle: 'arenaApp.competition.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -156,7 +156,7 @@ export const competitionRoute: Routes = [
             pagingParams: JhiResolvePagingParams
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             pageTitle: 'arenaApp.standings.title'
         },
         canActivate: [UserRouteAccessService]
