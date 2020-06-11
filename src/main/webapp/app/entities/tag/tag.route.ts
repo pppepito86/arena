@@ -33,7 +33,7 @@ export const tagRoute: Routes = [
         path: 'tag',
         component: TagComponent,
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             pageTitle: 'arenaApp.tag.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -45,7 +45,7 @@ export const tagRoute: Routes = [
             tag: TagResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: [],
             pageTitle: 'arenaApp.tag.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -57,7 +57,7 @@ export const tagRoute: Routes = [
             tag: TagResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.tag.home.title'
         },
         canActivate: [UserRouteAccessService]
@@ -69,7 +69,7 @@ export const tagRoute: Routes = [
             tag: TagResolve
         },
         data: {
-            authorities: ['ROLE_USER'],
+            authorities: ['ROLE_ADMIN'],
             pageTitle: 'arenaApp.tag.home.title'
         },
         canActivate: [UserRouteAccessService]
