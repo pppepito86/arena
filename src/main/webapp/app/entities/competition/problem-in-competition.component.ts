@@ -12,6 +12,7 @@ import { TagService } from '../tag';
 import { ProblemService } from '../problem';
 import { ITag } from '../../shared/model/tag.model';
 import { CompetitionProblemService } from '../competition-problem';
+import { AccountService } from '../../core';
 
 @Component({
     selector: 'jhi-problem-in-competition',
@@ -19,6 +20,7 @@ import { CompetitionProblemService } from '../competition-problem';
 })
 export class ProblemInCompetitionComponent implements OnInit {
     problem: IProblem;
+    currentAccount: any;
     competitionId: number;
     competitionProblemId: number;
     isSubmitting: boolean;
@@ -33,6 +35,7 @@ export class ProblemInCompetitionComponent implements OnInit {
         protected activatedRoute: ActivatedRoute,
         protected competitionService: CompetitionService,
         protected jhiAlertService: JhiAlertService,
+        protected accountService: AccountService,
         protected tagService: TagService,
         protected problemService: ProblemService,
         private titleService: Title,
@@ -52,6 +55,10 @@ export class ProblemInCompetitionComponent implements OnInit {
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
+
+        this.accountService.identity().then(account => {
+            this.currentAccount = account;
+        });
 
         this.tagService
             .query(true)
@@ -76,7 +83,7 @@ export class ProblemInCompetitionComponent implements OnInit {
         this.competitionService.submitSolution(this.competitionId, this.competitionProblemId, this.solution).subscribe(
             (res: HttpResponse<ISubmission>) => {
                 this.isSubmitting = false;
-                let submission = res.body;
+                const submission = res.body;
                 this.router.navigate(['submission', submission.id, 'view'], {
                     queryParams: { securityKey: submission.securityKey }
                 });
