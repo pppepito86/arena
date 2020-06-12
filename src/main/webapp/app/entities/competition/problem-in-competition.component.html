@@ -103,7 +103,7 @@
                 </dd>
             </dl>
 
-            <form *ngIf="problem.version > 0"
+            <form *ngIf="problem.version > 0 && currentAccount !== null"
                   name="submitSolutionForm" role="form" novalidate
                   (ngSubmit)="submit()" #submitSolutionForm="ngForm" >
                 <div>
