@@ -2,7 +2,13 @@
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.standings.title">Standings</span>
     </h2>
-    <div class="table-responsive" *ngIf="scores && scores.length > 0">
+
+    <div class="row justify-content-center">
+
+        <mat-spinner *ngIf="loading"></mat-spinner>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && scores && scores.length > 0">
         <table class="table table-striped">
             <thead>
             <tr>
@@ -18,7 +24,7 @@
             </tbody>
         </table>
     </div>
-    <div *ngIf="scores && scores.length && queryCount > 10">
+    <div *ngIf="!loading && scores && scores.length && queryCount > 10">
         <div class="row justify-content-center">
             <jhi-item-count [page]="page"
                             [total]="queryCount"
