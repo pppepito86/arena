@@ -64,16 +64,16 @@ public class CompetitionResource {
     private static final String ENTITY_NAME = "competition";
 
     private final CompetitionService competitionService;
-    
+
     private final SubmissionService submissionService;
 
     private final UserRepository userRepository;
 
     private final ProblemService problemService;
-    
+
     @Autowired
     private ApplicationProperties applicationProperties;
-    
+
     public CompetitionResource(CompetitionService competitionService,
     		UserRepository userRepository,
     		SubmissionService submissionService,
@@ -106,25 +106,25 @@ public class CompetitionResource {
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
-    
+
     @PostMapping("/competitions/{id}/subcompetitions")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateSubCompetitions(@PathVariable Long id,
     		@RequestBody List<CompetitionDTO> subCompetitions) throws URISyntaxException {
         log.debug("REST request to set cubcompetitions: {}", id);
-        
+
         competitionService.updateSubCompetitions(id, subCompetitions);;
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/competitions/{id}/subproblems")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateSubProblems(@PathVariable Long id,
     		@RequestBody List<CompetitionProblemDTO> subProblems) throws URISyntaxException {
         log.debug("REST request to set subproblems: {}", id);
-        
+
         competitionService.updateSubProblems(id, subProblems);
         return ResponseEntity.ok().build();
     }
@@ -181,7 +181,7 @@ public class CompetitionResource {
         Optional<CompetitionDTO> competitionDTO = competitionService.findOne(id);
         return ResponseUtil.wrapOrNotFound(competitionDTO);
     }
-    
+
     /**
      * GET  /competitions/:id/children : get the children of "id" competition.
      *
@@ -198,7 +198,7 @@ public class CompetitionResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     @GetMapping("/competitions/{id}/path")
     @Timed
     public ResponseEntity<List<CompetitionDTO>> getCompetitionPath(@PathVariable Long id) {
@@ -206,18 +206,18 @@ public class CompetitionResource {
         List<CompetitionDTO> path = competitionService.findPathFromRoot(id);
         return ResponseEntity.ok(path);
     }
-    
+
     @GetMapping("/competitions/{id}/submissions")
     @Timed
     public ResponseEntity<List<SubmissionDTO>> getCompetitionSubmissions(
     		@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get Competition submissoins : {}", id);
         Page<SubmissionDTO> page;
-        
+
         if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
         	page = competitionService.findSubmissionsByCompetition(id, pageable);
         } else {
-        	User user = 
+        	User user =
         			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         	page = competitionService.findSubmissionsByCompetitionAndUser(user, id, pageable);
         }
@@ -225,20 +225,20 @@ public class CompetitionResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     @GetMapping("/competitions/{id}/problems")
     @Timed
     public ResponseEntity<List<CompetitionProblemDTO>> getCompetitionProblems(
     		@PathVariable Long id, Pageable pageable, Principal principal) {
         log.debug("REST request to get Competition problems : {}", id);
-        
+
         User user = userRepository
         		.findOneByLogin(SecurityUtils.getCurrentUserLogin().get())
         		.get();
-        
+
         Page<CompetitionProblemDTO> page = competitionService.findProblems(id, pageable);
         for (CompetitionProblemDTO dto : page.getContent()) {
-        	
+
         	Integer points = competitionService.findPointsForCompetitionProblem(user, dto.getId());
         	dto.setPoints(points);
         }
@@ -246,7 +246,7 @@ public class CompetitionResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     @GetMapping("/competitions/{id}/problem/{compProb}")
     @Timed
     public ResponseEntity<ProblemDTO> getCompetitionProblem(
@@ -256,11 +256,11 @@ public class CompetitionResource {
         problemService.setLimitsToDto(problem);
         return ResponseEntity.ok(problem);
     }
-    
+
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @Timed
-    public ResponseEntity<SubmissionDTO> submitProblem(@PathVariable Long id, 
-    		@PathVariable Long compProb, 
+    public ResponseEntity<SubmissionDTO> submitProblem(@PathVariable Long id,
+    		@PathVariable Long compProb,
     		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
 
@@ -279,27 +279,27 @@ public class CompetitionResource {
 	        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
 	        File submissionDir = new File(submissionsDir, ""+submission.getId());
 	        File submissionFile = new File(submissionDir, "solution.cpp");
-	        
+
 	        submissionDir.mkdirs();
 	        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
 	        submission.setVerdict("waiting");
         }
 
         submissionService.save(submission);
-        
+
         return ResponseEntity.ok(submission);
     }
-    
+
     @GetMapping("/competitions/{id}/problem/{compProb}/submissions")
     @Timed
-    public ResponseEntity<List<SubmissionDTO>> getSubmissions(@PathVariable Long id, 
+    public ResponseEntity<List<SubmissionDTO>> getSubmissions(@PathVariable Long id,
     		@PathVariable Long compProb, Pageable pageable) {
         log.debug("REST request to get submission for competitive problem : {}", compProb);
         Page<SubmissionDTO> page;
         if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
         	page = submissionService.findSubmissionsByCompetitionProblem(compProb, pageable);
         } else {
-        	User user = 
+        	User user =
         			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         	page = submissionService.findSubmissionsByCompetitionProblemAndUser(user, compProb, pageable);
         }
@@ -307,7 +307,7 @@ public class CompetitionResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     @GetMapping("/competitions/{id}/standings")
     @Timed
     public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, Pageable pageable) {
@@ -317,7 +317,7 @@ public class CompetitionResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     /**
      * DELETE  /competitions/:id : delete the "id" competition.
      *

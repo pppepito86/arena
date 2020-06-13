@@ -76,7 +76,7 @@ export class ProblemInCompetitionComponent implements OnInit {
         this.competitionService.submitSolution(this.competitionId, this.competitionProblemId, this.solution).subscribe(
             (res: HttpResponse<ISubmission>) => {
                 this.isSubmitting = false;
-                let submission = res.body;
+                const submission = res.body;
                 this.router.navigate(['submission', submission.id, 'view'], {
                     queryParams: { securityKey: submission.securityKey }
                 });
