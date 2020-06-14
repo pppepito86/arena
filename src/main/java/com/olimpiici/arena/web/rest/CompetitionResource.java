@@ -260,6 +260,7 @@ public class CompetitionResource {
     }
 
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
     @Timed
     public ResponseEntity<SubmissionDTO> submitProblem(@PathVariable Long id,
                                                        @PathVariable Long compProb,
