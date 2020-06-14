@@ -98,6 +98,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.loading = true;
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;
