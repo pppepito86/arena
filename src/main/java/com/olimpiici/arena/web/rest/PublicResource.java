@@ -119,7 +119,7 @@ public class PublicResource {
     @Timed
     public ResponseEntity<?> autoSetTimeLimits() throws Exception {
         log.debug("REST to auto set time limits for all problems");
-        problemService.autoSetTimeLimits();
+        competitionProblemService.autoSetTimeLimits();
         return ResponseEntity.noContent().build();
     }
 

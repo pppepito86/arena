@@ -175,25 +175,7 @@ public class CompetitionProblemResource {
     @Timed
     public ResponseEntity<?> submitAuthors(@PathVariable Long id) throws Exception {
     	log.debug("REST request to submit authors code");
-    	
-    	CompetitionProblemDTO competitionProblemDTO = competitionProblemService.findOne(id).get();
-    	
-    	File problemDir = Paths.get(applicationProperties.getWorkDir(), "problems", String.valueOf(competitionProblemDTO.getProblemId())).toFile();
-    	File author = Paths.get(problemDir.getAbsolutePath(), "problem", "author", "author.cpp").toFile();
-    	if (!author.exists()) return ResponseEntity.noContent().build();
-      	
-    	SubmissionDTO submission = new SubmissionDTO();
-    	submission.setCompetitionProblemId(id);
-    	submission.setUserId(4L);
-
-    	for (int i = 0; i < 3; i++) {
-    		SubmissionDTO s = submissionService.save(submission);        	
-    		File submissionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+s.getId(), "solution.cpp").toFile();
-    		FileUtils.copyFile(author, submissionFile);
-    		s.setVerdict("waiting");
-    		submissionService.save(s);
-    	}
-      
+    	competitionProblemService.submitAuthorsIfNeeded(id);
     	return ResponseEntity.noContent().build();
     }
 
@@ -203,7 +185,9 @@ public class CompetitionProblemResource {
     public ResponseEntity<?> setTimes(@PathVariable Long id,
         @RequestParam(value = "set", defaultValue = "false") Boolean set) throws Exception {
         log.debug("REST request to set time limits");
-        problemService.autoSetTimeLimits(id);
+        competitionProblemService.autoSetTimeLimits(id);
         return ResponseEntity.noContent().build();
     }
+    
+    
 }

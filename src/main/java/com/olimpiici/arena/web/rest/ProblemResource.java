@@ -1,6 +1,7 @@
 package com.olimpiici.arena.web.rest;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -30,7 +31,9 @@ import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
@@ -58,9 +61,12 @@ public class ProblemResource {
     private WorkerPool workerPool;
     
     private final ProblemService problemService;
-
-    public ProblemResource(ProblemService problemService) {
+    
+    private final CompetitionProblemService competitionProblemService;
+    
+    public ProblemResource(ProblemService problemService, CompetitionProblemService competitionProblemService) {
         this.problemService = problemService;
+        this.competitionProblemService = competitionProblemService;
     }
 
     /**
@@ -105,6 +111,16 @@ public class ProblemResource {
         ProblemDTO result = problemService.save(problemDTO);
         problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
         problemService.updateTimeLimit(problemId, problemDTO.getTime());
+        
+        competitionProblemService.findOneByProblem(problemId)
+        		.ifPresent(cp -> {
+					try {
+						competitionProblemService.submitAuthorsIfNeeded(cp.getId());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				});
+        
         workerPool.deleteProblem(problemId);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))

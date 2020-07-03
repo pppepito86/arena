@@ -1,29 +1,17 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.grader.WorkerPool;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.TagService;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.SubmissionService;
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop;
-import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.domain.Competition;
-import com.olimpiici.arena.domain.CompetitionProblem;
-import com.olimpiici.arena.domain.Problem;
-import com.olimpiici.arena.domain.TagCollection;
-import com.olimpiici.arena.repository.CompetitionProblemRepository;
-import com.olimpiici.arena.repository.ProblemRepository;
-import com.olimpiici.arena.repository.TagCollectionRepository;
-import com.olimpiici.arena.repository.TagCollectionTagRepository;
-import com.olimpiici.arena.repository.TagRepository;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.SubmissionDTO;
-import com.olimpiici.arena.service.dto.TagDTO;
-import com.olimpiici.arena.service.mapper.ProblemMapper;
-import com.olimpiici.arena.service.mapper.TagMapper;
-import com.olimpiici.arena.service.util.HomographTranslator;
-
-import ch.qos.logback.core.util.Duration;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,31 +19,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.domain.Competition;
+import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.TagCollection;
+import com.olimpiici.arena.repository.CompetitionProblemRepository;
+import com.olimpiici.arena.repository.ProblemRepository;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
+import com.olimpiici.arena.service.mapper.ProblemMapper;
+import com.olimpiici.arena.service.mapper.TagMapper;
+import com.olimpiici.arena.service.util.HomographTranslator;
 
 /**
- * Service ementation for managing Problem.
+ * Service for managing Problem.
  */
 @Service
 @Transactional
@@ -66,19 +48,9 @@ public class ProblemService {
     private final ProblemRepository problemRepository;
 
     private final ProblemMapper problemMapper;
-
-    private final SubmissionService submissionService;
-
-    private final CompetitionProblemService competitionProblemService;
     
     @Autowired
     private CompetitionProblemRepository competitionProblemRepository;
-
-    private final TagCollectionTagRepository tagCollectionTagRepository;
-    
-    private final TagCollectionRepository tagCollectionRepository;
-
-    private final TagRepository tagRepository;
     
     private final TagMapper tagMapper;
     
@@ -86,26 +58,13 @@ public class ProblemService {
     
     @Autowired
     private ApplicationProperties applicationProperties;
-   
-    @Autowired 
-    private WorkerPool workerPool;
-
-    public ProblemService(CompetitionProblemService competitionProblemService,
-            ProblemRepository problemRepository, 
+  
+    public ProblemService(ProblemRepository problemRepository, 
     		ProblemMapper problemMapper,
-            SubmissionService submissionService,
-    		TagCollectionTagRepository tagCollectionTagRepository,
-    		TagCollectionRepository tagCollectionRepository,
-    		TagRepository tagRepository,
     		TagMapper tagMapper,
     		TagService tagService) {
         this.problemRepository = problemRepository;
         this.problemMapper = problemMapper;
-        this.competitionProblemService = competitionProblemService;
-        this.submissionService = submissionService;
-        this.tagCollectionTagRepository = tagCollectionTagRepository;
-        this.tagCollectionRepository = tagCollectionRepository;
-        this.tagRepository = tagRepository;
         this.tagMapper = tagMapper;
         this.tagService = tagService;
     }
@@ -189,7 +148,6 @@ public class ProblemService {
 			problemRepository.save(problem);
     	}
     }
-
     
 	public Properties getProperties(Long problemId) throws Exception {
     	Properties props = new Properties();
@@ -204,57 +162,6 @@ public class ProblemService {
 		}
 		return props;
 	}
-  
-    
-    public void autoSetTimeLimits() throws Exception {
-       PageRequest page = PageRequest.of(0, 10000);
-       List<ProblemDTO> problems = findAll(page).getContent();
-       log.debug("Setting time limit for " + problems.size() + " problems");
-       for (ProblemDTO problem : problems) {
-           autoSetTimeLimits(problem.getId());
-       }
-    }
-
-	
-	public void autoSetTimeLimits(Long id) throws Exception { 
-        // TODO: use problem id, not comp problem id
-        log.debug("Setting automatic time limit for problem " + id);
-        PageRequest page = PageRequest.of(0, 10000);
-        List<SubmissionDTO> submissions = submissionService
-            .findSubmissionsByCompetitionProblem(id, page)
-            .getContent();
-
-        long problemId = competitionProblemService.findOne(id).get().getProblemId();
-
-        final int authorUserId = 4;
-        final int numSolutions = 3;
-
-        boolean hasEnoughGoodSubmitions = submissions
-                            .stream()
-                            .filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
-                            .count() >= numSolutions;
-    
-        if (hasEnoughGoodSubmitions) {
-            List<Integer> times = submissions.stream()
-                    .filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
-                    .limit(numSolutions)
-                    .map(s -> s.getTimeInMillis())
-                    .collect(Collectors.toList());
-
-            int max = times.stream().mapToInt(t -> t).max().getAsInt();
-
-            int timeLimitMs = 100 * ((max*15/10)/100+1);
-
-            log.info("limit for problem<" + problemId + "> with times " + 
-                    times + " will be " + timeLimitMs + "ms");
-
-            updateTimeLimit(problemId, timeLimitMs);
-            workerPool.deleteProblem(problemId);
-        } else {
-            log.info("can't find " + numSolutions + " good solutions for problemId = " + problemId);
-        }
-	}
-
 	
 	public void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception {
 		String timeValue = newTimeLimitMs/1000 + "." + newTimeLimitMs%1000;
@@ -378,15 +285,67 @@ public class ProblemService {
 		}
 	}
 	
+	public File getProblemDir(String workDir, Long taskId) {
+		return new File(workDir + "/problems/" + taskId + "/problem");
+	}
+	
 	public Optional<File> getTaskDescription(String workDir, Long taskId) {
 		try {
-			File dir = new File(workDir + "/problems/" + taskId + "/problem");
+			File dir = getProblemDir(workDir, taskId);
 			return Files.walk(dir.toPath())
 					.filter(Files::isRegularFile)
 					.map(Path::toFile)
 					.filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
 					.sorted((f1, f2) -> Integer.compare(f1.getAbsolutePath().length(), f2.getAbsolutePath().length()))
 					.findFirst();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Optional.empty();
+		}
+	}
+	
+	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
+		try {
+			File dir = getProblemDir(workDir, taskId);
+			List<File> cppFiles = Files.walk(dir.toPath())
+					.filter(Files::isRegularFile)
+					.map(Path::toFile)
+					.filter(f -> f.getName().toLowerCase().endsWith(".cpp"))
+					.collect(Collectors.toList());
+			
+			if (cppFiles.isEmpty()) {
+				return Optional.empty();
+			}
+			
+			if (cppFiles.size() == 1) {
+				return Optional.of(cppFiles.get(0));
+			}
+			
+			Optional<File> file = cppFiles.stream()
+					.filter(f -> f.getName().toLowerCase().equals("author.cpp"))
+					.findFirst();
+			if (file.isPresent()) {
+				return file;
+			}
+			
+			Optional<String> titleCpp = problemRepository.findById(taskId)
+					.map(problem -> problem.getTitle())
+					.map(title -> title.toLowerCase() + ".cpp");
+			if (!titleCpp.isPresent()) {
+				return  Optional.empty();
+			}
+			
+			file = cppFiles.stream()
+					.filter(f -> f.getName().toLowerCase().equals(titleCpp.get()))
+					.findFirst();
+			if (file.isPresent()) {
+				return file;
+			}
+			
+			return cppFiles.stream()
+					.filter(f -> f.getName().toLowerCase().contains("100"))
+					.findFirst();
+		
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Optional.empty();
