@@ -43,6 +43,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -373,6 +375,21 @@ public class ProblemService {
 			return true;
 		} catch (Exception e) {
 			return false;
+		}
+	}
+	
+	public Optional<File> getTaskDescription(String workDir, Long taskId) {
+		try {
+			File dir = new File(workDir + "/problems/" + taskId + "/problem");
+			return Files.walk(dir.toPath())
+					.filter(Files::isRegularFile)
+					.map(Path::toFile)
+					.filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
+					.sorted((f1, f2) -> Integer.compare(f1.getAbsolutePath().length(), f2.getAbsolutePath().length()))
+					.findFirst();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Optional.empty();
 		}
 	}
 	
