@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service ementation for managing Competition.
@@ -266,11 +267,9 @@ public class CompetitionService {
 		
 		Competition competition = competitionRepository.getOne(competitionId);
 		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition);
-		
-		submissionRepository
-			.findByCompetitionProblemIn(problems)
-			.stream()
-			.forEach(submission -> {
+        
+        try(Stream<Submission> submissions = submissionRepository.findByCompetitionProblemIn(problems)) {
+            submissions.forEach(submission -> {
 				Long userId = submission.getUser().getId();
 				if (!userToPointsPerProblem.containsKey(userId)) 
 					userToPointsPerProblem.put(userId, new HashMap<Long, Integer>());
@@ -280,6 +279,7 @@ public class CompetitionService {
 				points = IntUtil.safeMax(points, submission.getPoints());
 				pointsPerProblem.put(problem, points);
 			});
+        }	
 		
 		List<UserPoints> standings = userToPointsPerProblem
 			.entrySet()

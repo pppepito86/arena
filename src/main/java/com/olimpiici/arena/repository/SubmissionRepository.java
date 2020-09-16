@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 
 /**
  * Spring Data  repository for the Submission entity.
@@ -46,7 +48,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     Page<Submission> findByCompetitionProblemIn(
     		Collection<CompetitionProblem> competitionProblem, Pageable pageable);
     
-    List<Submission> findByCompetitionProblemIn(
+    Stream<Submission> findByCompetitionProblemIn(
     		Collection<CompetitionProblem> competitionProblem);
     
     List<Submission> findByVerdict(String verdict);
