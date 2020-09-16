@@ -2,7 +2,6 @@ package com.olimpiici.arena.config;
 
 import java.time.Duration;
 
-import com.olimpiici.arena.service.CompetitionService;
 import org.ehcache.config.builders.*;
 import org.ehcache.jsr107.Eh107Configuration;
 
@@ -19,8 +18,6 @@ public class CacheConfiguration {
 
     private final javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration;
 
-    private final javax.cache.configuration.Configuration<Object, Object> slowServiceConfiguration;
-
     public CacheConfiguration(JHipsterProperties jHipsterProperties) {
         BeanClassLoaderAwareJCacheRegionFactory.setBeanClassLoader(this.getClass().getClassLoader());
         JHipsterProperties.Cache.Ehcache ehcache =
@@ -30,12 +27,6 @@ public class CacheConfiguration {
             CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class,
                 ResourcePoolsBuilder.heap(ehcache.getMaxEntries()))
                 .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(ehcache.getTimeToLiveSeconds())))
-                .build());
-
-        slowServiceConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
-            CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class,
-                ResourcePoolsBuilder.heap(ehcache.getMaxEntries()))
-                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
                 .build());
     }
 
@@ -54,8 +45,6 @@ public class CacheConfiguration {
             cm.createCache(com.olimpiici.arena.domain.TagCollection.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.Tag.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.TagCollectionTag.class.getName(), jcacheConfiguration);
-
-            cm.createCache(com.olimpiici.arena.service.CompetitionService.USER_POINTS_CACHE, slowServiceConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

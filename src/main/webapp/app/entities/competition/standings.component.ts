@@ -31,7 +31,6 @@ export class StandingsComponent implements OnInit, OnDestroy {
     previousPage: any;
     reverse: any;
     parentCompetition: ICompetition;
-    loading = false;
 
     constructor(
         protected competitionService: CompetitionService,
@@ -69,7 +68,6 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     loadPage(page: number) {
-        this.loading = true;
         if (page !== this.previousPage) {
             this.previousPage = page;
             this.transition();
@@ -100,7 +98,6 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.loading = true;
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;
@@ -133,11 +130,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
         this.totalItems = parseInt(headers.get('X-Total-Count'), 10);
         this.queryCount = this.totalItems;
         this.scores = data;
-        this.loading = false;
     }
 
     protected onError(errorMessage: string) {
         this.jhiAlertService.error(errorMessage, null, null);
-        this.loading = false;
     }
 }

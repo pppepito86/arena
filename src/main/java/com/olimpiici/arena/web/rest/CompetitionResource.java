@@ -1,15 +1,18 @@
 package com.olimpiici.arena.web.rest;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
-import com.olimpiici.arena.service.UserPointsService;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,22 +71,17 @@ public class CompetitionResource {
 
     private final ProblemService problemService;
 
-    private final UserPointsService userPointsService;
-
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    public CompetitionResource(
-        CompetitionService competitionService,
-        UserRepository userRepository,
-        SubmissionService submissionService,
-        ProblemService problemService,
-        UserPointsService userPointsService) {
+    public CompetitionResource(CompetitionService competitionService,
+    		UserRepository userRepository,
+    		SubmissionService submissionService,
+    		ProblemService problemService) {
         this.competitionService = competitionService;
         this.userRepository = userRepository;
         this.submissionService = submissionService;
         this.problemService = problemService;
-        this.userPointsService = userPointsService;
     }
 
     /**
@@ -97,11 +95,11 @@ public class CompetitionResource {
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> createCompetition(
-        @RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
+    		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to save Competition : {}", competitionDTO);
         if (competitionDTO.getId() != null) {
             throw new BadRequestAlertException(
-                "A new competition cannot already have an ID", ENTITY_NAME, "idexists");
+            		"A new competition cannot already have an ID", ENTITY_NAME, "idexists");
         }
         CompetitionDTO result = competitionService.save(competitionDTO);
         return ResponseEntity.created(new URI("/api/competitions/" + result.getId()))
@@ -113,10 +111,10 @@ public class CompetitionResource {
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateSubCompetitions(@PathVariable Long id,
-                                                                @RequestBody List<CompetitionDTO> subCompetitions) throws URISyntaxException {
+    		@RequestBody List<CompetitionDTO> subCompetitions) throws URISyntaxException {
         log.debug("REST request to set cubcompetitions: {}", id);
 
-        competitionService.updateSubCompetitions(id, subCompetitions);
+        competitionService.updateSubCompetitions(id, subCompetitions);;
         return ResponseEntity.ok().build();
     }
 
@@ -124,7 +122,7 @@ public class CompetitionResource {
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateSubProblems(@PathVariable Long id,
-                                                            @RequestBody List<CompetitionProblemDTO> subProblems) throws URISyntaxException {
+    		@RequestBody List<CompetitionProblemDTO> subProblems) throws URISyntaxException {
         log.debug("REST request to set subproblems: {}", id);
 
         competitionService.updateSubProblems(id, subProblems);
@@ -144,7 +142,7 @@ public class CompetitionResource {
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<CompetitionDTO> updateCompetition(
-        @RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
+    		@RequestBody CompetitionDTO competitionDTO) throws URISyntaxException {
         log.debug("REST request to update Competition : {}", competitionDTO);
         if (competitionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -193,7 +191,7 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/children")
     @Timed
     public ResponseEntity<List<CompetitionDTO>> getCompetitionChildren(
-        @PathVariable Long id, Pageable pageable) {
+    		@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get Competition children : {}", id);
         Page<CompetitionDTO> page = competitionService.findChildren(id, pageable);
         String url = String.format("/api/competitions/%d/children", id);
@@ -212,16 +210,16 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/submissions")
     @Timed
     public ResponseEntity<List<SubmissionDTO>> getCompetitionSubmissions(
-        @PathVariable Long id, Pageable pageable) {
+    		@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get Competition submissoins : {}", id);
         Page<SubmissionDTO> page;
 
         if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
-            page = competitionService.findSubmissionsByCompetition(id, pageable);
+        	page = competitionService.findSubmissionsByCompetition(id, pageable);
         } else {
-            User user =
-                userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-            page = competitionService.findSubmissionsByCompetitionAndUser(user, id, pageable);
+        	User user =
+        			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        	page = competitionService.findSubmissionsByCompetitionAndUser(user, id, pageable);
         }
         String url = String.format("/api/competitions/{id}/problem/{compProb}/submissions", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
@@ -231,18 +229,18 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/problems")
     @Timed
     public ResponseEntity<List<CompetitionProblemDTO>> getCompetitionProblems(
-        @PathVariable Long id, Pageable pageable, Principal principal) {
+    		@PathVariable Long id, Pageable pageable, Principal principal) {
         log.debug("REST request to get Competition problems : {}", id);
 
         User user = userRepository
-            .findOneByLogin(SecurityUtils.getCurrentUserLogin().get())
-            .get();
+        		.findOneByLogin(SecurityUtils.getCurrentUserLogin().get())
+        		.get();
 
         Page<CompetitionProblemDTO> page = competitionService.findProblems(id, pageable);
         for (CompetitionProblemDTO dto : page.getContent()) {
 
-            Integer points = competitionService.findPointsForCompetitionProblem(user, dto.getId());
-            dto.setPoints(points);
+        	Integer points = competitionService.findPointsForCompetitionProblem(user, dto.getId());
+        	dto.setPoints(points);
         }
         String url = String.format("/api/competitions/%d/problems", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
@@ -252,7 +250,7 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/problem/{compProb}")
     @Timed
     public ResponseEntity<ProblemDTO> getCompetitionProblem(
-        @PathVariable Long id, @PathVariable Long compProb) {
+    		@PathVariable Long id, @PathVariable Long compProb) {
         log.debug("REST request to get Competition problems : {}", id);
         ProblemDTO problem = competitionService.findProblem(compProb);
         problemService.setLimitsToDto(problem);
@@ -263,8 +261,8 @@ public class CompetitionResource {
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
     @Timed
     public ResponseEntity<SubmissionDTO> submitProblem(@PathVariable Long id,
-                                                       @PathVariable Long compProb,
-                                                       @RequestBody String solution) throws Exception {
+    		@PathVariable Long compProb,
+    		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
 
         SubmissionDTO submission = new SubmissionDTO();
@@ -275,17 +273,17 @@ public class CompetitionResource {
         submission = submissionService.save(submission);
 
         // max allowed source code size is 64 KB UTF-8
-        if (solution.length() > 64 * 1024 / 4) {
-            submission.setVerdict("source too large");
-            submission.setDetails("source too large");
+        if (solution.length() > 64*1024/4) {
+        	submission.setVerdict("source too large");
+        	submission.setDetails("source too large");
         } else {
-            File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
-            File submissionDir = new File(submissionsDir, "" + submission.getId());
-            File submissionFile = new File(submissionDir, "solution.cpp");
+	        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
+	        File submissionDir = new File(submissionsDir, ""+submission.getId());
+	        File submissionFile = new File(submissionDir, "solution.cpp");
 
-            submissionDir.mkdirs();
-            FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
-            submission.setVerdict("waiting");
+	        submissionDir.mkdirs();
+	        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
+	        submission.setVerdict("waiting");
         }
 
         submissionService.save(submission);
@@ -296,15 +294,15 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/problem/{compProb}/submissions")
     @Timed
     public ResponseEntity<List<SubmissionDTO>> getSubmissions(@PathVariable Long id,
-                                                              @PathVariable Long compProb, Pageable pageable) {
+    		@PathVariable Long compProb, Pageable pageable) {
         log.debug("REST request to get submission for competitive problem : {}", compProb);
         Page<SubmissionDTO> page;
         if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
-            page = submissionService.findSubmissionsByCompetitionProblem(compProb, pageable);
+        	page = submissionService.findSubmissionsByCompetitionProblem(compProb, pageable);
         } else {
-            User user =
-                userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-            page = submissionService.findSubmissionsByCompetitionProblemAndUser(user, compProb, pageable);
+        	User user =
+        			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        	page = submissionService.findSubmissionsByCompetitionProblemAndUser(user, compProb, pageable);
         }
         String url = String.format("/api/competitions/{id}/problem/{compProb}/submissions", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
@@ -315,7 +313,7 @@ public class CompetitionResource {
     @Timed
     public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get standings for competition: {}", id);
-        Page<UserPoints> page = userPointsService.findStandingsPage(id, pageable);
+		Page<UserPoints> page = competitionService.findStandings(id, pageable);
         String url = String.format("/api/competitions/{id}/standings", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
