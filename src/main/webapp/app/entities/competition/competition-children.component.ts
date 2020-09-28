@@ -82,6 +82,9 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             .subscribe(
                 (res: HttpResponse<ICompetition[]>) => {
                     this.grandChildrenCompetitions[child.id] = res.body;
+                    this.grandChildrenCompetitions[child.id].sort(function(a, b) {
+                        return a.order - b.order;
+                    });
                 },
                 (res: HttpErrorResponse) => this.onError(res.message)
             );
@@ -95,6 +98,9 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             .subscribe(
                 (res: HttpResponse<ICompetition[]>) => {
                     this.grandChildrenProblems[child.id] = res.body;
+                    this.grandChildrenProblems[child.id].sort(function(a, b) {
+                        return a.order - b.order;
+                    });
                 },
                 (res: HttpErrorResponse) => this.onError(res.message)
             );
