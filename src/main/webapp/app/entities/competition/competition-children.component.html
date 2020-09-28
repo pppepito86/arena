@@ -24,8 +24,9 @@
                  <div *ngIf="grandChildrenProblems[competition.id]">
                      <a *ngFor="let problem of grandChildrenProblems[competition.id]" 
                          [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]"
-                         style="width:6em; display:inline-block">
-                         {{problem.title}}</a>
+                         class="problem-name"
+                         [ngStyle]="{backgroundColor: getColor(problem.points/100.0)}">
+                         <span *ngIf="problem.points==100">✓</span> {{problem.title}}</a>
                  </div>
                 </td>
             </tr>
