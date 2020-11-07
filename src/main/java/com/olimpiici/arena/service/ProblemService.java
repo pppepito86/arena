@@ -189,6 +189,9 @@ public class ProblemService {
 	private void writeGradeProperties(long problemId, Properties props) throws Exception {
 		File gradePropertiesFile = getGradeProperties(problemId);
 		if (!gradePropertiesFile.exists()) {
+			if (!gradePropertiesFile.getParentFile().exists()) {
+				gradePropertiesFile.getParentFile().mkdirs();
+			}
 			gradePropertiesFile.createNewFile();
 		}
 		try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
