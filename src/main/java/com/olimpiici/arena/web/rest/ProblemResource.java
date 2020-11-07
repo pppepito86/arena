@@ -174,6 +174,9 @@ public class ProblemResource {
         ZipFile zipZipFole = new ZipFile(zipFile);
 
         File zipDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem").toFile();
+        if (zipDir.exists()) {
+            FileUtils.deleteDirectory(zipDir);
+        }
         zipDir.mkdirs();
         zipZipFole.extractAll(zipDir.getAbsolutePath());
         
