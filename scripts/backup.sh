@@ -1,9 +1,6 @@
 curr_date=`date '+%Y-%m-%d'`
 pushd ~/arena/workdir/problems
-aws s3 sync . s3://backup.arena.olimpiici.com/workdir_${curr_date}/problems --exclude "*" --include "*.zip"
-popd
-pushd ~/arena/workdir/submissions
-aws s3 sync . s3://backup.arena.olimpiici.com/workdir_${curr_date}/submissions 
+aws s3 sync . s3://backup.arena.olimpiici.com/problems_${curr_date}/problems --exclude "*" --include "*.zip"
 popd
 
 pushd ~/arena
