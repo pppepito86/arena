@@ -1,10 +1,14 @@
-pushd ~/workspace/workdir/problems
-aws s3 sync . s3://backup.arena.olimpiici.com/problems --exclude "*" --include "*.zip"
+curr_date=`date '+%Y-%m-%d'`
+pushd ~/arena/workdir/problems
+aws s3 sync . s3://backup.arena.olimpiici.com/workdir_${curr_date}/problems --exclude "*" --include "*.zip"
+popd
+pushd ~/arena/workdir/submissions
+aws s3 sync . s3://backup.arena.olimpiici.com/workdir_${curr_date}/submissions 
 popd
 
-pushd ~/workspace
-mysqldump -u root -ppassword arena_dev > database.sql      # password required
-file=backup_`date '+%Y-%m-%d'`.zip
+pushd ~/arena
+mysqldump -u root arena_dev > database.sql      # password required
+file=backup_${curr_date}.zip
 zip -r $file database.sql workdir/submissions
 aws s3 cp $file s3://backup.arena.olimpiici.com/
 rm database.sql
