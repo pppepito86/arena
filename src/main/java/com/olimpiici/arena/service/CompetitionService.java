@@ -304,31 +304,51 @@ public class CompetitionService {
 		return findAllCompetitionsInSubTree(competition, null);
 	}
 
+	private boolean matchesFilter(String name, List<String> filter) {
+		if (filter == null) {
+			return true;
+		} 
+		for (String f : filter) {
+			if (name.equals(f)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition, List<String> filter) {
-		List<Competition> all = new ArrayList<>();
 		List<Competition> bfs = new ArrayList<>();
-		
-		all.add(competition);
+		List<Competition> filteredCompetitions = new ArrayList<>();
 		bfs.add(competition);
+		// Find all competitions which match the filter using BFS. 
 		while (!bfs.isEmpty()) {
 			List<Competition> next = competitionRepository.findByParentIn(bfs);
-			bfs = next;
-
-			List<Competition> competitionsToAdd = new ArrayList<>(next);
-			if (filter != null) {
-				competitionsToAdd = competitionsToAdd.stream().filter(c -> {
-					for (String f : filter) {
-						if (c.getLabel().equals(f)) {
-							return true;
-						}
-					}
-					return false;
-				}).collect(Collectors.toList());
+			bfs.clear();
+			for (Competition c : next) {
+				if (matchesFilter(c.getLabel(), filter)) {
+					filteredCompetitions.add(c);
+				} else {
+					bfs.add(c);
+				}
 			}
-			all.addAll(competitionsToAdd);
+			
+			bfs = next;
 		}
 		
-		return all;
+		// Find all competitions in the subtrees of filteredCompetitions
+		List<Competition> result = new ArrayList<>();
+		if (matchesFilter(competition.getLabel(), filter)) {
+			result.add(competition);
+		}
+		result.addAll(filteredCompetitions);
+		bfs = filteredCompetitions;
+		while (!bfs.isEmpty()) {
+			List<Competition> next = competitionRepository.findByParentIn(bfs);
+			result.addAll(next);
+			bfs = next;
+		}
+		
+		return result;
 	}
 
 	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition) {
