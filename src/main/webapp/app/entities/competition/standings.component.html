@@ -3,8 +3,14 @@
         <span jhiTranslate="arenaApp.standings.title">Standings</span>
     </h2>
 
-    <div class="row justify-content-center">
+    <div>
+        <button class="btn btn-primary" [disabled]="!weeks" (click)="setWeeks(undefined)">За всички времена</button>
+        <button class="btn btn-primary" [disabled]="weeks==52" (click)="setWeeks(52)">1 година</button>
+        <button class="btn btn-primary" [disabled]="weeks==4" (click)="setWeeks(4)">1 месец</button>
+    </div>
 
+
+    <div class="row justify-content-center">
         <mat-spinner *ngIf="loading"></mat-spinner>
     </div>
 
@@ -41,5 +47,9 @@
                             (pageChange)="loadPage(page)"></ngb-pagination>
         </div>
     </div>
+    <div *ngIf="!loading && (!scores || scores.length == 0)">
+        <span jhiTranslate="arenaApp.standings.empty">No standings are found.</span>
+    </div>
+    
     <jhi-alert></jhi-alert>
 </div>

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
@@ -32,6 +32,8 @@ export class StandingsComponent implements OnInit, OnDestroy {
     reverse: any;
     parentCompetition: ICompetition;
     loading = false;
+    weeks: number = null;
+    filter: string[] = [];
 
     constructor(
         protected competitionService: CompetitionService,
@@ -53,15 +55,25 @@ export class StandingsComponent implements OnInit, OnDestroy {
             this.reverse = data.pagingParams.ascending;
             this.predicate = data.pagingParams.predicate;
         });
+
+        this.activatedRoute.queryParams.subscribe((params: Params) => {
+            console.log('w', params['w']);
+            console.log('f', params['f']);
+            this.weeks = params['w'];
+            this.filter = params['f'];
+        });
     }
 
     loadAll() {
+        let params = {
+            page: this.page - 1,
+            size: this.itemsPerPage,
+            sort: this.sort()
+        };
+        if (this.weeks) params['w'] = this.weeks;
+        if (this.filter) params['f'] = this.filter;
         this.competitionService
-            .getStandings(this.parentCompetition.id, {
-                page: this.page - 1,
-                size: this.itemsPerPage,
-                sort: this.sort()
-            })
+            .getStandings(this.parentCompetition.id, params)
             .subscribe(
                 (res: HttpResponse<IUserPoints[]>) => this.paginateStandings(res.body, res.headers),
                 (res: HttpErrorResponse) => this.onError(res.message)
@@ -76,26 +88,35 @@ export class StandingsComponent implements OnInit, OnDestroy {
         }
     }
 
+    getParams() {
+        let params = {
+            page: this.page,
+            size: this.itemsPerPage,
+            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+        };
+        if (this.weeks) params['w'] = this.weeks;
+        if (this.filter) params['f'] = this.filter;
+        return params;
+    }
+
+    setWeeks(weeks: number) {
+        this.weeks = weeks;
+        this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`], {
+            queryParams: this.getParams()
+        });
+        this.loadAll();
+    }
+
     transition() {
-        this.router.navigate([`/competition/${this.parentCompetition.id}/standings`], {
-            queryParams: {
-                page: this.page,
-                size: this.itemsPerPage,
-                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-            }
+        this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`], {
+            queryParams: this.getParams()
         });
         this.loadAll();
     }
 
     clear() {
         this.page = 0;
-        this.router.navigate([
-            `/competition/${this.parentCompetition.id}/standings`,
-            {
-                page: this.page,
-                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-            }
-        ]);
+        this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`, this.getParams()]);
         this.loadAll();
     }
 

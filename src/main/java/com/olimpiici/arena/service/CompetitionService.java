@@ -1,7 +1,15 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.service.CompetitionService;
-import com.olimpiici.arena.service.SubmissionService;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
@@ -22,25 +30,14 @@ import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.util.IntUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service ementation for managing Competition.
@@ -255,65 +252,59 @@ public class CompetitionService {
 				.reduce(0, IntUtil::safeSum);
 	}
 
-	
-	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable) {	
-		Map<Long, Map<Long, Integer>> userToPointsPerProblem 
-			= new HashMap<Long, Map<Long, Integer>>();
-		Map<Long, User> idToUser = new HashMap<>();
-		userRepository
-			.findAll()
-			.stream()
-			.forEach(user -> idToUser.put(user.getId(), user));
-		
+	/**
+	 * 
+	 * @param competitionId
+	 * @param pageable
+	 * @param from Start date for the standings generation.
+	 * @param filter If null, no filtering is applied. Otherwise only sumbissions to problems
+	 * in competitions with name equal to one of the elements of this list are considered. 
+	 * For exaple if filter = {'C', 'D'} only submissions for C and D group will be considered.
+	 * @return
+	 */
+	public Page<UserPoints> findStandings(Long competitionId, Pageable pageable, 
+            ZonedDateTime from, List<String> filter) {
+		log.debug("Calculating standings for competition {} from {} with filter {}", competitionId,
+			from, filter == null ? "null" : filter.toString());
+		// Standing before "from"
+        Standings oldStandings = new Standings(userRepository);
+		Standings fullStandings = new Standings(userRepository);
+
 		Competition competition = competitionRepository.getOne(competitionId);
-		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition);
+		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition, filter);
+		log.debug("Found {} problems.", problems.size());
         
         try(Stream<Submission> submissions = submissionRepository.findByCompetitionProblemIn(problems)) {
             submissions.forEach(submission -> {
-				Long userId = submission.getUser().getId();
-				if (!userToPointsPerProblem.containsKey(userId)) 
-					userToPointsPerProblem.put(userId, new HashMap<Long, Integer>());
-				Map<Long, Integer> pointsPerProblem = userToPointsPerProblem.get(userId);
-				Long problem = submission.getCompetitionProblem().getId();
-				Integer points = pointsPerProblem.getOrDefault(problem, 0);
-				points = IntUtil.safeMax(points, submission.getPoints());
-				pointsPerProblem.put(problem, points);
+				ZonedDateTime uploadDate = submission.getUploadDate();
+				
+				if (uploadDate != null && uploadDate.isBefore(from)) {
+					oldStandings.processSubmission(submission);
+				}
+				fullStandings.processSubmission(submission);
 			});
         }	
-		
-		List<UserPoints> standings = userToPointsPerProblem
-			.entrySet()
-			.stream()
-			.map(entry -> {
-				Integer points = entry.getValue()
-						.values()
-						.stream()
-						.mapToInt(Integer::intValue)
-						.sum();
-				User user = idToUser.get(entry.getKey());
-				return new UserPoints(user, points);
-			})
-			.filter(userPoints -> userPoints.user.getId() > 4)
-			.collect(Collectors.toList());
-		
-
-		Collections.sort(standings);
-		
+		fullStandings.minus(oldStandings);
+		List<UserPoints> standingsList = fullStandings.getStandings();		
 		int fromIndex = (int)(pageable.getOffset());
-		int toIndex = Math.min(standings.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
+		int toIndex = Math.min(standingsList.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
+
 		List<UserPoints> pageContent;
 		
-		if (fromIndex < standings.size()) {
-			pageContent = standings.subList(fromIndex, toIndex);
+		if (fromIndex < standingsList.size()) {
+			pageContent = standingsList.subList(fromIndex, toIndex);
 		} else {
 			pageContent = new ArrayList<>();
 		}
 		
-		return new PageImpl<>(pageContent, pageable, standings.size());
+		return new PageImpl<>(pageContent, pageable, standingsList.size());
 	}
 
-	
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {
+		return findAllCompetitionsInSubTree(competition, null);
+	}
+
+	public List<Competition> findAllCompetitionsInSubTree(Competition competition, List<String> filter) {
 		List<Competition> all = new ArrayList<>();
 		List<Competition> bfs = new ArrayList<>();
 		
@@ -321,16 +312,31 @@ public class CompetitionService {
 		bfs.add(competition);
 		while (!bfs.isEmpty()) {
 			List<Competition> next = competitionRepository.findByParentIn(bfs);
-			all.addAll(next);
 			bfs = next;
+
+			List<Competition> competitionsToAdd = new ArrayList<>(next);
+			if (filter != null) {
+				competitionsToAdd = competitionsToAdd.stream().filter(c -> {
+					for (String f : filter) {
+						if (c.getLabel().equals(f)) {
+							return true;
+						}
+					}
+					return false;
+				}).collect(Collectors.toList());
+			}
+			all.addAll(competitionsToAdd);
 		}
 		
 		return all;
 	}
 
-	
 	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition) {
-		List<Competition> competitions = findAllCompetitionsInSubTree(competition);
+		return findAllProblemsInSubTree(competition, null);
+	}
+	
+	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition, List<String> filter) {
+		List<Competition> competitions = findAllCompetitionsInSubTree(competition, filter);
 		List<CompetitionProblem> problems = competitionProblemRepository
 			.findByCompetitionIn(competitions);
 		return problems;

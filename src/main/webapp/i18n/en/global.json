@@ -5,7 +5,15 @@
         "menu": {
             "home": "Home",
             "catalog": "Catalog",
-            "standings": "Standings",
+            "standings": {
+                "main": "Standings",
+                "general": "General",
+                "groupE": "Group E",
+                "groupD": "Group D",
+                "groupC": "Group C",
+                "groupB": "Group B",
+                "groupA": "Group A"
+            },
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
             "entities": {
                 "main": "Entities",

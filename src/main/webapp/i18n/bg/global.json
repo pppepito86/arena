@@ -5,7 +5,15 @@
         "menu": {
             "home": "Начало",
             "catalog": "Задачи",
-            "standings": "Класиране",
+            "standings": {
+                "main": "Класиране",
+                "general": "Общо",
+                "groupE": "Група E",
+                "groupD": "Група D",
+                "groupC": "Група C",
+                "groupB": "Група B",
+                "groupA": "Група A"
+            },
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
             "entities": {
                 "main": "Entities",

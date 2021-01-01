@@ -31,7 +31,8 @@
         "standings": {
             "title": "Standings",
             "user": "User",
-            "points": "Points"
+            "points": "Points",
+            "empty": "No standings are found. :("
         }
     }
 }
