@@ -1,13 +1,22 @@
 package com.olimpiici.arena.domain;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import javax.persistence.*;
-
-import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * A CompetitionProblem.
@@ -34,6 +43,10 @@ public class CompetitionProblem implements Serializable {
     @JsonIgnoreProperties("")
     private Competition competition;
 
+    @OneToMany(mappedBy = "competitionProblem")
+    @JsonIgnoreProperties("")
+    private List<ProblemTopic> problemTopic;
+    
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -82,6 +95,14 @@ public class CompetitionProblem implements Serializable {
         this.competition = competition;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    public Topic getTopic() {
+        if (problemTopic == null || problemTopic.isEmpty()) {
+            return null;
+        }
+        
+        return problemTopic.get(0).getTopic();
+    }
 
     @Override
     public boolean equals(Object o) {

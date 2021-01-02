@@ -1,24 +1,28 @@
 package com.olimpiici.arena.web.rest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.pesho.sandbox.SandboxExecutor;
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.domain.Topic;
+import com.olimpiici.arena.grader.WorkerPool;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.CommentService;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -32,26 +36,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zeroturnaround.exec.ProcessExecutor;
-
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.grader.WorkerPool;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.SubmissionService;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.SubmissionDTO;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
 
 /**
  * REST controller for managing CompetitionProblem.
@@ -69,6 +55,9 @@ public class CompetitionProblemResource {
     
     @Autowired 
     private WorkerPool workerPool;
+
+    @Autowired
+    private CommentService commentService;
     
     private final CompetitionProblemService competitionProblemService;
     private final SubmissionService submissionService;
@@ -189,5 +178,10 @@ public class CompetitionProblemResource {
         return ResponseEntity.noContent().build();
     }
     
-    
+    @GetMapping("/competition-problems/{id}/topic")
+    @Timed
+    public Topic getTopic(@PathVariable Long id)
+    		throws URISyntaxException {
+        return commentService.getOrCreateTopicForCompProblem(id);
+    }
 }

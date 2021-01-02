@@ -8,6 +8,18 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.grader.WorkerPool;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,19 +38,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.grader.WorkerPool;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.TagDTO;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
 
 import io.github.jhipster.web.util.ResponseUtil;
 import net.lingala.zip4j.core.ZipFile;
@@ -59,7 +58,7 @@ public class ProblemResource {
 
     @Autowired
     private WorkerPool workerPool;
-    
+
     private final ProblemService problemService;
     
     private final CompetitionProblemService competitionProblemService;

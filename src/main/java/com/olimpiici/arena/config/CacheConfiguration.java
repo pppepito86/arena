@@ -2,15 +2,17 @@ package com.olimpiici.arena.config;
 
 import java.time.Duration;
 
-import org.ehcache.config.builders.*;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.jsr107.Eh107Configuration;
-
-import io.github.jhipster.config.jcache.BeanClassLoaderAwareJCacheRegionFactory;
-import io.github.jhipster.config.JHipsterProperties;
-
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import io.github.jhipster.config.JHipsterProperties;
+import io.github.jhipster.config.jcache.BeanClassLoaderAwareJCacheRegionFactory;
 
 @Configuration
 @EnableCaching
@@ -45,6 +47,10 @@ public class CacheConfiguration {
             cm.createCache(com.olimpiici.arena.domain.TagCollection.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.Tag.class.getName(), jcacheConfiguration);
             cm.createCache(com.olimpiici.arena.domain.TagCollectionTag.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.Topic.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.Comment.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.TopicSubscriptions.class.getName(), jcacheConfiguration);
+            cm.createCache(com.olimpiici.arena.domain.ProblemTopic.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }
