@@ -10,6 +10,7 @@ import { JhiMetricsService } from './metrics.service';
 })
 export class JhiMetricsMonitoringComponent implements OnInit {
     metrics: any = {};
+    stats: any = {};
     cachesStats: any = {};
     servicesStats: any = {};
     updatingMetrics = true;
@@ -50,6 +51,9 @@ export class JhiMetricsMonitoringComponent implements OnInit {
                     };
                 }
             });
+        });
+        this.metricsService.getStats().subscribe(stats => {
+            this.stats = stats;
         });
     }
 
