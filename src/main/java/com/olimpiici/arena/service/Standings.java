@@ -44,16 +44,16 @@ public class Standings {
 	    List<UserPoints> standings = userToPointsPerProblem
 			.entrySet()
 			.stream()
-			.map(entry -> {
+            .filter(entry -> entry.getKey() > 4)
+            .map(entry -> {
 				Integer points = entry.getValue()
 						.values()
 						.stream()
 						.mapToInt(Integer::intValue)
 						.sum();
 				User user = idToUser.get(entry.getKey());
-				return new UserPoints(user, points);
+				return new UserPoints(user.getFirstName(), user.getLastName(), points);
 			})
-			.filter(userPoints -> userPoints.user.getId() > 4)
 			.collect(Collectors.toList());
 
         Collections.sort(standings);

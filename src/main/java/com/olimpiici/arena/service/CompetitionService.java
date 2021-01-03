@@ -1,5 +1,6 @@
 package com.olimpiici.arena.service;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,7 @@ public class CompetitionService {
     
     private final UserRepository userRepository;
     
-    private final ProblemRepository problemRepository;
+	private final ProblemRepository problemRepository;
 
     public CompetitionService(CompetitionRepository competitionRepository, 
     		CompetitionProblemRepository competitionProblemRepository, 
@@ -266,6 +267,16 @@ public class CompetitionService {
             ZonedDateTime from, List<String> filter) {
 		log.debug("Calculating standings for competition {} from {} with filter {}", competitionId,
 			from, filter == null ? "null" : filter.toString());
+
+		if (competitionId == 1) { // Root
+			List<UserPoints> standings = competitionRepository
+					.getRootStandings(from, pageable.getOffset(), pageable.getPageSize())
+					.stream()
+					.map(row -> new UserPoints((String)row[1], (String)row[2], ((BigDecimal)row[3]).intValue()))
+					.collect(Collectors.toList());
+			return new PageImpl<>(standings, pageable, standings.size());
+		}
+		
 		// Standing before "from"
         Standings oldStandings = new Standings(userRepository);
 		Standings fullStandings = new Standings(userRepository);

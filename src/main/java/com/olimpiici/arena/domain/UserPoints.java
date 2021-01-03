@@ -1,21 +1,20 @@
 package com.olimpiici.arena.domain;
 
 public class UserPoints implements Comparable<UserPoints> {
-	public User user;
+	public String firstName;
+	public String lastName;
 	public Integer points;
 	
-	public UserPoints(User user, Integer points) {
+	public UserPoints(String firstName, String lastName, Integer points) {
 		super();
-		this.user = user;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.points = points;
 	}
 
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
+	public void setUser(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
 	}
 
 	public Integer getPoints() {
