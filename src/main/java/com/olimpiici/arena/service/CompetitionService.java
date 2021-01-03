@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
@@ -268,47 +267,28 @@ public class CompetitionService {
 		log.debug("Calculating standings for competition {} from {} with filter {}", competitionId,
 			from, filter == null ? "null" : filter.toString());
 
-		if (competitionId == 1 && filter == null) { // Root
-			List<UserPoints> standings = competitionRepository
-					.getRootStandings(from, pageable.getOffset(), pageable.getPageSize())
-					.stream()
-					.map(row -> new UserPoints((String)row[1], (String)row[2], ((BigDecimal)row[3]).intValue()))
-					.collect(Collectors.toList());
-			return new PageImpl<>(standings, pageable, standings.size());
-		}
-		
-		// Standing before "from"
-        Standings oldStandings = new Standings(userRepository);
-		Standings fullStandings = new Standings(userRepository);
+		List<Object[]> rawStandings;
 
-		Competition competition = competitionRepository.getOne(competitionId);
-		List<CompetitionProblem> problems = findAllProblemsInSubTree(competition, filter);
-		log.debug("Found {} problems.", problems.size());
-        
-        try(Stream<Submission> submissions = submissionRepository.findByCompetitionProblemIn(problems)) {
-            submissions.forEach(submission -> {
-				ZonedDateTime uploadDate = submission.getUploadDate();
-				
-				if (uploadDate != null && uploadDate.isBefore(from)) {
-					oldStandings.processSubmission(submission);
-				}
-				fullStandings.processSubmission(submission);
-			});
-        }	
-		fullStandings.minus(oldStandings);
-		List<UserPoints> standingsList = fullStandings.getStandings();		
-		int fromIndex = (int)(pageable.getOffset());
-		int toIndex = Math.min(standingsList.size(), (int)(pageable.getOffset() + pageable.getPageSize()));
-
-		List<UserPoints> pageContent;
-		
-		if (fromIndex < standingsList.size()) {
-			pageContent = standingsList.subList(fromIndex, toIndex);
+		if (competitionId == 1 && filter == null) { 
+			// For the root competition with no filters compute standing directly without
+			// sending SQL filters for the problems. This makes the computation around 3x faster
+			// (600ms vs 200ms) and having a separate branch is worth is since this is the most
+			// commonly requested standings.
+			rawStandings = competitionRepository
+					.getRootStandings(from, pageable.getOffset(), pageable.getPageSize());
 		} else {
-			pageContent = new ArrayList<>();
+			Competition competition = competitionRepository.getOne(competitionId);
+			List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
+					.map(cp -> cp.getId())
+					.collect(Collectors.toList());
+			rawStandings = competitionRepository
+					.getStandingsForProblems(from, problems, pageable.getOffset(), pageable.getPageSize());
 		}
-		
-		return new PageImpl<>(pageContent, pageable, standingsList.size());
+	
+		List<UserPoints> standings = rawStandings.stream()
+				.map(row -> new UserPoints((String)row[1], (String)row[2], ((BigDecimal)row[3]).intValue()))
+				.collect(Collectors.toList());
+		return new PageImpl<>(standings, pageable, standings.size());
 	}
 
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {
