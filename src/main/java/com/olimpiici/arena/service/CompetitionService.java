@@ -268,7 +268,7 @@ public class CompetitionService {
 		log.debug("Calculating standings for competition {} from {} with filter {}", competitionId,
 			from, filter == null ? "null" : filter.toString());
 
-		if (competitionId == 1) { // Root
+		if (competitionId == 1 && filter == null) { // Root
 			List<UserPoints> standings = competitionRepository
 					.getRootStandings(from, pageable.getOffset(), pageable.getPageSize())
 					.stream()
