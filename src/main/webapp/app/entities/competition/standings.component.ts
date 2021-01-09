@@ -50,25 +50,21 @@ export class StandingsComponent implements OnInit, OnDestroy {
         this.itemsPerPage = ITEMS_PER_PAGE;
         this.routeData = this.activatedRoute.data.subscribe(data => {
             this.parentCompetition = data.parentCompetition;
-            this.page = data.pagingParams.page;
-            this.previousPage = data.pagingParams.page;
-            this.reverse = data.pagingParams.ascending;
-            this.predicate = data.pagingParams.predicate;
+            console.log('route data, page', this.page, this.activatedRoute);
         });
 
         this.activatedRoute.queryParams.subscribe((params: Params) => {
-            console.log('w', params['w']);
-            console.log('f', params['f']);
             this.weeks = params['w'];
             this.filter = params['f'];
+            this.page = params['page'];
+            this.previousPage = params['page'];
         });
     }
 
     loadAll() {
-        let params = {
+        const params = {
             page: this.page - 1,
-            size: this.itemsPerPage,
-            sort: this.sort()
+            size: this.itemsPerPage
         };
         if (this.weeks) params['w'] = this.weeks;
         if (this.filter) params['f'] = this.filter;
@@ -81,7 +77,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     loadPage(page: number) {
-        this.loading = true;
+        this.page = page;
         if (page !== this.previousPage) {
             this.previousPage = page;
             this.transition();
@@ -89,10 +85,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
     }
 
     getParams() {
-        let params = {
+        const params = {
             page: this.page,
-            size: this.itemsPerPage,
-            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            size: this.itemsPerPage
         };
         if (this.weeks) params['w'] = this.weeks;
         if (this.filter) params['f'] = this.filter;
@@ -104,20 +99,12 @@ export class StandingsComponent implements OnInit, OnDestroy {
         this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`], {
             queryParams: this.getParams()
         });
-        this.loadAll();
     }
 
     transition() {
         this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`], {
             queryParams: this.getParams()
         });
-        this.loadAll();
-    }
-
-    clear() {
-        this.page = 0;
-        this.router.navigate([`/catalog/${this.parentCompetition.id}/standings`, this.getParams()]);
-        this.loadAll();
     }
 
     ngOnInit() {

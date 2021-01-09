@@ -268,7 +268,7 @@ public class CompetitionService {
 			from, filter == null ? "null" : filter.toString());
 
 		List<Object[]> rawStandings;
-
+		int size;
 		if (competitionId == 1 && filter == null) { 
 			// For the root competition with no filters compute standing directly without
 			// sending SQL filters for the problems. This makes the computation around 3x faster
@@ -276,6 +276,7 @@ public class CompetitionService {
 			// commonly requested standings.
 			rawStandings = competitionRepository
 					.getRootStandings(from, pageable.getOffset(), pageable.getPageSize());
+			size = competitionRepository.getRootStandingsSize(from);
 		} else {
 			Competition competition = competitionRepository.getOne(competitionId);
 			List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
@@ -283,12 +284,13 @@ public class CompetitionService {
 					.collect(Collectors.toList());
 			rawStandings = competitionRepository
 					.getStandingsForProblems(from, problems, pageable.getOffset(), pageable.getPageSize());
+			size = competitionRepository.getStandingsSizeForProblems(from, problems);
 		}
 	
 		List<UserPoints> standings = rawStandings.stream()
 				.map(row -> new UserPoints((String)row[1], (String)row[2], ((BigDecimal)row[3]).intValue()))
 				.collect(Collectors.toList());
-		return new PageImpl<>(standings, pageable, standings.size());
+		return new PageImpl<>(standings, pageable, size);
 	}
 
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {
