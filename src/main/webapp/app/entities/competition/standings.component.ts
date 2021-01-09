@@ -26,7 +26,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     totalItems: any;
     queryCount: any;
     itemsPerPage: any;
-    page: any;
+    page: any = 1;
     predicate: any;
     previousPage: any;
     reverse: any;
@@ -56,8 +56,10 @@ export class StandingsComponent implements OnInit, OnDestroy {
         this.activatedRoute.queryParams.subscribe((params: Params) => {
             this.weeks = params['w'];
             this.filter = params['f'];
-            this.page = params['page'];
-            this.previousPage = params['page'];
+            if (params['page']) {
+                this.page = params['page'];
+                this.previousPage = this.page;
+            }
         });
     }
 
