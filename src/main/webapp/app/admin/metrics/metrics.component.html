@@ -8,6 +8,18 @@
 
     <h3 *ngIf="stats">Stats</h3>
 
+    <div *ngIf="stats.queue">
+        <h4>Queue</h4>
+        <div> Age: {{stats.queue.ageMins}} mins </div>
+        <div> Count: {{stats.queue.submissionIds.length}} </div>
+    </div>
+
+    <div *ngIf="stats.badSubmissionIds">
+        <h4>Bad submissions ({{stats.badSubmissionIds.length}}) </h4>
+        <span *ngFor="let sub of stats.badSubmissionIds">
+            <a [routerLink]="['/submission', sub, 'view']">{{sub}}</a>,
+        </span>
+    </div>
     <div *ngIf="stats.submissions">
         <h4>Submissions</h4>
         <div> Total: {{stats.submissions.total}} </div>

@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.User;
@@ -17,6 +18,7 @@ import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.service.dto.Stats;
 import com.olimpiici.arena.service.dto.Stats.Metric;
 import com.olimpiici.arena.service.dto.Stats.PeriodDelta;
+import com.olimpiici.arena.service.dto.Stats.Queue;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,6 +54,10 @@ public class StatsResource {
         stats.problems.submitable = problemRepository.findAll().stream()
             .filter(p -> p.getVersion() != null && p.getVersion() > 0)
             .count();
+        stats.queue = collectQueueStats();
+        stats.badSubmissionIds = submissionRepository.findBadSubmissions().stream()
+            .map(s -> s.getId())
+            .collect(Collectors.toList());
         return stats;
     }
 
@@ -84,6 +90,25 @@ public class StatsResource {
         collectStats(submissions, getTime, periods);
         m.periods.add(periods);
         return m;
+    }
+
+    private Queue collectQueueStats() {
+        Queue queue = new Queue();
+        List<Submission> submissionsInQueue = submissionRepository.findQueue();
+        queue.submissionIds = submissionsInQueue.stream()
+            .map(s -> s.getId())
+            .collect(Collectors.toList());
+        
+        queue.ageMins = 0;
+
+        if (!submissionsInQueue.isEmpty()) {
+            ZonedDateTime oldestSubmitTime = 
+                submissionsInQueue.get(submissionsInQueue.size()-1).getUploadDate();
+            queue.ageMins =
+                (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+        }
+         
+        return queue;
     }
 
     private List<PeriodDelta> getPeriodsOfMonths(int last) {

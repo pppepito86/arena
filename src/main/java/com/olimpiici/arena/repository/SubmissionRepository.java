@@ -1,19 +1,19 @@
 package com.olimpiici.arena.repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import com.olimpiici.arena.domain.CompetitionProblem;
-import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.User;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 
 /**
@@ -25,6 +25,15 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     @Query("select submission from Submission submission where submission.user.login = ?#{principal.username}")
     List<Submission> findByUserIsCurrentUser();
+
+    @Query("select submission from Submission submission" 
+        + " where submission.verdict='waiting' or submission.verdict='judging'"
+        + " order by submission.id desc")
+    List<Submission> findQueue();
+
+    @Query("select submission from Submission submission" 
+        + " where submission.verdict=''")
+    List<Submission> findBadSubmissions();
     
     List<Submission> findByUser(User user);
     
