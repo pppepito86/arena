@@ -32,7 +32,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findQueue();
 
     @Query("select submission from Submission submission" 
-        + " where submission.verdict=''")
+        + " where submission.verdict='' and submission.user.id != 4") // Empty verdict and not author solution
     List<Submission> findBadSubmissions();
     
     List<Submission> findByUser(User user);
