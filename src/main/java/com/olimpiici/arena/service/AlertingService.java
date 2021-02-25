@@ -29,11 +29,13 @@ public class AlertingService {
     public void checkQeueueAndAlert() {
         List<Submission> submissionsInQueue = submissionRepository.findQueue();
         
-        long ageMins = 0;
-        if (!submissionsInQueue.isEmpty()) {
-            ZonedDateTime oldestSubmitTime = 
-                submissionsInQueue.get(submissionsInQueue.size()-1).getUploadDate();
+        long ageMins = -1;
+
+        for (int i = submissionsInQueue.size()-1; i >= 0; i--) {
+            ZonedDateTime oldestSubmitTime = submissionsInQueue.get(i).getUploadDate();
+            if (oldestSubmitTime == null) continue; // Author solutions don't have a timestamp.
             ageMins = (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+            break;
         }
         
         if (ageMins >= 15) {

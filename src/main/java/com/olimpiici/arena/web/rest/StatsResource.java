@@ -104,8 +104,12 @@ public class StatsResource {
         if (!submissionsInQueue.isEmpty()) {
             ZonedDateTime oldestSubmitTime = 
                 submissionsInQueue.get(submissionsInQueue.size()-1).getUploadDate();
-            queue.ageMins =
-                (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+            if (oldestSubmitTime == null) {
+                queue.ageMins = -1;    
+            } else {
+                queue.ageMins =
+                    (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+            }
         }
          
         return queue;
