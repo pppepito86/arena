@@ -59,9 +59,9 @@ public class AlertingService {
 
         String list = badSubs.stream()
             .map(s -> String.format("<a href='https://arena.olimpiici.com/#/submission/%d/view'>%d</a>", s.getId(), s.getId()))
-            .collect(Collectors.joining("\n"));
-        String message = "There are " + badSubs.size() + " bad submissions. Here's a list of them: \n" + list;
+            .collect(Collectors.joining("</br>\n"));
+        String message = "<p> There are " + badSubs.size() + " bad submissions. Here's a list of them: </p> \n" + list;
 
-        mailService.sendEmail(mail, badSubs.size() + " bad submissions", message, /*multpart*/ false, /*isHtml*/ false);   
+        mailService.sendEmail(mail, badSubs.size() + " bad submissions", message, /*multpart*/ false, /*isHtml*/ true);   
     }
 }
