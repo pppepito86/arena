@@ -323,43 +323,43 @@ public class ProblemService {
 	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
 		try {
 			File dir = getProblemDir(workDir, taskId);
-			List<File> cppFiles = Files.walk(dir.toPath())
+			String ext = getSolutionFileExtension(taskId);
+			List<File> potentialSols = Files.walk(dir.toPath())
 					.filter(Files::isRegularFile)
 					.map(Path::toFile)
-					.filter(f -> f.getName().toLowerCase().endsWith(".cpp"))
+					.filter(f -> f.getName().toLowerCase().endsWith("." + ext))
 					.collect(Collectors.toList());
 			
-			if (cppFiles.isEmpty()) {
+			if (potentialSols.isEmpty()) {
 				return Optional.empty();
 			}
 			
-			if (cppFiles.size() == 1) {
-				return Optional.of(cppFiles.get(0));
+			if (potentialSols.size() == 1) {
+				return Optional.of(potentialSols.get(0));
 			}
 			
-			String ext = getSolutionFileExtension(taskId);
-			Optional<File> file = cppFiles.stream()
+			Optional<File> file = potentialSols.stream()
 					.filter(f -> f.getName().toLowerCase().equals("author." + ext))
 					.findFirst();
 			if (file.isPresent()) {
 				return file;
 			}
 			
-			Optional<String> titleCpp = problemRepository.findById(taskId)
+			Optional<String> title = problemRepository.findById(taskId)
 					.map(problem -> problem.getTitle())
-					.map(title -> title.toLowerCase() + ".cpp");
-			if (!titleCpp.isPresent()) {
+					.map(t -> t.toLowerCase() + "." + ext);
+			if (!title.isPresent()) {
 				return  Optional.empty();
 			}
 			
-			file = cppFiles.stream()
-					.filter(f -> f.getName().toLowerCase().equals(titleCpp.get()))
+			file = potentialSols.stream()
+					.filter(f -> f.getName().toLowerCase().equals(title.get()))
 					.findFirst();
 			if (file.isPresent()) {
 				return file;
 			}
 			
-			return cppFiles.stream()
+			return potentialSols.stream()
 					.filter(f -> f.getName().toLowerCase().contains("100"))
 					.findFirst();
 		
