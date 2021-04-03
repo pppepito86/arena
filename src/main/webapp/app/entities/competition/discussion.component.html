@@ -1,0 +1,40 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="problem">
+            <h2 id="page-heading">
+                <span jhiTranslate="arenaApp.problem.discussion">Discussion</span> - {{problem.title}}
+            </h2>
+            <jhi-competition-path></jhi-competition-path>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            
+            <form role="form" novalidate (ngSubmit)="onPostComment()">
+                <div class="form-group">
+                    <textarea rows="5" class="form-control" name="newComment" [(ngModel)]="newComment"></textarea>
+                </div>
+                <div>
+
+                    <button type="submit" id="save-entity" class="btn btn-primary"
+                        [disabled]="isSubmitting">
+                        <span jhiTranslate="arenaApp.competition.submit">Submit</span>
+                    </button>
+                </div>
+            </form>
+
+            <div *ngFor="let comment of comments; let idx = index" class="comment-wrapper">
+                <span class="comment-idx">
+                    #{{comments.length - idx}}
+                </span>
+                <span class="comment-author">
+                    {{comment.author.firstName}} {{comment.author.lastName}}
+                </span>
+                <span class="comment-posted-date">
+                    {{comment.postedDate  | date:'dd MMM y, EEE, HH:mm'}}
+                </span>
+                <div class="comment-text">
+                    <pre>{{comment.content}}</pre>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>

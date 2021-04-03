@@ -1,4 +1,5 @@
 --liquibase formatted sql
+--changeset shalamanov:20210102
 
 create table topic (
     id bigint(20) not null auto_increment,

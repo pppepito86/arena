@@ -1,0 +1,25 @@
+.comment-wrapper {
+    margin-top: 1em;
+}
+
+.comment-author {
+    font-weight: bold;
+}
+
+.comment-posted-date {
+    margin-left: 1em;
+}
+
+.comment-text {
+    background-color: cornsilk;
+    padding: 7px;
+    font-family: monospace;
+}
+
+.comment-idx {
+    font-weight: bold;
+}
+
+pre {
+    margin-bottom: 0;
+}
