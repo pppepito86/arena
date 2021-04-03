@@ -160,7 +160,7 @@ public class ProblemService {
 		if (!gradePropertiesFile.exists()) {
 			return props;
 		}
-		 
+
 		try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
 			props.load(fis);
 		} catch (IOException e) {
@@ -337,8 +337,9 @@ public class ProblemService {
 				return Optional.of(cppFiles.get(0));
 			}
 			
+			String ext = getSolutionFileExtension(taskId);
 			Optional<File> file = cppFiles.stream()
-					.filter(f -> f.getName().toLowerCase().equals("author.cpp"))
+					.filter(f -> f.getName().toLowerCase().equals("author." + ext))
 					.findFirst();
 			if (file.isPresent()) {
 				return file;
