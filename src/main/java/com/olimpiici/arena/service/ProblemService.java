@@ -2,6 +2,7 @@ package com.olimpiici.arena.service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -12,16 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Competition;
@@ -35,6 +26,16 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
 import com.olimpiici.arena.service.util.HomographTranslator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.zeroturnaround.exec.ProcessExecutor;
 
 /**
  * Service for managing Problem.
@@ -149,17 +150,23 @@ public class ProblemService {
     	}
     }
     
-	public Properties getProperties(Long problemId) throws Exception {
+	public Properties getProperties(Long problemId) {
     	Properties props = new Properties();
 		File gradePropertiesFile = getGradeProperties(problemId);
+		
+		props.setProperty("time", "1");
+		props.setProperty("memory", "256");
+		
 		if (!gradePropertiesFile.exists()) {
-			props.setProperty("time", "1");
-			props.setProperty("memory", "256");
-		} else {
-			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
-				props.load(fis);
-			}
+			return props;
 		}
+		 
+		try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
+			props.load(fis);
+		} catch (IOException e) {
+			log.error("Cannot read metadata for problem: " + problemId, e);
+		}
+
 		return props;
 	}
 	
@@ -181,9 +188,15 @@ public class ProblemService {
 	}
 
 	private File getGradeProperties(long problemId) {
-        String workdir = applicationProperties.getWorkDir(); 
+        String workdir = applicationProperties.getWorkDir();  
 		return Paths.get(workdir , "problems", String.valueOf(problemId), "problem", "grade.properties")
 				.toFile();
+	}
+
+	public String getSolutionFileExtension(long problemId) {
+		String defaultExtension = "cpp";
+		Properties props = getProperties(problemId);
+		return props.getProperty("extensions", defaultExtension);
 	}
 	
 	private void writeGradeProperties(long problemId, Properties props) throws Exception {

@@ -5,10 +5,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.SubmissionService;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import org.apache.commons.io.FileUtils;
 import org.pesho.grader.SubmissionScore;
@@ -25,16 +34,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.SubmissionService;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.SubmissionDTO;
 
 import io.github.jhipster.web.util.ResponseUtil;
 import net.lingala.zip4j.core.ZipFile;

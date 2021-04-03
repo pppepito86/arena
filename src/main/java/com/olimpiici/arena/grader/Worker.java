@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.olimpiici.arena.service.SubmissionService;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,8 +23,6 @@ import org.pesho.grader.SubmissionScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Worker {
 	
@@ -83,7 +84,7 @@ public class Worker {
 	}
 	
 	private File getSourceFile(long submissionId) {
-		return Paths.get(workDir, "submissions", ""+submissionId, "solution.cpp").toFile();
+		return SubmissionService.findSubmissionFile(workDir, submissionId).get();
 	}
 	
 	private boolean isRunning(long submissionId) throws IOException {

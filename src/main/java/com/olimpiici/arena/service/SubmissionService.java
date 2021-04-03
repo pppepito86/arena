@@ -1,7 +1,14 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.service.SubmissionService;
-import com.olimpiici.arena.service.TagService;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
@@ -23,14 +30,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service ementation for managing Submission.
@@ -197,20 +196,33 @@ public class SubmissionService {
 				.collect(Collectors.toList());
 	}
 	
-	
 	public String findSubmissionCode(Long id) {
-		File solutionFile = Paths.get(applicationProperties.getWorkDir(), "submissions", ""+id, "solution.cpp").toFile();
-		if (!solutionFile.exists()) return null;
-		
+		Optional<File> file = findSubmissionFile(applicationProperties.getWorkDir(), id);
+		if (!file.isPresent()) {
+			log.error("No submission files");
+			return null;
+		}
+
 		try {
-			return FileUtils.readFileToString(solutionFile, StandardCharsets.UTF_8);
+			return FileUtils.readFileToString(file.get(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error("Problem reading solution file source", e);
 			return null;
 		}
-		
 	}
 
+	public static Optional<File> findSubmissionFile(String workdir, Long id) {
+		File submissionDir = Paths.get(workdir, "submissions", ""+id).toFile();
+		File[] filesInSubmssionDir = submissionDir.listFiles();
+		if (filesInSubmssionDir == null) {
+			return Optional.empty();
+		}
+
+		return Arrays.stream(filesInSubmssionDir)
+			.filter(File::isFile)
+			.filter(f -> f.getName().startsWith("solution"))
+			.findFirst();
+	}
     
     public List<TagDTO> findTags(Long id) {
     	Submission submission = submissionRepository.getOne(id);

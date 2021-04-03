@@ -17,6 +17,7 @@ import com.olimpiici.arena.domain.UserPoints;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
+import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.CompetitionService;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.SubmissionService;
@@ -62,6 +63,9 @@ public class CompetitionResource {
     private static final String ENTITY_NAME = "competition";
 
     private final CompetitionService competitionService;
+
+    @Autowired
+    private CompetitionProblemService competitionProblemService;
 
     private final SubmissionService submissionService;
 
@@ -269,15 +273,18 @@ public class CompetitionResource {
         submission.setUploadDate(ZonedDateTime.now());
         submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         submission = submissionService.save(submission);
-
+        
         // max allowed source code size is 64 KB UTF-8
         if (solution.length() > 64*1024/4) {
-        	submission.setVerdict("source too large");
+            submission.setVerdict("source too large");
         	submission.setDetails("source too large");
         } else {
-	        File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
+            long problemId = competitionProblemService.findOne(compProb).get().getProblemId();
+            String ext = problemService.getSolutionFileExtension(problemId);
+	        
+            File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
 	        File submissionDir = new File(submissionsDir, ""+submission.getId());
-	        File submissionFile = new File(submissionDir, "solution.cpp");
+	        File submissionFile = new File(submissionDir, "solution." + ext);
 
 	        submissionDir.mkdirs();
 	        FileUtils.writeStringToFile(submissionFile, solution, StandardCharsets.UTF_8);
