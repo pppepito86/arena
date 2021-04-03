@@ -41,8 +41,7 @@ public class Topic implements Serializable {
     @Column(name = "created_date")
     private ZonedDateTime createdDate;
 
-    @OneToMany(mappedBy = "topic")
-    @JsonIgnoreProperties("")
+    @OneToMany(mappedBy = "topicId")
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "topic")

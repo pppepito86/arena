@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.olimpiici.arena.domain.Comment;
 import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.ProblemTopic;
 import com.olimpiici.arena.domain.Topic;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.CommentRepository;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
+import com.olimpiici.arena.repository.ProblemTopicRepository;
 import com.olimpiici.arena.repository.TopicRepository;
 
 import org.slf4j.Logger;
@@ -35,6 +37,9 @@ public class CommentService {
 	@Autowired
 	private TopicRepository topicRepository;
 
+	@Autowired
+	private ProblemTopicRepository problemTopicRepository;
+
 	public Topic getOrCreateTopicForCompProblem(Long compProblemId)  {
 		CompetitionProblem cp = competitionProblemRepository.getOne(compProblemId);
 		Topic topic = cp.getTopic();
@@ -43,6 +48,11 @@ public class CommentService {
 			topic.setTitle(cp.getProblem().getTitle());
 			topic.setCreatedDate(ZonedDateTime.now());
 			topic = topicRepository.save(topic);
+
+			ProblemTopic pt = new ProblemTopic();
+			pt.setTopic(topic);
+			pt.setCompetitionProblem(cp.getId());
+			problemTopicRepository.save(pt);
 		}
 		return topic;
 	}
@@ -53,9 +63,10 @@ public class CommentService {
 
 	public Comment postCommentToTopic(Long topicId, User author, String content) {
 		Comment comment = new Comment();
-		comment.setTopic(topicRepository.getOne(topicId));
+		comment.setTopicId(topicId);
 		comment.setAuthor(author);
 		comment.setContent(content);
+		comment.setPostedDate(ZonedDateTime.now());
 		comment = commentRepository.save(comment);
 		return comment;
 	}

@@ -28,10 +28,8 @@ public class Comment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "topic_id")
-    @JsonIgnoreProperties("")
-    private Topic topic;
+    @Column(name = "topic_id")
+    private long topicId;
 
     @Column(name = "content")
     private String content;
@@ -63,12 +61,8 @@ public class Comment implements Serializable {
         return id;
     }
 
-    public Topic getTopic() {
-        return topic;
-    }
-
-    public void setTopic(Topic topic) {
-        this.topic = topic;
+    public void setTopicId(long topicId) {
+        this.topicId = topicId;
     }
 
     public String getContent() {

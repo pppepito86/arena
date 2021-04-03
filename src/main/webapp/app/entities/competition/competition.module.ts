@@ -17,6 +17,7 @@ import {
     CompetitionChildrenComponent,
     CompetitionPathComponent,
     CatalogComponent,
+    DiscussionComponent,
     ProblemInCompetitionComponent,
     StandingsComponent,
     competitionRoute,
@@ -46,6 +47,7 @@ const ENTITY_STATES = [...competitionRoute, ...competitionPopupRoute];
         CompetitionProblemsComponent,
         CompetitionPathComponent,
         CatalogComponent,
+        DiscussionComponent,
         ProblemInCompetitionComponent,
         StandingsComponent
     ],

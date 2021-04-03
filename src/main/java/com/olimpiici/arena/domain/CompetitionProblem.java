@@ -43,7 +43,7 @@ public class CompetitionProblem implements Serializable {
     @JsonIgnoreProperties("")
     private Competition competition;
 
-    @OneToMany(mappedBy = "competitionProblem")
+    @OneToMany(mappedBy = "competitionProblemId")
     @JsonIgnoreProperties("")
     private List<ProblemTopic> problemTopic;
     

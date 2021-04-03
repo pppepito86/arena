@@ -9,6 +9,8 @@ import { IProblem } from '../../shared/model/problem.model';
 import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
 import { IUserPoints } from '../../shared/model/user-points.model';
 import { ISubmission } from '../../shared/model/submission.model';
+import { IComment } from 'app/shared/model/comment.model';
+import { ITopic } from 'app/shared/model/topic.model';
 
 type EntityResponseType = HttpResponse<ICompetition>;
 type EntityArrayResponseType = HttpResponse<ICompetition[]>;
@@ -16,6 +18,8 @@ type EntityArrayResponseType = HttpResponse<ICompetition[]>;
 @Injectable({ providedIn: 'root' })
 export class CompetitionService {
     public resourceUrl = SERVER_API_URL + 'api/competitions';
+    public competitionProblems = SERVER_API_URL + 'api/competition-problems';
+    public topicUrl = SERVER_API_URL + 'api/topic';
 
     constructor(protected http: HttpClient) {}
 
@@ -77,5 +81,20 @@ export class CompetitionService {
         const options = createRequestOption(req);
         const url = `${this.resourceUrl}/${competitionId}/standings`;
         return this.http.get<IUserPoints[]>(url, { params: options, observe: 'response' });
+    }
+
+    getTopic(competitionProblemId: number): Observable<HttpResponse<ITopic>> {
+        const url = `${this.competitionProblems}/${competitionProblemId}/topic`;
+        return this.http.get<ITopic>(url, { observe: 'response' });
+    }
+
+    getComments(topicId: number): Observable<HttpResponse<IComment[]>> {
+        const url = `${this.topicUrl}/${topicId}/comment`;
+        return this.http.get<IComment[]>(url, { observe: 'response' });
+    }
+
+    postComment(topicId: number, text: string): Observable<HttpResponse<IComment>> {
+        const url = `${this.topicUrl}/${topicId}/comment`;
+        return this.http.post<IComment>(url, text, { observe: 'response' });
     }
 }

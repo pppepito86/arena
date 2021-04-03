@@ -20,15 +20,21 @@ public class ProblemTopic implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @ManyToOne
-    @JsonIgnoreProperties("")
-    private CompetitionProblem competitionProblem;
-    
+    private long competitionProblemId;
+
     @ManyToOne
     @JsonIgnoreProperties("")
     private Topic topic;
 
     public Topic getTopic() {
         return topic;
+    }
+
+    public void setCompetitionProblem(long cp)  {
+        this.competitionProblemId = cp;
+    }
+
+    public void setTopic(Topic t)  {
+        this.topic = t;
     }
 }

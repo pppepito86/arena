@@ -8,5 +8,6 @@ export * from './competition-children.component';
 export * from './competition-problems.component';
 export * from './competition-path.component';
 export * from './catalog.component';
+export * from './discussion.component';
 export * from './problem-in-competition.component';
 export * from './standings.component';

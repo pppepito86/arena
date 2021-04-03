@@ -17,6 +17,7 @@
             },
             "title": "Title",
             "directory": "Directory",
+            "discussion": "Discussion",
             "version": "Version",
             "statement": "Statement",
             "open": "Open",

@@ -1,21 +1,26 @@
 <div class="row justify-content-center">
     <div class="col-8">
         <div *ngIf="problem">
-            <h2  id="page-heading">
+            <h2 id="page-heading">
                 {{problem.title}}
-                <button class="btn btn-primary float-right jh-create-entity create-competition"
-                        [routerLink]="['submissions']">
-                    <span  jhiTranslate="arenaApp.competition.submissions">
-                    Submissions
+                <button class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['submissions']">
+                    <span jhiTranslate="arenaApp.competition.submissions">
+                        Submissions
                     </span>
                 </button>
+            
+                <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
+                    href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
+                    <span jhiTranslate="arenaApp.problem.downloadZip">
+                        Download ZIP
+                    </span>
+                </a>
 
-                <a class="btn btn-primary float-right"
-                   style="margin-right: 0.5em;"
-                   href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
-                        <span jhiTranslate="arenaApp.problem.downloadZip">
-                            Download ZIP
-                        </span>
+                <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
+                    [routerLink]="['discussion']">
+                    <span jhiTranslate="arenaApp.problem.discussion">
+                        Discussion
+                    </span>
                 </a>
             </h2>
             <jhi-competition-path></jhi-competition-path>
