@@ -20,6 +20,8 @@ import com.olimpiici.arena.service.dto.Stats.Metric;
 import com.olimpiici.arena.service.dto.Stats.PeriodDelta;
 import com.olimpiici.arena.service.dto.Stats.Queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/management/stats")
 public class StatsResource {
+	
+	private static final Logger log = LoggerFactory.getLogger(StatsResource.class);
 
     private final SubmissionRepository submissionRepository;
     
@@ -47,6 +51,10 @@ public class StatsResource {
 
     @GetMapping
     public Stats getAll() {
+    	Runtime r = Runtime.getRuntime();
+    	long memStart = r.totalMemory() - r.freeMemory(); 
+    	long timeStart = System.nanoTime();
+    	
         Stats stats = new Stats();    
         stats.users = collectUserStats();
         stats.submissions = collectSubmissionsStats();
@@ -58,6 +66,12 @@ public class StatsResource {
         stats.badSubmissionIds = submissionRepository.findBadSubmissions().stream()
             .map(s -> s.getId())
             .collect(Collectors.toList());
+        
+        long memEnd = r.totalMemory() - r.freeMemory(); 
+        long timeEnd = System.nanoTime();
+        log.debug("stats request finished in " + (timeEnd - timeStart)/1e9 + " s  "
+        		+ (memEnd - memStart) / (1024 * 1024) + " MB mem");
+        
         return stats;
     }
 
@@ -75,10 +89,10 @@ public class StatsResource {
     private Metric collectSubmissionsStats() {
         Metric m = new Metric();
         m.total = submissionRepository.count();
-        List<Submission> submissions = submissionRepository.findAll(); //Sort.by(Sort.Direction.ASC, "uploadDate"));
+        List<ZonedDateTime> submissions = submissionRepository.findAllUploadDates(); //Sort.by(Sort.Direction.ASC, "uploadDate"));
         List<PeriodDelta> periods = getPeriodsOfDays(20);
-        Function<Submission, Instant> getTime = s -> {
-            ZonedDateTime uploadDate = s.getUploadDate();
+        Function<ZonedDateTime, Instant> getTime = s -> {
+            ZonedDateTime uploadDate = s;//(ZonedDateTime) s[0];
             if (uploadDate != null) return uploadDate.toInstant();
             else return null; //ZonedDateTime.now().minus(Period.ofYears(50)).toInstant();
         };

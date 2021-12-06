@@ -1,5 +1,6 @@
 package com.olimpiici.arena.repository;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,9 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     @Query("select submission from Submission submission" 
         + " where submission.verdict='' and submission.user.id != 4") // Empty verdict and not author solution
     List<Submission> findBadSubmissions();
+    
+    @Query("select submission.uploadDate from Submission submission")
+    List<ZonedDateTime> findAllUploadDates();
     
     List<Submission> findByUser(User user);
     
