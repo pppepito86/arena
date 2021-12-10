@@ -35,6 +35,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
     weeks: number = null;
     filter: string[] = [];
 
+    myPoints?: any;
+    currentUserIsInStandings: boolean = false;
+
     constructor(
         protected competitionService: CompetitionService,
         protected parseLinks: JhiParseLinks,
@@ -61,6 +64,14 @@ export class StandingsComponent implements OnInit, OnDestroy {
                 this.previousPage = this.page;
             }
         });
+
+        this.competitionService.getMyPoints(this.parentCompetition.id).subscribe(
+            (res: HttpResponse<any>) => {
+                this.myPoints = res.body;
+                this.checkIfCurrUserIsInStandings();
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     loadAll() {
@@ -144,6 +155,13 @@ export class StandingsComponent implements OnInit, OnDestroy {
         this.queryCount = this.totalItems;
         this.scores = data;
         this.loading = false;
+        this.checkIfCurrUserIsInStandings();
+    }
+
+    protected checkIfCurrUserIsInStandings() {
+        if (this.myPoints && this.scores) {
+            this.currentUserIsInStandings = this.scores.map(row => row.userId).includes(this.myPoints.userId);
+        }
     }
 
     protected onError(errorMessage: string) {

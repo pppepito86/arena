@@ -10,6 +10,25 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.User;
@@ -29,25 +48,6 @@ import com.olimpiici.arena.service.util.RandomUtil;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
 import com.olimpiici.arena.web.rest.util.PaginationUtil;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import io.github.jhipster.web.util.ResponseUtil;
 
@@ -273,7 +273,7 @@ public class CompetitionResource {
         submission.setUploadDate(ZonedDateTime.now());
         submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
         submission = submissionService.save(submission);
-        
+
         // max allowed source code size is 64 KB UTF-8
         if (solution.length() > 64*1024/4) {
             submission.setVerdict("source too large");
@@ -281,7 +281,7 @@ public class CompetitionResource {
         } else {
             long problemId = competitionProblemService.findOne(compProb).get().getProblemId();
             String ext = problemService.getSolutionFileExtension(problemId);
-	        
+
             File submissionsDir = new File(applicationProperties.getWorkDir(), "submissions");
 	        File submissionDir = new File(submissionsDir, ""+submission.getId());
 	        File submissionFile = new File(submissionDir, "solution." + ext);
@@ -317,17 +317,31 @@ public class CompetitionResource {
     @GetMapping("/competitions/{id}/standings")
     @Timed
     public ResponseEntity<List<UserPoints>> getStandings(@PathVariable Long id, Pageable pageable,
-            @RequestParam(value = "w", defaultValue = "5200") Integer weeks, 
+            @RequestParam(value = "w", defaultValue = "5200") Integer weeks,
             @RequestParam(value = "f", required = false) List<String> filter) {
         log.debug("REST request to get standings for competition: {}, weeks = {}, filter = {}", id, weeks, filter);
         ZonedDateTime from = ZonedDateTime.now().minus(Period.ofWeeks(weeks));
 
         if (filter != null && filter.isEmpty()) filter = null;
         Page<UserPoints> page = competitionService.findStandings(id, pageable, from, filter);
-        
+
         String url = String.format("/api/competitions/{id}/standings", id);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, url);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/competitions/{id}/mypoints")
+    @Timed
+    public UserPoints getStandingsForCurrentUser(@PathVariable Long id,
+            @RequestParam(value = "w", defaultValue = "5200") Integer weeks,
+            @RequestParam(value = "f", required = false) List<String> filter) {
+
+    	User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+    	ZonedDateTime from = ZonedDateTime.now().minus(Period.ofWeeks(weeks));
+
+
+        if (filter != null && filter.isEmpty()) filter = null;
+        return competitionService.findPointsForUser(id, user.getId(), from, filter);
     }
 
     /**

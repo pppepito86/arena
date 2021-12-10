@@ -4,13 +4,13 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import com.olimpiici.arena.domain.Competition;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import com.olimpiici.arena.domain.Competition;
 
 
 /**
@@ -20,13 +20,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CompetitionRepository extends JpaRepository<Competition, Long> {
 	Page<Competition> findByParent(Competition parent, Pageable pageable);
-	
+
 	List<Competition> findByParent(Competition parent);
-	
+
 	List<Competition> findByParentIn(Collection<Competition> parent);
 
 	@Query(
-		value = 
+		value =
 			" select user_points_all.user_id, "
 			+ "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
@@ -57,7 +57,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getRootStandings(ZonedDateTime timeSince, long pageOffset, long pageSize);
 
 	@Query(
-		value = 
+		value =
 			"select count(distinct user_id)"
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
@@ -66,9 +66,8 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	)
 	Integer getRootStandingsSize(ZonedDateTime timeSince);
 
-	@Query(
-		value = 
-			" select user_points_all.user_id, "
+	String standingQueryCommon =
+			  " select user_points_all.user_id, "
 			+ "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
 			+ "     sum(user_points_all.max_points) - coalesce(sum(user_points_old.max_points),0) as total_points"
@@ -91,7 +90,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " on jhi_user.id = user_points_all.user_id"
 			+ " and user_points_all.competition_problem_id in ?2"
 			+ " where user_points_all.user_id != 4"  // Not the author
-			+ " group by user_id"
+			+ " group by user_id";
+
+	@Query(
+		value = standingQueryCommon
 			+ " order by total_points desc"
 			+ " limit ?3 , ?4 ;",
 		nativeQuery = true
@@ -99,7 +101,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getStandingsForProblems(ZonedDateTime timeSince, List<Long> problemIds, long pageOffset, long pageSize);
 
 	@Query(
-		value = 
+		value =
 			"select count(distinct user_id)"
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
@@ -109,4 +111,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	)
 	Integer getStandingsSizeForProblems(ZonedDateTime timeSince, List<Long> problemIds);
 
+	@Query(
+		value = standingQueryCommon
+			+ " having user_points_all.user_id = ?3 ;",
+		nativeQuery = true
+	)
+	List<Object[]> getUserPointsForProblems(ZonedDateTime timeSince, List<Long> problemIds, Long userId);
 }

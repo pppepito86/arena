@@ -83,6 +83,12 @@ export class CompetitionService {
         return this.http.get<IUserPoints[]>(url, { params: options, observe: 'response' });
     }
 
+    getMyPoints(competitionId: number, req?: any): Observable<HttpResponse<any>> {
+        const options = createRequestOption(req);
+        const url = `${this.resourceUrl}/${competitionId}/mypoints`;
+        return this.http.get<any>(url, { params: options, observe: 'response' });
+    }
+
     getTopic(competitionProblemId: number): Observable<HttpResponse<ITopic>> {
         const url = `${this.competitionProblems}/${competitionProblemId}/topic`;
         return this.http.get<ITopic>(url, { observe: 'response' });

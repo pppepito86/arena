@@ -18,14 +18,29 @@
         <table class="table table-striped">
             <thead>
             <tr>
+                <th width="3em"><span>#</span> </th>
                 <th><span jhiTranslate="arenaApp.standings.user">User</span> </th>
                 <th><span jhiTranslate="arenaApp.standings.points">Points</span> </th>
             </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let userpoints of scores">
-                <td>{{userpoints.firstName}} {{userpoints.lastName}}</td>
-                <td>{{userpoints.points}}</td>
+            <tr *ngFor="let userpoints of scores; let i = index">
+                <td>{{i + 1 + (page - 1) * itemsPerPage}}</td>
+                
+                <ng-container *ngIf="myPoints && userpoints.userId == myPoints.userId; else userIsNotCurrent">
+                    <td><b> {{userpoints.firstName}} {{userpoints.lastName}}</b></td>
+                    <td><b>{{userpoints.points}}</b></td>
+                </ng-container> 
+
+                <ng-template #userIsNotCurrent>
+                    <td>{{userpoints.firstName}} {{userpoints.lastName}}</td>
+                    <td>{{userpoints.points}}</td>
+                </ng-template>
+            </tr>
+            <tr *ngIf="myPoints && !currentUserIsInStandings">
+                <td> ? </td>
+                <td><b>{{myPoints.firstName}} {{myPoints.lastName}}</b></td>
+                <td><b>{{myPoints.points}}</b></td>
             </tr>
             </tbody>
         </table>
