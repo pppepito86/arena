@@ -38,9 +38,25 @@
     </div>
 
     <div *ngIf="stats.users">
-        <h4>Users</h4>
+        <h4>New Users</h4>
         <div> Total: {{stats.users.total}} </div>
         <table class="table table-striped" *ngFor="let periods of stats.users.periods">
+            <thead>
+            <tr>
+                <th *ngFor="let period of periods">{{period.name}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td *ngFor="let period of periods">{{period.delta}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="stats.activeUsers">
+        <h4>Active Users</h4>
+        <table class="table table-striped" *ngFor="let periods of stats.activeUsers.periods">
             <thead>
             <tr>
                 <th *ngFor="let period of periods">{{period.name}}</th>

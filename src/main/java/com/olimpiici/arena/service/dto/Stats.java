@@ -6,13 +6,14 @@ import java.util.List;
 
 public class Stats {
     public Metric users = new Metric();
+    public Metric activeUsers = new Metric();
     public Metric submissions = new Metric();
     public Problems problems = new Problems();
     public Queue queue = new Queue();
     public List<Long> badSubmissionIds;
 
     public static class Metric {
-        public long total;
+        public long total = -1;
         public List<List<PeriodDelta>> periods = new ArrayList<>();
     }
 
