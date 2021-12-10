@@ -27,37 +27,46 @@
             </thead>
             <tbody>
             <ng-container *ngFor="let tag of tags ;trackBy: trackId">
-            <tr *ngIf="tag.title.toLowerCase().includes(searchText.toLowerCase())">
-                <td *jhiHasAnyAuthority="'ROLE_ADMIN'"><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.id}}</a></td>
-                <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.title}}</a></td>
-                <td>{{tag.popularity}}</td>
-                <td *jhiHasAnyAuthority="'ROLE_ADMIN'">{{tag.keywords}}</td>
-                <td *jhiHasAnyAuthority="'ROLE_ADMIN'">{{tag.visible}}</td>
-                <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">
-                    <div class="btn-group flex-btn-group-container">
-                        <button type="submit"
-                                [routerLink]="['/tag', tag.id, 'view' ]"
-                                class="btn btn-info btn-sm">
-                            <fa-icon [icon]="'eye'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                        </button>
-                        <button type="submit"
-                                [routerLink]="['/tag', tag.id, 'edit']"
-                                class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                        </button>
-                        <button type="submit"
-                                [routerLink]="['/', { outlets: { popup: 'tag/'+ tag.id + '/delete'} }]"
-                                replaceUrl="true"
-                                queryParamsHandling="merge"
-                                class="btn btn-danger btn-sm">
-                            <fa-icon [icon]="'times'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
-                        </button>
-                    </div>
-                </td>
-            </tr>
+            
+            <ng-container *ngIf="tag.title.toLowerCase().includes(searchText.toLowerCase())">
+                <!-- Row if NOT admin -->
+                <tr *jhiHasNotAuthority="'ROLE_ADMIN'">
+                    <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.title}}</a></td>
+                    <td>{{tag.popularity}}</td>
+                </tr>
+
+                <!-- Row if admin -->
+                <tr *jhiHasAnyAuthority="'ROLE_ADMIN'" >
+                    <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.id}}</a></td>
+                    <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.title}}</a></td>
+                    <td>{{tag.popularity}}</td>
+                    <td>{{tag.keywords}}</td>
+                    <td>{{tag.visible}}</td>
+                    <td class="text-right">
+                        <div class="btn-group flex-btn-group-container">
+                            <button type="submit"
+                                    [routerLink]="['/tag', tag.id, 'view' ]"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon [icon]="'eye'"></fa-icon>
+                                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                            </button>
+                            <button type="submit"
+                                    [routerLink]="['/tag', tag.id, 'edit']"
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                            </button>
+                            <button type="submit"
+                                    [routerLink]="['/', { outlets: { popup: 'tag/'+ tag.id + '/delete'} }]"
+                                    replaceUrl="true"
+                                    queryParamsHandling="merge"
+                                    class="btn btn-danger btn-sm">
+                                <fa-icon [icon]="'times'"></fa-icon>
+                                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
             </ng-container>
             </tbody>
         </table>

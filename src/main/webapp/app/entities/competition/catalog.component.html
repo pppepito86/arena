@@ -2,7 +2,8 @@
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.catalog.home.title">Catalog</span>
 
-        <button class="btn btn-primary float-right"
+        <button *ngIf="currentAccount !== null"
+                class="btn btn-primary float-right"
                 [routerLink]="['submissions']">
             <span  jhiTranslate="arenaApp.competition.submissions">
             Submissions

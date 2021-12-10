@@ -28,6 +28,8 @@ export class TagComponent implements OnInit, OnDestroy {
         this.tagService.query().subscribe(
             (res: HttpResponse<ITag[]>) => {
                 this.tags = res.body;
+                // Sort by popularity
+                this.tags.sort((a, b) => (a.popularity > b.popularity ? -1 : b.popularity > a.popularity ? 1 : 0));
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );

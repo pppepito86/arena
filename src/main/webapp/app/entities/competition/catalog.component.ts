@@ -1,14 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
-
-import { ICompetition } from 'app/shared/model/competition.model';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { AccountService } from 'app/core';
-
-import { ITEMS_PER_PAGE } from 'app/shared';
-import { CompetitionService } from './competition.service';
 
 @Component({
     selector: 'jhi-catalog',
@@ -16,10 +8,15 @@ import { CompetitionService } from './competition.service';
 })
 export class CatalogComponent implements OnInit {
     id: number;
+    currentAccount: any;
 
-    constructor(protected activatedRoute: ActivatedRoute) {}
+    constructor(protected activatedRoute: ActivatedRoute, protected accountService: AccountService) {}
 
     ngOnInit() {
         this.id = this.activatedRoute.snapshot.params['id'];
+
+        this.accountService.identity().then(account => {
+            this.currentAccount = account;
+        });
     }
 }

@@ -3,18 +3,21 @@
         <div *ngIf="problem">
             <h2 id="page-heading">
                 {{problem.title}}
-                <button class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['submissions']">
-                    <span jhiTranslate="arenaApp.competition.submissions">
-                        Submissions
-                    </span>
-                </button>
-            
-                <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
-                    href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
-                    <span jhiTranslate="arenaApp.problem.downloadZip">
-                        Download ZIP
-                    </span>
-                </a>
+
+                <div *ngIf="currentAccount !== null">
+                    <button class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['submissions']">
+                        <span jhiTranslate="arenaApp.competition.submissions">
+                            Submissions
+                        </span>
+                    </button>
+                
+                    <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
+                        href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
+                        <span jhiTranslate="arenaApp.problem.downloadZip">
+                            Download ZIP
+                        </span>
+                    </a>
+                </div>
 
                 <!-- <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
                     [routerLink]="['discussion']">
@@ -128,6 +131,10 @@
                     </button>
                 </div>
             </form>
+
+            <div *ngIf="currentAccount == null" class="alert alert-warning">
+                За да изпратиш решeние на задачата, трябва да влезеш или да се регистрираш.
+            </div>
 
             <div *ngIf="problem.version == 0"
                  class="alert alert-warning"
