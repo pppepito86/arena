@@ -8,18 +8,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.config.ApplicationProperties;
-import com.olimpiici.arena.grader.WorkerPool;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.TagDTO;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.web.rest.util.PaginationUtil;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +27,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.grader.WorkerPool;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+import com.olimpiici.arena.web.rest.util.PaginationUtil;
+
 import io.github.jhipster.web.util.ResponseUtil;
-import net.lingala.zip4j.core.ZipFile;
 
 /**
  * REST controller for managing Problem.
@@ -52,7 +51,7 @@ public class ProblemResource {
     private final Logger log = LoggerFactory.getLogger(ProblemResource.class);
 
     private static final String ENTITY_NAME = "problem";
-    
+
     @Autowired
     private ApplicationProperties applicationProperties;
 
@@ -60,9 +59,9 @@ public class ProblemResource {
     private WorkerPool workerPool;
 
     private final ProblemService problemService;
-    
+
     private final CompetitionProblemService competitionProblemService;
-    
+
     public ProblemResource(ProblemService problemService, CompetitionProblemService competitionProblemService) {
         this.problemService = problemService;
         this.competitionProblemService = competitionProblemService;
@@ -96,7 +95,7 @@ public class ProblemResource {
      * @return the ResponseEntity with status 200 (OK) and with body the updated problemDTO,
      * or with status 400 (Bad Request) if the problemDTO is not valid,
      * or with status 500 (Internal Server Error) if the problemDTO couldn't be updated
-     * @throws Exception 
+     * @throws Exception
      */
     @PutMapping("/problems")
     @Timed
@@ -110,7 +109,7 @@ public class ProblemResource {
         ProblemDTO result = problemService.save(problemDTO);
         problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
         problemService.updateTimeLimit(problemId, problemDTO.getTime());
-        
+
         competitionProblemService.findOneByProblem(problemId)
         		.ifPresent(cp -> {
 					try {
@@ -119,14 +118,14 @@ public class ProblemResource {
 						e.printStackTrace();
 					}
 				});
-        
+
         workerPool.deleteProblem(problemId);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
             .body(result);
     }
 
-    
+
     /**
      * GET  /problems : get all the problems.
      *
@@ -160,30 +159,23 @@ public class ProblemResource {
         		.map(dto -> problemService.setLimitsToDto(dto));
         return ResponseUtil.wrapOrNotFound(problemDTO);
     }
-    
+
     @PostMapping("/problems/{id}/zip")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
     public ResponseEntity<?> updateZip(@PathVariable Long id, @RequestBody MultipartFile file)
     		throws Exception {
         log.debug("REST updating zip for: {} {}", id, file.getOriginalFilename());
-        
+
         File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
         FileUtils.copyInputStreamToFile(file.getInputStream(), zipFile);
-        ZipFile zipZipFole = new ZipFile(zipFile);
+        problemService.unzipProblemZip(id);
 
-        File zipDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem").toFile();
-        if (zipDir.exists()) {
-            FileUtils.deleteDirectory(zipDir);
-        }
-        zipDir.mkdirs();
-        zipZipFole.extractAll(zipDir.getAbsolutePath());
-        
         workerPool.deleteProblem(id);
-        
+
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/problems/{id}/tags")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
@@ -193,7 +185,7 @@ public class ProblemResource {
         problemService.updateTags(id, tags);
         return ResponseEntity.ok().build();
     }
-    
+
     @GetMapping("/problems/{id}/tags")
     @Timed
     public List<TagDTO> getTags(@PathVariable Long id)
