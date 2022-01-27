@@ -181,7 +181,7 @@ public class CompetitionProblemService {
 
         boolean hasEnoughGoodSubmitions = submissions
                             .stream()
-                            .filter(s -> s.getUserId() == authorUserId && s.getPoints() == 100)
+                            .filter(s -> s.getUserId() == authorUserId && s.getPoints() != null && s.getPoints() == 100)
                             .count() >= numSolutions;
 
         if (hasEnoughGoodSubmitions) {

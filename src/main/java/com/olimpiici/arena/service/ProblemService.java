@@ -324,10 +324,10 @@ public class ProblemService {
 				continue;
 			}
 
-			log.info("Populating competition info for problem " + problem.toString());
 			problem.setYear(year);
 			problem.setCompetition(competition);
 			problem.setGroup(groupName);
+			log.info("Populating competition info for problem " + problem.toString());
 			problemRepository.save(problem);
 		}
     }
