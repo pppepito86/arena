@@ -167,14 +167,15 @@ public class CompetitionProblemService {
 	    }
 
 	public void autoSetTimeLimits(Long compProblemId) throws Exception {
-        // TODO: use problem id, not comp problem id
-        log.debug("Setting automatic time limit for problem " + compProblemId);
+		long problemId = findOne(compProblemId).get().getProblemId();
+		log.debug("Setting automatic time limit for competition problem {} problem {}",
+        		compProblemId, problemId);
+
         PageRequest page = PageRequest.of(0, 10000);
         List<SubmissionDTO> submissions = submissionService
             .findSubmissionsByCompetitionProblem(compProblemId, page)
             .getContent();
 
-        long problemId = findOne(compProblemId).get().getProblemId();
 
         final int authorUserId = 4;
         final int numSolutions = 3;

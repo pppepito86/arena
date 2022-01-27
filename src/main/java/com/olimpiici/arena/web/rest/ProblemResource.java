@@ -110,15 +110,6 @@ public class ProblemResource {
         problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
         problemService.updateTimeLimit(problemId, problemDTO.getTime());
 
-        competitionProblemService.findOneByProblem(problemId)
-        		.ifPresent(cp -> {
-					try {
-						competitionProblemService.submitAuthorsIfNeeded(cp.getId());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				});
-
         workerPool.deleteProblem(problemId);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
@@ -172,6 +163,15 @@ public class ProblemResource {
     	problemService.unzipProblemZip(id);
 
         workerPool.deleteProblem(id);
+
+        competitionProblemService.findOneByProblem(id)
+			.ifPresent(cp -> {
+				try {
+					competitionProblemService.submitAuthorsIfNeeded(cp.getId());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 
         return ResponseEntity.ok().build();
     }
