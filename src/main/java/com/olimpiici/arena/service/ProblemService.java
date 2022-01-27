@@ -282,30 +282,42 @@ public class ProblemService {
         return dto;
 	}
 
-	@Scheduled(fixedDelay = 24*60*60*1000)
+	@Scheduled(fixedDelay = 24*60*60*1000) // Every day
     public void populateCompetitionInfo() {
     	log.info("Starting job for populating competition info in problem.");
     	for (CompetitionProblem cp : competitionProblemRepository.findAll()) {
-			Problem problem = cp.getProblem();
-			if (problem.getYear() != null
-                    && problem.getCompetition() != null
-                    && problem.getGroup() != null) {
-				continue;
-			}
-			log.info("Populating competition info for problem " + problem.toString());
-			List<Competition> path = getPath(cp);
-			for (Competition competition : path) {
-				String name = competition.getLabel();
+    		List<Competition> path = getPath(cp);
+    		// If CP is not connected to root, skip it
+    		if (path.get(path.size() - 1).getId() != 1) {
+    			continue;
+    		}
+
+			Integer year = null;
+			Competition competition = null;
+			String groupName = null;
+			for (Competition c : path) {
+				String name = c.getLabel();
 				name = name.trim();
-				if (isYear(name)) {
-					problem.setYear(Integer.parseInt(name));
-				} else if (name.length() == 1) { // assume it's group
-					String groupName = new HomographTranslator().translate(name);
-					problem.setGroup(groupName);
-				} else { // assume it's competition name
-					problem.setCompetition(competition);
+				if (year == null && isYear(name)) {
+					year = Integer.parseInt(name);
+				} else if (groupName == null && name.length() == 1) { // assume it's group
+					groupName = new HomographTranslator().translate(name);
+				} else if (competition == null && name.length() > 1) { // assume it's competition name
+					competition = c;
 				}
 			}
+
+			Problem problem = cp.getProblem();
+			if (problem.getYear().equals(year)
+                    && problem.getCompetition().getId() == competition.getId()
+                    && problem.getGroup().equals(groupName)) {
+				continue;
+			}
+
+			log.info("Populating competition info for problem " + problem.toString());
+			problem.setYear(year);
+			problem.setCompetition(competition);
+			problem.setGroup(groupName);
 			problemRepository.save(problem);
 		}
     }
@@ -314,7 +326,7 @@ public class ProblemService {
 		List<Competition> path = new ArrayList<>();
 		Competition competition = cp.getCompetition();
 
-		while (competition != null && competition.getId() != 1) {
+		while (competition != null) {
 			path.add(competition);
 			competition = competition.getParent();
 		};
