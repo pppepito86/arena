@@ -18,21 +18,23 @@ public class ProblemDTO implements Serializable {
     private Integer version;
 
     private Integer time;
-    
+
     private Integer memory;
-    
+
     private Long tagsId;
-    
+
     private Integer year;
 
     private String group;
 
     private String competitionLabel;
-    
+
     private Integer competitionId;
-    
+
+    public Integer canonicalCompetitionProblemId;
+
     public List<TagDTO> allTags;
-    
+
     public Long getId() {
         return id;
     }
@@ -68,19 +70,19 @@ public class ProblemDTO implements Serializable {
     public Integer getTime() {
 		return time;
 	}
-    
+
     public void setTime(Integer time) {
 		this.time = time;
 	}
-    
+
     public Integer getMemory() {
 		return memory;
 	}
-    
+
     public void setMemory(Integer memory) {
 		this.memory = memory;
 	}
-    
+
     public Long getTagsId() {
         return tagsId;
     }
@@ -96,7 +98,7 @@ public class ProblemDTO implements Serializable {
     public void setGroup(String group) {
         this.group = group;
     }
-    
+
     public Integer getYear() {
         return year;
     }
@@ -113,7 +115,8 @@ public class ProblemDTO implements Serializable {
         this.competitionId = competitionId;
     }
 
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -128,22 +131,24 @@ public class ProblemDTO implements Serializable {
         return Objects.equals(getId(), problemDTO.getId());
     }
 
-    
-    public int hashCode() {
+
+    @Override
+	public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    
-    public String toString() {
+
+    @Override
+	public String toString() {
         return "ProblemDTO{" +
             "id=" + getId() +
             ", title='" + getTitle() + "'" +
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
             ", tags=" + getTagsId() +
-            ", competitionLabel=" + getCompetitionLabel() + 
-            ", competitionId=" + getCompetitionId() + 
-            ", group=" + getGroup() + 
+            ", competitionLabel=" + getCompetitionLabel() +
+            ", competitionId=" + getCompetitionId() +
+            ", group=" + getGroup() +
             ", year=" + getYear() +
             "}";
     }

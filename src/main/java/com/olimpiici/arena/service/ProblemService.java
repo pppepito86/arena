@@ -320,13 +320,16 @@ public class ProblemService {
 			if (Objects.equals(problem.getYear(), year)
                     && problem.getCompetition() != null
                     && problem.getCompetition().getId() == competition.getId()
-                    && Objects.equals(problem.getGroup(), groupName)) {
+                    && Objects.equals(problem.getGroup(), groupName)
+                    && problem.getCanonicalCompetitionProblem() != null
+                    && problem.getCanonicalCompetitionProblem().getId() == cp.getId()) {
 				continue;
 			}
 
 			problem.setYear(year);
 			problem.setCompetition(competition);
 			problem.setGroup(groupName);
+			problem.setCanonicalCompetitionProblem(cp);
 			log.info("Populating competition info for problem " + problem.toString());
 			problemRepository.save(problem);
 		}

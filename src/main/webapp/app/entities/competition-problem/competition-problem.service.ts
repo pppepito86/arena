@@ -23,7 +23,7 @@ export class CompetitionProblemService {
         return this.http.put<ICompetitionProblem>(this.resourceUrl, competitionProblem, { observe: 'response' });
     }
 
-    find(id: number): Observable<EntityResponseType> {
+    find(id: number): Observable<HttpResponse<ICompetitionProblem>> {
         return this.http.get<ICompetitionProblem>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
 

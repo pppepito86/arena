@@ -13,6 +13,7 @@ import { ProblemService } from '../problem';
 import { ITag } from '../../shared/model/tag.model';
 import { CompetitionProblemService } from '../competition-problem';
 import { AccountService } from '../../core';
+import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
 
 @Component({
     selector: 'jhi-problem-in-competition',
@@ -46,6 +47,16 @@ export class ProblemInCompetitionComponent implements OnInit {
         const params = this.activatedRoute.snapshot.paramMap;
         this.competitionId = Number(params.get('id'));
         this.competitionProblemId = Number(params.get('compProb'));
+
+        this.competitionProblemService.find(this.competitionProblemId).subscribe(
+            (res: HttpResponse<ICompetitionProblem>) => {
+                let realCompetitionId = res.body.competitionId;
+                if (realCompetitionId != this.competitionId) {
+                    this.router.navigate(['catalog', realCompetitionId, 'problem', this.competitionProblemId]);
+                }
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
 
         this.competitionService.findProblem(this.competitionId, this.competitionProblemId).subscribe(
             (res: HttpResponse<IProblem>) => {

@@ -1,9 +1,10 @@
 package com.olimpiici.arena.service.mapper;
 
-import com.olimpiici.arena.domain.*;
-import com.olimpiici.arena.service.dto.ProblemDTO;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import org.mapstruct.*;
+import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 
 /**
  * Mapper for the entity Problem and its DTO ProblemDTO.
@@ -11,12 +12,15 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {TagCollectionMapper.class, CompetitionMapper.class})
 public interface ProblemMapper extends EntityMapper<ProblemDTO, Problem> {
 
-    @Mapping(source = "tags.id", target = "tagsId")
-    @Mapping(source = "competition.id", target = "competitionId")
+    @Override
+	@Mapping(source = "tags.id", target = "tagsId")
+    @Mapping(source = "canonicalCompetitionProblem.competition.id", target = "competitionId")
     @Mapping(source = "competition.label", target = "competitionLabel")
+    @Mapping(source = "canonicalCompetitionProblem.id", target = "canonicalCompetitionProblemId")
     ProblemDTO toDto(Problem problem);
 
-    @Mapping(source = "tagsId", target = "tags")
+    @Override
+	@Mapping(source = "tagsId", target = "tags")
     @Mapping(source = "competitionId", target = "competition")
     Problem toEntity(ProblemDTO problemDTO);
 

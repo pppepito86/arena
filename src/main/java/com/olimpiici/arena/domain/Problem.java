@@ -1,13 +1,21 @@
 package com.olimpiici.arena.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
-
-import java.io.Serializable;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * A Problem.
@@ -41,6 +49,10 @@ public class Problem implements Serializable {
     @ManyToOne
     @JsonIgnoreProperties("")
     private Competition competition;
+
+    @ManyToOne
+    @JoinColumn(name="canonical_competition_problem")
+    private CompetitionProblem canonicalCompetitionProblem;
 
     @ManyToOne
     @JsonIgnoreProperties("")
@@ -106,7 +118,7 @@ public class Problem implements Serializable {
     public void setTags(TagCollection tagCollection) {
         this.tags = tagCollection;
     }
-   
+
     public String getGroup() {
         return group;
     }
@@ -119,7 +131,7 @@ public class Problem implements Serializable {
     public void setGroup(String group) {
         this.group = group;
     }
-    
+
     public Integer getYear() {
         return year;
     }
@@ -144,6 +156,14 @@ public class Problem implements Serializable {
 
     public void setCompetition(Competition competition) {
         this.competition = competition;
+    }
+
+    public CompetitionProblem getCanonicalCompetitionProblem() {
+        return canonicalCompetitionProblem;
+    }
+
+    public void setCanonicalCompetitionProblem(CompetitionProblem competition) {
+        this.canonicalCompetitionProblem = competition;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 
@@ -174,8 +194,8 @@ public class Problem implements Serializable {
             ", title='" + getTitle() + "'" +
             ", directory='" + getDirectory() + "'" +
             ", version=" + getVersion() +
-            ", year=" + getYear() + 
-            ", competition=" + (getCompetition() != null ? getCompetition().getId() : "") + 
+            ", year=" + getYear() +
+            ", competition=" + (getCompetition() != null ? getCompetition().getId() : "") +
             ", group=" + getGroup() +
             "}";
     }

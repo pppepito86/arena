@@ -28,4 +28,5 @@
 	<include file="config/liquibase/changelog/20190107133100_initial_tags.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/202003291020_add_competition_info_to_Problem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20210102_create_comments_tables.sql" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20220127_add_competition_problem_to_Problem.sql" relativeToChangelogFile="false"/>
 </databaseChangeLog>
