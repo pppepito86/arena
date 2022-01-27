@@ -10,14 +10,14 @@ import com.olimpiici.arena.config.ApplicationProperties;
 
 @Component
 public class WorkerPool {
-	
+
 	private List<Worker> workers;
-	
+
 	public WorkerPool(ApplicationProperties applicationProperties) {
 		workers = new ArrayList<>();
 		workers.add(new Worker(applicationProperties.getWorkerUrl(), applicationProperties.getWorkDir()));
 	}
-	
+
 	public void deleteProblem(long problemId) {
 		workers.forEach(worker -> {
 			try {

@@ -3,13 +3,13 @@ package com.olimpiici.arena.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -50,6 +50,8 @@ import net.lingala.zip4j.exception.ZipException;
 public class ProblemService {
 
     private final Logger log = LoggerFactory.getLogger(ProblemService.class);
+
+    private final Object lock = new Object();
 
     private final ProblemRepository problemRepository;
 
@@ -169,10 +171,12 @@ public class ProblemService {
 			return props;
 		}
 
-		try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
-			props.load(fis);
-		} catch (IOException e) {
-			log.error("Cannot read metadata for problem: " + problemId, e);
+		synchronized (lock) {
+			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
+				props.load(fis);
+			} catch (IOException e) {
+				log.error("Cannot read metadata for problem: " + problemId, e);
+			}
 		}
 
 		return props;
@@ -183,7 +187,7 @@ public class ProblemService {
 
 		Properties props = getProperties(problemId);
 		String oldTime = props.getProperty("time");
-		if (oldTime != null && oldTime == timeValue) {
+		if (oldTime != null && oldTime.equals(timeValue)) {
 			return;
 		}
 		props.setProperty("time", timeValue);
@@ -194,66 +198,82 @@ public class ProblemService {
 	public void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception {
 		Properties props = getProperties(problemId);
 		String newMemory = String.valueOf(newMemoryLimitMb);
-		String oldMemory = "memory";
-		if (oldMemory != null && oldMemory == newMemory) {
+		String oldMemory = props.getProperty("memory");
+		if (oldMemory != null && oldMemory.equals(newMemory)) {
 			return;
 		}
+
 		props.setProperty("memory", newMemory);
 		writeGradeProperties(problemId, props);
 	}
 
-	private File getGradeProperties(long problemId) {
-        String workdir = applicationProperties.getWorkDir();
-		return Paths.get(workdir , "problems", String.valueOf(problemId), "problem", "grade.properties")
-				.toFile();
-	}
-
-	public String getSolutionFileExtension(long problemId) {
+	public String getSolutionFileExtension(long problemId) throws IOException {
 		String defaultExtension = "cpp";
 		Properties props = getProperties(problemId);
 		return props.getProperty("extensions", defaultExtension);
 	}
 
 	private void writeGradeProperties(long problemId, Properties props) throws Exception {
-		unzipProblemZip(problemId);
-		File gradePropertiesFile = getGradeProperties(problemId);
-		if (!gradePropertiesFile.exists()) {
-			if (!gradePropertiesFile.getParentFile().exists()) {
-				gradePropertiesFile.getParentFile().mkdirs();
+		synchronized (lock) {
+			unzipProblemZipLocked(problemId);
+			File gradePropertiesFile = getGradeProperties(problemId);
+			if (!gradePropertiesFile.exists()) {
+				if (!gradePropertiesFile.getParentFile().exists()) {
+					gradePropertiesFile.getParentFile().mkdirs();
+				}
+				gradePropertiesFile.createNewFile();
 			}
-			gradePropertiesFile.createNewFile();
+			try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
+				props.store(pw, null);
+			}
+			recreateProblemZipLocked(problemId);
 		}
-		try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
-			props.store(pw, null);
-		}
-		recreateProblemZip(problemId);
 	}
 
-	public void unzipProblemZip(long problemId) throws ZipException, IOException {
-		File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, "problem.zip").toFile();
-        ZipFile zipZipFole = new ZipFile(zipFile);
+	private File getProblemFile(long problemId, String filename) {
+		return Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, filename)
+				.toFile();
+	}
 
-        File zipDir = Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, "problem").toFile();
+	private File getProblemZip(long problemId) {
+		return getProblemFile(problemId, "problem.zip");
+	}
+
+	private File getUnzippedProblemFolder(long problemId) {
+		return getProblemFile(problemId, "problem");
+	}
+
+	private File getGradeProperties(long problemId) {
+		return getProblemFile(problemId, Paths.get("problem", "grade.properties").toString());
+	}
+
+
+	public void unzipProblemZip(long problemId) throws ZipException, IOException {
+		synchronized(lock) {
+			unzipProblemZipLocked(problemId);
+		}
+	}
+
+	private void unzipProblemZipLocked(long problemId) throws ZipException, IOException {
+		File zipFile = getProblemZip(problemId);
+        ZipFile zipZipFile = new ZipFile(zipFile);
+
+        File zipDir = getUnzippedProblemFolder(problemId);
         if (zipDir.exists()) {
             FileUtils.deleteDirectory(zipDir);
         }
         zipDir.mkdirs();
-        zipZipFole.extractAll(zipDir.getAbsolutePath());
+        zipZipFile.extractAll(zipDir.getAbsolutePath());
 	}
 
-	private void recreateProblemZip(long problemId) throws Exception {
-        String workdir = applicationProperties.getWorkDir();
-        File problemsDir = Paths.get(workdir, "problems", String.valueOf(problemId), "problem").toFile();
+	private void recreateProblemZipLocked(long problemId) throws Exception {
+        File problemsDir = getUnzippedProblemFolder(problemId);
 		ProcessExecutor executor = new ProcessExecutor()
       			.command("zip", "-r", "problem.zip", ".")
       			.directory(problemsDir);
       	executor.execute();
-      	File problemZipNew = Paths
-            .get(workdir, "problems", String.valueOf(problemId), "problem", "problem.zip")
-            .toFile();
-      	File problemZipOrig = Paths
-            .get(workdir, "problems", String.valueOf(problemId), "problem.zip")
-            .toFile();
+      	File problemZipNew = getProblemFile(problemId, Paths.get("problem", "problem.zip").toString());
+      	File problemZipOrig = getProblemZip(problemId);
       	problemZipOrig.delete();
       	problemZipNew.renameTo(problemZipOrig);
 
@@ -261,23 +281,12 @@ public class ProblemService {
 	}
 
 	public ProblemDTO setLimitsToDto(ProblemDTO dto) {
-		int time = 1000;
-		int memory = 256;
+		Properties props = getProperties(dto.getId());
 
-		File propertyFile = getGradeProperties(dto.getId());
-		if (propertyFile.exists()) {
-       		try (InputStream is = new FileInputStream(propertyFile)) {
-       			Properties props = new Properties();
-	        	props.load(is);
+		int time = (int) (1000*Double.valueOf(props.getProperty("time", "")) + 0.1);
+		dto.setTime(time);
 
-	        	time = (int) (1000*Double.valueOf(props.getProperty("time", "1")) + 0.1);
-	        	memory = Integer.valueOf(props.getProperty("memory", ""+memory));
-	        } catch (Exception e) {
-	        	log.error("Cannot read metadata for problem: " + dto.getId(), e);
-	        }
-		}
-
-        dto.setTime(time);
+		int memory = Integer.valueOf(props.getProperty("memory", ""));
         dto.setMemory(memory);
         return dto;
 	}
@@ -288,7 +297,7 @@ public class ProblemService {
     	for (CompetitionProblem cp : competitionProblemRepository.findAll()) {
     		List<Competition> path = getPath(cp);
     		// If CP is not connected to root, skip it
-    		if (path.get(path.size() - 1).getId() != 1) {
+    		if (path.isEmpty() || path.get(path.size() - 1).getId() != 1) {
     			continue;
     		}
 
@@ -308,9 +317,10 @@ public class ProblemService {
 			}
 
 			Problem problem = cp.getProblem();
-			if (problem.getYear().equals(year)
+			if (Objects.equals(problem.getYear(), year)
+                    && problem.getCompetition() != null
                     && problem.getCompetition().getId() == competition.getId()
-                    && problem.getGroup().equals(groupName)) {
+                    && Objects.equals(problem.getGroup(), groupName)) {
 				continue;
 			}
 

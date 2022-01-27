@@ -169,7 +169,7 @@ public class ProblemResource {
 
         File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
         FileUtils.copyInputStreamToFile(file.getInputStream(), zipFile);
-        problemService.unzipProblemZip(id);
+    	problemService.unzipProblemZip(id);
 
         workerPool.deleteProblem(id);
 

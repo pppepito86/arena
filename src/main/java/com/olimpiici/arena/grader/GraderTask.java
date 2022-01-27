@@ -21,15 +21,15 @@ import io.jsonwebtoken.io.IOException;
 
 @Component
 public class GraderTask {
-	
+
     private final Logger log = LoggerFactory.getLogger(GraderTask.class);
 
 	private ObjectMapper mapper = new ObjectMapper();
-    
+
     private final SubmissionService submissionService;
     private final CompetitionProblemService competitionProblemService;
     public final Worker worker;
-    
+
     public GraderTask(SubmissionService submissionService,
     		CompetitionProblemService competitionProblemService,
     		ApplicationProperties applicationProperties) {
@@ -37,15 +37,15 @@ public class GraderTask {
         this.competitionProblemService = competitionProblemService;
         this.worker = new Worker(applicationProperties.getWorkerUrl(), applicationProperties.getWorkDir());
     }
-    
+
 	@Scheduled(fixedDelay = 3000)
 	public void gradeTask() throws IOException {
 		List<SubmissionDTO> submissions = new ArrayList<>();
 		submissions.addAll(submissionService.findSubmissionByVerdict("judging"));
 		submissions.addAll(submissionService.findSubmissionByVerdict("waiting"));
-		
+
 		if (submissions.size() == 0) return;
-		
+
 		if (!worker.isAlive()) {
 			log.warn("worker is not alive: " + worker.getUrl());
 			return;
@@ -53,13 +53,13 @@ public class GraderTask {
 
 		submissions.forEach(s -> grade(s));
 	}
-	
+
 	private void grade(SubmissionDTO submission) {
 		log.debug("grading submission with id: " + submission.getId());
 
 		submission.setVerdict("judging");
 		submissionService.save(submission);
-		
+
 		long submissionId = submission.getId();
 		long problemId = competitionProblemService.findOne(submission.getCompetitionProblemId()).get().getProblemId();
 
@@ -74,7 +74,7 @@ public class GraderTask {
 			updateScore(submissionId, score);
 		}
 	}
-	
+
 	public void updateScore(long submissionId, SubmissionScore score) {
 		String verdict = "";
 		String details = "";
@@ -97,7 +97,7 @@ public class GraderTask {
 			} else if (values.length == 1){
 				verdict = values[0].getVerdict().toString();
                 if (!verdict.equals("OK")) {
-				    System.out.println("Submission <" + submissionId + "> failed with " 
+				    System.out.println("Submission <" + submissionId + "> failed with "
                         + values[0].getReason());
                 }
 			}
@@ -108,14 +108,14 @@ public class GraderTask {
 			verdict = verdict.substring(0, Math.min(verdict.length(), 500));
 			Optional<SubmissionDTO> maybeSubmission = submissionService.findOne(submissionId);
 			if (!maybeSubmission.isPresent()) return;
-			
+
 			SubmissionDTO submission = maybeSubmission.get();
 			submission.setDetails(details);
 			submission.setPoints(points);
 			if (score.isFinished()) submission.setVerdict(verdict);
 			else submission.setVerdict("judging");
 			submission.setTimeInMillis((int) (1000*time+0.5));
-			
+
 			try {
 				submissionService.save(submission);
 			} catch (Exception e) {
@@ -124,7 +124,7 @@ public class GraderTask {
 				submissionService.save(submission);
 			}
 		}
-		
+
 	}
 
 }
