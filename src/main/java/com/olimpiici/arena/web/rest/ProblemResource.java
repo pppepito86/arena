@@ -109,8 +109,6 @@ public class ProblemResource {
         ProblemDTO result = problemService.save(problemDTO);
         problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
         problemService.updateTimeLimit(problemId, problemDTO.getTime());
-
-        workerPool.deleteProblem(problemId);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
             .body(result);
