@@ -29,10 +29,14 @@ import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Competition;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
+import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.TagCollection;
+import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.ProblemRepository;
+import com.olimpiici.arena.repository.SubmissionRepository;
+import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
@@ -59,6 +63,12 @@ public class ProblemService {
 
     @Autowired
     private CompetitionProblemRepository competitionProblemRepository;
+
+    @Autowired
+    private SubmissionService submissionService;
+
+    @Autowired
+    private SubmissionRepository submissionRepository;
 
     private final TagMapper tagMapper;
 
@@ -130,12 +140,48 @@ public class ProblemService {
      * Delete the problem by id.
      *
      * @param id the id of the entity
+     * @throws IOException
      */
-    public void delete(Long id) {
+    public void delete(Long id) throws IOException {
         log.debug("Request to delete Problem : {}", id);
+
+        List<CompetitionProblem> compProblems =
+        		competitionProblemRepository.findByProblemId(id);
+
+        List<Submission> submissions = compProblems.stream()
+        	.flatMap( cp -> submissionRepository.findAllByCompetitionProblem(cp).stream())
+        	.collect(Collectors.toList());
+
+        boolean problemHasUserSubmissions = submissions.stream()
+        	.anyMatch(s -> s.getUser().getId() != 4 && !isUserAdmin(s.getUser()));
+        if (problemHasUserSubmissions) {
+        	throw new IllegalStateException("Cannot delete problem " +
+        			id + " because there are user submissions");
+        }
+
+        submissions.forEach(s -> submissionService.delete(s.getId()));
+
+        Problem problem = problemRepository.getOne(id);
+        problem.setCanonicalCompetitionProblem(null);
+        problemRepository.saveAndFlush(problem);
+
+        competitionProblemRepository.deleteInBatch(compProblems);
+
         problemRepository.deleteById(id);
+
+        File problemDir = getProblemFile(id, "");
+        if (problemDir.exists()) {
+        	FileUtils.deleteDirectory(problemDir);
+        }
+
+        workerPool.deleteProblem(id);
     }
 
+    private static boolean isUserAdmin(User user) {
+    	return user.getAuthorities()
+        		.stream()
+        		.anyMatch(authority -> authority.getName().equals(AuthoritiesConstants.ADMIN));
+    }
 
     public List<TagDTO> findTags(Long id) {
     	Problem problem = problemRepository.getOne(id);

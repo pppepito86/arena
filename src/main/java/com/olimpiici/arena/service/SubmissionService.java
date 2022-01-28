@@ -9,6 +9,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
@@ -23,14 +31,6 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 /**
  * Service ementation for managing Submission.
  */
@@ -41,22 +41,22 @@ public class SubmissionService {
     private final Logger log = LoggerFactory.getLogger(SubmissionService.class);
 
     private final SubmissionRepository submissionRepository;
-    
+
     private final UserRepository userRepository;
-    
+
     private final CompetitionRepository competitionRepository;
-    
+
     private final CompetitionProblemRepository competitionProblemRepository;
 
     private final SubmissionMapper submissionMapper;
-    
+
     private final ApplicationProperties applicationProperties;
-    
+
     private final TagService tagService;
 
     private final TagMapper tagMapper;
-    
-    public SubmissionService(SubmissionRepository submissionRepository, 
+
+    public SubmissionService(SubmissionRepository submissionRepository,
     		SubmissionMapper submissionMapper,
     		CompetitionProblemRepository competitionProblemRepository,
     		UserRepository userRepository,
@@ -80,7 +80,7 @@ public class SubmissionService {
      * @param submissionDTO the entity to save
      * @return the persisted entity
      */
-    
+
     public SubmissionDTO save(SubmissionDTO submissionDTO) {
         log.debug("Request to save Submission : {}", submissionDTO);
 
@@ -95,15 +95,15 @@ public class SubmissionService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    
+
     @Transactional(readOnly = true)
     public Page<SubmissionDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Submissions");
         return submissionRepository.findAll(pageable)
             .map(submissionMapper::toDto);
     }
-    
-    
+
+
 	public Page<SubmissionDTO> findByUser(User user, Pageable pageable) {
 		return submissionRepository.findByUser(user, pageable)
 				.map(submissionMapper::toDto);
@@ -116,7 +116,7 @@ public class SubmissionService {
      * @param id the id of the entity
      * @return the entity
      */
-    
+
     @Transactional(readOnly = true)
     public Optional<SubmissionDTO> findOne(Long id) {
         log.debug("Request to get Submission : {}", id);
@@ -133,34 +133,40 @@ public class SubmissionService {
      *
      * @param id the id of the entity
      */
-    
+
     public void delete(Long id) {
         log.debug("Request to delete Submission : {}", id);
+        Optional<File> file = findSubmissionFile(applicationProperties.getWorkDir(), id);
+        if (file.isPresent()) {
+        	if (file.get().exists()) {
+        		file.get().delete();
+        	}
+        }
         submissionRepository.deleteById(id);
     }
 
-	
-	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId, 
+
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId,
 			Long competitionProblemId, Pageable pageable) {
 		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
 		User user = userRepository.findById(userId).get();
 		return findSubmissionsByCompetitionProblemAndUser(user, competitionProblemId, pageable);
 	}
-	
-	
-	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user, 
+
+
+	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user,
 			Long competitionProblemId,
 			Pageable pageable) {
 		CompetitionProblem competitionProblem = competitionProblemRepository
 				.findById(competitionProblemId).get();
-		
+
 		Page<SubmissionDTO> submissions = submissionRepository
 				.findByCompetitionProblemAndUser(competitionProblem, user, pageable)
 				.map(submissionMapper::toDto);
 		return submissions;
 	}
-	
-	
+
+
 	public Page<SubmissionDTO> findSubmissionsByUserAndCompetitionProblemIn(User user,
 			List<CompetitionProblem> competitionProblems, Pageable pageable) {
 		return submissionRepository
@@ -168,26 +174,26 @@ public class SubmissionService {
 				.map(submissionMapper::toDto);
 	}
 
-	
+
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblem(
 			Long competitionProblemId, Pageable pageable) {
-		CompetitionProblem competitionProblem = 
+		CompetitionProblem competitionProblem =
 				competitionProblemRepository.getOne(competitionProblemId);
 		Page<SubmissionDTO> submissions = submissionRepository
 				.findByCompetitionProblem(competitionProblem, pageable)
 				.map(submissionMapper::toDto);
 		return submissions;
 	}
-	
-	
+
+
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemIn(
 			List<CompetitionProblem> competitionProblems, Pageable pageable) {
 		return submissionRepository
 				.findByCompetitionProblemIn(competitionProblems, pageable)
 				.map(submissionMapper::toDto);
 	}
-	
-	
+
+
 	public List<SubmissionDTO> findSubmissionByVerdict(String verdict) {
 		return submissionRepository
 				.findByVerdict(verdict)
@@ -195,7 +201,7 @@ public class SubmissionService {
 				.map(submissionMapper::toDto)
 				.collect(Collectors.toList());
 	}
-	
+
 	public String findSubmissionCode(Long id) {
 		Optional<File> file = findSubmissionFile(applicationProperties.getWorkDir(), id);
 		if (!file.isPresent()) {
@@ -223,27 +229,27 @@ public class SubmissionService {
 			.filter(f -> f.getName().startsWith("solution"))
 			.findFirst();
 	}
-    
+
     public List<TagDTO> findTags(Long id) {
     	Submission submission = submissionRepository.getOne(id);
     	return tagService.findTagsForCollection(submission.getTags())
 	    	.map(tagMapper::toDto)
 			.collect(Collectors.toList());
     }
-    
-    
+
+
     public void updateTags(Long id, List<TagDTO> newTags) {
     	Submission submission = submissionRepository.getOne(id);
-    	TagCollection newCollection	= 
+    	TagCollection newCollection	=
     			tagService.updateTagsForCollection(submission.getTags(), newTags);
-    	
+
     	if (submission.getTags() == null) {
     		submission.setTags(newCollection);
     		submissionRepository.save(submission);
     	}
     }
 
-	
+
 	public void rejudge(Long id) {
 		Submission submission = submissionRepository.getOne(id);
 		submission.setVerdict("waiting");

@@ -197,11 +197,12 @@ public class ProblemResource {
      *
      * @param id the id of the problemDTO to delete
      * @return the ResponseEntity with status 200 (OK)
+     * @throws IOException
      */
     @DeleteMapping("/problems/{id}")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<Void> deleteProblem(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProblem(@PathVariable Long id) throws IOException {
         log.debug("REST request to delete Problem : {}", id);
         problemService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
