@@ -24,18 +24,21 @@ public class GraderTask {
 
     private final Logger log = LoggerFactory.getLogger(GraderTask.class);
 
+
 	private ObjectMapper mapper = new ObjectMapper();
 
     private final SubmissionService submissionService;
     private final CompetitionProblemService competitionProblemService;
-    public final Worker worker;
+    public Worker worker;
+
 
     public GraderTask(SubmissionService submissionService,
     		CompetitionProblemService competitionProblemService,
-    		ApplicationProperties applicationProperties) {
+    		ApplicationProperties applicationProperties,
+    		WorkerPool workerPool) {
         this.submissionService = submissionService;
         this.competitionProblemService = competitionProblemService;
-        this.worker = new Worker(applicationProperties.getWorkerUrl(), applicationProperties.getWorkDir());
+        this.worker = workerPool.getOne();
     }
 
 	@Scheduled(fixedDelay = 3000)

@@ -27,4 +27,8 @@ public class WorkerPool {
 			}
 		});
 	}
+
+	public Worker getOne() {
+		return workers.get(0);
+	}
 }

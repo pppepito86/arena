@@ -45,8 +45,8 @@ public class Worker {
 		this.workDir = workDir;
 	}
 
-	public SubmissionScore grade(long problemId, long submissionId, GraderTask listener, boolean isAuthor)
-			throws Exception {
+	public synchronized SubmissionScore grade(long problemId, long submissionId,
+			GraderTask listener, boolean isAuthor) throws Exception {
 
 		if (!isProblemUploaded(problemId)) {
 			log.debug("Problem is not uloaded. Uploading...");
@@ -85,15 +85,6 @@ public class Worker {
 
 	private File getSourceFile(long submissionId) {
 		return SubmissionService.findSubmissionFile(workDir, submissionId).get();
-	}
-
-	private boolean isRunning(long submissionId) throws IOException {
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpGet get = new HttpGet(url + "/api/v1/submissions/" + submissionId + "/status");
-		CloseableHttpResponse response = httpclient.execute(get);
-		String responseString = EntityUtils.toString(response.getEntity());
-		httpclient.close();
-		return "running".equals(responseString);
 	}
 
 	private SubmissionScore getScore(long submissionId) throws IOException {
@@ -145,7 +136,7 @@ public class Worker {
 		}
 	}
 
-	public boolean isProblemUploaded(long problemId) throws IOException {
+	private boolean isProblemUploaded(long problemId) throws IOException {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpGet get = new HttpGet(url + "/api/v1/problems/" + problemId);
 		CloseableHttpResponse response = httpclient.execute(get);
@@ -153,7 +144,7 @@ public class Worker {
 		return response.getStatusLine().getStatusCode() == 200;
 	}
 
-	public void sendProblemToWorker(long problemId, String zipFilePath) throws IOException {
+	private void sendProblemToWorker(long problemId, String zipFilePath) throws IOException {
 		File problemFile = new File(zipFilePath);
         HttpEntity entity = MultipartEntityBuilder.create()
                 .addBinaryBody("file", problemFile, ContentType.TEXT_PLAIN, problemFile.getName())
@@ -168,7 +159,7 @@ public class Worker {
 
 	}
 
-	public void deleteProblem(long problemId) throws IOException {
+	public synchronized void deleteProblem(long problemId) throws IOException {
 		HttpDelete delete = new HttpDelete(url + "/api/v1/problems/" + problemId);
 
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
