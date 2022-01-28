@@ -16,7 +16,7 @@
             <input matInput 
                 style="font-family: monospace"
                 (keyup.enter)="applyFilter($event)" 
-                placeholder=" game г:C т:граф c:есенен">
+                placeholder=" game г:C т:граф c:есенен в:1">
         </mat-form-field>
 
         <table style="width:100%" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
@@ -30,9 +30,14 @@
                     <span jhiTranslate="arenaApp.problem.title">Title</span>
                 </th>
                 <td mat-cell *matCellDef="let element">
-                    <a [routerLink]="['/catalog', element.competitionId, 'problem', element.canonicalCompetitionProblemId]">
+                    <div *ngIf="element.competitionId && element.canonicalCompetitionProblemId; else nolink">
+                        <a [routerLink]="['/catalog', element.competitionId, 'problem', element.canonicalCompetitionProblemId]">
+                            {{element.title}}
+                        </a>
+                    </div>
+                    <ng-template #nolink>
                         {{element.title}}
-                    </a>
+                    </ng-template>
                 </td>
             </ng-container>
 

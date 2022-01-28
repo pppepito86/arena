@@ -130,6 +130,10 @@ export class ProblemComponent implements OnInit, OnDestroy {
                     if (!problem.competitionLabel.toLowerCase().includes(val)) {
                         return false;
                     }
+                } else if (key.startsWith('v') || key.startsWith('в')) {
+                    if (problem.version != val) {
+                        return false;
+                    }
                 }
             } else if (!problemStr.includes(part)) {
                 return false;
