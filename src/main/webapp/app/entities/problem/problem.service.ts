@@ -63,7 +63,6 @@ export class ProblemService {
         const formData: FormData = new FormData();
         formData.append('file', file, file.name);
         const url = `${this.resourceUrl}/${problemId}/zip`;
-        console.log('****to upload ' + problemId + ' ' + url);
         return this.http.post(url, formData);
     }
 }

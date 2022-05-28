@@ -17,6 +17,7 @@ export class ProblemUpdateComponent implements OnInit {
     problem: IProblem;
     isSaving: boolean;
     fileUploadStatus: string;
+    editableLimits = true;
 
     constructor(
         protected jhiAlertService: JhiAlertService,
@@ -30,6 +31,11 @@ export class ProblemUpdateComponent implements OnInit {
         this.activatedRoute.data.subscribe(({ problem }) => {
             this.problem = problem;
         });
+        this.activatedRoute.queryParams.subscribe(params => {
+            if (params.editableLimits !== undefined) {
+                this.editableLimits = params.editableLimits;
+            }
+        });
     }
 
     previousState() {
@@ -38,6 +44,13 @@ export class ProblemUpdateComponent implements OnInit {
 
     save() {
         this.isSaving = true;
+        // If the memory and time are not editable, don't send
+        // them back to the server to prevent them from overriding
+        // the values from a new zip that has just been uploaded.
+        if (!this.editableLimits) {
+            this.problem.memory = null;
+            this.problem.time = null;
+        }
         if (this.problem.id !== undefined) {
             this.subscribeToSaveResponse(this.problemService.update(this.problem));
         } else {

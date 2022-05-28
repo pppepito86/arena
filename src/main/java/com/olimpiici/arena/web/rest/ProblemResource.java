@@ -71,13 +71,16 @@ public class ProblemResource {
      * POST  /problems : Create a new problem.
      *
      * @param problemDTO the problemDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new problemDTO, or with status 400 (Bad Request) if the problem has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with
+     * 	body the new problemDTO, or with status 400 (Bad Request) if
+     * 	the problem has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/problems")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<ProblemDTO> createProblem(@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
+    public ResponseEntity<ProblemDTO> createProblem(
+    		@RequestBody ProblemDTO problemDTO) throws URISyntaxException {
         log.debug("REST request to save Problem : {}", problemDTO);
         if (problemDTO.getId() != null) {
             throw new BadRequestAlertException("A new problem cannot already have an ID", ENTITY_NAME, "idexists");
@@ -106,9 +109,14 @@ public class ProblemResource {
 		if (problemId == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
+
         ProblemDTO result = problemService.save(problemDTO);
-        problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
-        problemService.updateTimeLimit(problemId, problemDTO.getTime());
+        if (problemDTO.getMemory() != null) {
+        	problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
+        }
+        if (problemDTO.getTime() != null) {
+        	problemService.updateTimeLimit(problemId, problemDTO.getTime());
+        }
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
             .body(result);

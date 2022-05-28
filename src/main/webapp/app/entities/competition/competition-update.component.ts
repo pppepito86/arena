@@ -134,7 +134,6 @@ export class CompetitionUpdateComponent implements OnInit {
     }
 
     onSubCompetitionAdd(subCompetitionId: number) {
-        // console.log("addign ", this.newSubCompetitionId);
         this.competitionService.find(subCompetitionId).subscribe(
             (res: HttpResponse<ICompetition>) => {
                 this.children_competitions.push(res.body);
@@ -153,7 +152,6 @@ export class CompetitionUpdateComponent implements OnInit {
     }
 
     onSubProblemAdded(subProblemId: number) {
-        // console.log("addign ", this.newSubCompetitionId);
         this.problemService.find(subProblemId).subscribe(
             (res: HttpResponse<IProblem>) =>
                 this.children_problems.push({
@@ -191,7 +189,7 @@ export class CompetitionUpdateComponent implements OnInit {
                 this.competitionProblemService.create(competitionProblem).subscribe(
                     value => {
                         // 3. Redirects to the edit page of the created Problem
-                        this.router.navigate(['/problem', problemId, 'edit']);
+                        this.router.navigate(['/problem', problemId, 'edit'], { queryParams: { editableLimits: 0 } });
                     },
                     (err: HttpErrorResponse) => this.onError(err.message)
                 );
