@@ -28,6 +28,7 @@ export class SubmissionDetailComponent implements OnInit {
     autocompleteTags: ITag[] = [];
     tagStatus = 0;
     tagStatusTimeout;
+    Math = Math; // Make the Math library visible in html
 
     constructor(
         protected activatedRoute: ActivatedRoute,

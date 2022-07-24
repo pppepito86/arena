@@ -92,7 +92,13 @@
 
                     <td *ngIf="scoreStep.value.verdict == 'OK'" style="background-color: #00ff00"> {{scoreStep.value.verdict}} </td>
                     <td *ngIf="scoreStep.value.verdict != 'OK'"  style="background-color: red; color:white; font-weight: bold;"> {{scoreStep.value.verdict}} </td>
-                    <td> {{scoreStep.value.time}} </td>
+                    <td>
+                        <span *ngIf="scoreStep.value.time && scoreStep.value.time < 0">
+                            ≥
+                        </span>
+                        {{Math.abs(scoreStep.value.time)}} s
+                    </td>
+
                     <td style="max-width: 15em; text-align: left"> <pre>{{scoreStep.value.output}}</pre></td>
                     <!--<td style="max-width: 15em;"> <pre>{{scoreStep.value.expectedOutput}}</pre> </td>-->
                 </tr>
