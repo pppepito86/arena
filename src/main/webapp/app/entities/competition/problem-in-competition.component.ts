@@ -50,8 +50,8 @@ export class ProblemInCompetitionComponent implements OnInit {
 
         this.competitionProblemService.find(this.competitionProblemId).subscribe(
             (res: HttpResponse<ICompetitionProblem>) => {
-                let realCompetitionId = res.body.competitionId;
-                if (realCompetitionId != this.competitionId) {
+                const realCompetitionId = res.body.competitionId;
+                if (realCompetitionId !== this.competitionId) {
                     this.router.navigate(['catalog', realCompetitionId, 'problem', this.competitionProblemId]);
                 }
             },

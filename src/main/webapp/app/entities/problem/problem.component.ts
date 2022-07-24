@@ -98,7 +98,7 @@ export class ProblemComponent implements OnInit, OnDestroy {
     filterFunction(problem: any, filter: string) {
         let tagsStr = '';
         if (problem.allTags) {
-            for (let tag of problem.allTags) {
+            for (const tag of problem.allTags) {
                 tagsStr += '|' + tag.title;
             }
         }
@@ -114,11 +114,21 @@ export class ProblemComponent implements OnInit, OnDestroy {
                 let val = part.substring(ind + 1);
                 if (key.startsWith('g') || key.startsWith('г')) {
                     val = val.toLowerCase();
-                    if (val === 'а') val = 'a';
-                    if (val === 'б' || val === 'в') val = 'b';
-                    if (val === 'с' || val === 'ц') val = 'c';
-                    if (val === 'д') val = 'd';
-                    if (val === 'е') val = 'e';
+                    if (val === 'а') {
+                        val = 'a';
+                    }
+                    if (val === 'б' || val === 'в') {
+                        val = 'b';
+                    }
+                    if (val === 'с' || val === 'ц') {
+                        val = 'c';
+                    }
+                    if (val === 'д') {
+                        val = 'd';
+                    }
+                    if (val === 'е') {
+                        val = 'e';
+                    }
                     if (!problem.group || !problem.group.toLowerCase().includes(val)) {
                         return false;
                     }
@@ -131,7 +141,7 @@ export class ProblemComponent implements OnInit, OnDestroy {
                         return false;
                     }
                 } else if (key.startsWith('v') || key.startsWith('в')) {
-                    if (problem.version != val) {
+                    if (problem.version !== val) {
                         return false;
                     }
                 }

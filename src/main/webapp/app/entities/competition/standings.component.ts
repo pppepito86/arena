@@ -36,7 +36,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     filter: string[] = [];
 
     myPoints?: any;
-    currentUserIsInStandings: boolean = false;
+    currentUserIsInStandings = false;
 
     constructor(
         protected competitionService: CompetitionService,
@@ -79,8 +79,12 @@ export class StandingsComponent implements OnInit, OnDestroy {
             page: this.page - 1,
             size: this.itemsPerPage
         };
-        if (this.weeks) params['w'] = this.weeks;
-        if (this.filter) params['f'] = this.filter;
+        if (this.weeks) {
+            params['w'] = this.weeks;
+        }
+        if (this.filter) {
+            params['f'] = this.filter;
+        }
         this.competitionService
             .getStandings(this.parentCompetition.id, params)
             .subscribe(
@@ -102,8 +106,12 @@ export class StandingsComponent implements OnInit, OnDestroy {
             page: this.page,
             size: this.itemsPerPage
         };
-        if (this.weeks) params['w'] = this.weeks;
-        if (this.filter) params['f'] = this.filter;
+        if (this.weeks) {
+            params['w'] = this.weeks;
+        }
+        if (this.filter) {
+            params['f'] = this.filter;
+        }
         return params;
     }
 

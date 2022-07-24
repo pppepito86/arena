@@ -35,7 +35,7 @@ export class TagDetailComponent implements OnInit {
         this.tagService.findProblems(this.tag.id).subscribe(
             (res: HttpResponse<ICompetitionProblem[]>) => {
                 this.problems = res.body;
-                for (let problem of this.problems) {
+                for (const problem of this.problems) {
                     this.problemsWithOfficialTag.add(problem.id);
                 }
 
@@ -43,7 +43,7 @@ export class TagDetailComponent implements OnInit {
                 this.tagService.findProblemsTaggedByUsers(this.tag.id).subscribe(
                     (res: HttpResponse<ICompetitionProblem[]>) => {
                         this.userTaggedProblems = [];
-                        for (let problem of res.body) {
+                        for (const problem of res.body) {
                             if (!this.problemsWithOfficialTag.has(problem.id)) {
                                 this.userTaggedProblems.push(problem);
                             }

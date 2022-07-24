@@ -94,9 +94,9 @@ export class SubmissionDetailComponent implements OnInit {
 
         this.testDetails = [];
         for (let i = 1; ; i++) {
-            let property = `Test${i}`;
+            const property = `Test${i}`;
             if (this.submissionDetails['scoreSteps'].hasOwnProperty(property)) {
-                let val = this.submissionDetails['scoreSteps'][property];
+                const val = this.submissionDetails['scoreSteps'][property];
                 if (!val.output) {
                     val.output = '';
                 }

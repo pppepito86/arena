@@ -33,7 +33,9 @@ export class TagService {
     query(publicOnly?: boolean, req?: any): Observable<EntityArrayResponseType> {
         const options = createRequestOption(req);
         let url = this.resourceUrl;
-        if (publicOnly == true) url += '?publicOnly=true';
+        if (publicOnly === true) {
+            url += '?publicOnly=true';
+        }
         return this.http.get<ITag[]>(url, { params: options, observe: 'response' });
     }
 

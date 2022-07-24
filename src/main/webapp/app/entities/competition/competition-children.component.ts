@@ -65,7 +65,7 @@ export class CompetitionChildrenComponent implements OnInit, OnDestroy {
             .subscribe(
                 (res: HttpResponse<ICompetition[]>) => {
                     this.paginateCompetitions(res.body, res.headers);
-                    for (let child of res.body) {
+                    for (const child of res.body) {
                         this.loadGrandChildrenCompetitions(child);
                         this.loadGrandChildrenProblems(child);
                     }

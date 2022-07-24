@@ -82,9 +82,9 @@ export class SubmissionService {
     }
 
     updateTags(submissionId: number, tags: ITag[]): Observable<HttpResponse<any>> {
-        let tagsCopy: ITag[] = [];
-        for (let tag of tags) {
-            let tagCopy = {
+        const tagsCopy: ITag[] = [];
+        for (const tag of tags) {
+            const tagCopy = {
                 id: tag.id,
                 title: tag.title
             };
