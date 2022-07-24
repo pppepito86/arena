@@ -33,6 +33,7 @@ export class SubmissionComponent implements OnInit, OnDestroy {
     forProblem: boolean;
     competitionId: number;
     problemId: number;
+    Math = Math; // Make the Math library visible in html
 
     constructor(
         protected submissionService: SubmissionService,

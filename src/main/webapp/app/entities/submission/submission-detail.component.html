@@ -54,7 +54,10 @@
                         <span>{{submission.points}}</span>
                     </td>
                     <td>
-                        <span>{{submission.timeInMillis}}</span> ms
+                        <span *ngIf="submission.timeInMillis && submission.timeInMillis < 0">
+                            ≥
+                        </span>
+                        {{Math.abs(submission.timeInMillis)}} ms
                     </td>
                     <td>
                         <span>{{submission.uploadDate  | date:'dd MMM y, EEE, HH:mm:ss'}}</span>

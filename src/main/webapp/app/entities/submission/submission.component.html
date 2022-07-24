@@ -26,7 +26,12 @@
                 <td>{{submission.problemName}}</td>
                 <td>{{submission.userFirstName}} {{submission.userLastName}}</td>
                 <td>{{submission.uploadDate | date:'dd MMM y HH:mm'}}</td>
-                <td>{{submission.timeInMillis}}</td>
+                <td>
+                    <span *ngIf="submission.timeInMillis && submission.timeInMillis < 0">
+                        ≥
+                    </span>
+                    {{Math.abs(submission.timeInMillis)}} ms
+                </td>
                 <td style="max-width: 15em;">{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>
                 <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">

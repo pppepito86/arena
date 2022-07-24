@@ -13,6 +13,7 @@ import { SubmissionService } from './submission.service';
 })
 export class SubmissionDeleteDialogComponent {
     submission: ISubmission;
+    Math = Math; // Make the Math library visible in html
 
     constructor(
         protected submissionService: SubmissionService,
