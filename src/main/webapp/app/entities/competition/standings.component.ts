@@ -191,7 +191,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
             }
             row.perProblemJson = null;
         }
-        for (const problemId of problems) {
+        for (const problemId of Array.from(problems)) {
             const problem: ProblemColumn = {
                 id: problemId
             };

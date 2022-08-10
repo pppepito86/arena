@@ -15,13 +15,13 @@ export const getPointsColor = (ratio: number): string => {
         ? 'hsl(44deg 100% 69%)'
         : ratio > 0.3
         ? 'hsl(33deg 100% 71%)'
-        : ratio > 0.2
-        ? 'hsl(24deg 100% 73%)'
-        : ratio > 0.1
-        ? 'hsl(15deg 100% 74%)'
-        : ratio > 0
-        ? 'hsl(7deg 100% 76%)'
-        : 'transparent';
+        : // : ratio > 0.2
+          // ? 'hsl(24deg 100% 73%)'
+          // : ratio > 0.1
+          // ? 'hsl(15deg 100% 74%)'
+          // : ratio > 0
+          // ? 'hsl(7deg 100% 76%)'
+          'transparent';
     //   ratio === 0 ? 'hsl(0deg 100% 78%)' :
     //     '#FFFFFF';
 };
