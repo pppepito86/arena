@@ -11,6 +11,7 @@ import { ITEMS_PER_PAGE } from 'app/shared';
 import { CompetitionService } from './competition.service';
 import { IProblem } from '../../shared/model/problem.model';
 import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
+import { getPointsColor } from 'app/shared/util/points-color';
 
 @Component({
     selector: 'jhi-competition-problems',
@@ -30,6 +31,7 @@ export class CompetitionProblemsComponent implements OnInit {
     page: any;
     previousPage: any;
     parentCompetition: ICompetition;
+    getPointsColor = getPointsColor;
 
     DEFAULT_SORT = 'order,asc';
 

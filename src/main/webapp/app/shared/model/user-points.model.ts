@@ -4,6 +4,8 @@ export interface IUserPoints {
     userId?: any;
     user?: IUser;
     points?: number;
+    perProblemJson?: string;
+    perProblem?: any;
 }
 
 export class UserPoints implements IUserPoints {

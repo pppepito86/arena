@@ -25,7 +25,7 @@
                      <a *ngFor="let problem of grandChildrenProblems[competition.id]" 
                          [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]"
                          class="problem-name"
-                         [ngStyle]="{backgroundColor: getColor(problem.points/100.0)}">
+                         [ngStyle]="{backgroundColor: getPointsColor(problem.points/100.0)}">
                          <span *ngIf="problem.points==100">✓</span> {{problem.title}}</a>
                  </div>
                 </td>

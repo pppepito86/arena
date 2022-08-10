@@ -5,6 +5,7 @@ export interface IProblem {
     version?: number;
     time?: number;
     memory?: number;
+    competitionId?: number;
 }
 
 export class Problem implements IProblem {

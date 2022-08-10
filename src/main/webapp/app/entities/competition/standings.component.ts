@@ -10,6 +10,15 @@ import { AccountService } from 'app/core';
 import { ITEMS_PER_PAGE } from 'app/shared';
 import { CompetitionService } from './competition.service';
 import { IUserPoints } from '../../shared/model/user-points.model';
+import { IProblem } from 'app/shared/model/problem.model';
+import { ɵangular_packages_platform_browser_dynamic_platform_browser_dynamic_a } from '@angular/platform-browser-dynamic';
+import { getPointsColor } from 'app/shared/util/points-color';
+
+interface ProblemColumn {
+    id: number;
+    competitionId?: number;
+    name?: string;
+}
 
 @Component({
     selector: 'jhi-standings',
@@ -37,6 +46,8 @@ export class StandingsComponent implements OnInit, OnDestroy {
 
     myPoints?: any;
     currentUserIsInStandings = false;
+    problems: ProblemColumn[] = [];
+    getPointsColor = getPointsColor;
 
     constructor(
         protected competitionService: CompetitionService,
@@ -85,12 +96,14 @@ export class StandingsComponent implements OnInit, OnDestroy {
         if (this.filter) {
             params['f'] = this.filter;
         }
-        this.competitionService
-            .getStandings(this.parentCompetition.id, params)
-            .subscribe(
-                (res: HttpResponse<IUserPoints[]>) => this.paginateStandings(res.body, res.headers),
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
+        this.competitionService.getStandings(this.parentCompetition.id, params).subscribe(
+            (res: HttpResponse<IUserPoints[]>) => {
+                const standings = res.body;
+                this.processStandings(standings);
+                this.paginateStandings(standings, res.headers);
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     loadPage(page: number) {
@@ -155,6 +168,44 @@ export class StandingsComponent implements OnInit, OnDestroy {
             result.push('id');
         }
         return result;
+    }
+
+    getFontWeight(userId: number): string {
+        if (this.myPoints && userId === this.myPoints.userId) {
+            return '800'; // very bold
+        }
+        return 'unset';
+    }
+    getPointsForProblem(userPoints: IUserPoints, problemId: number) {
+        return userPoints.perProblem[problemId] || 0;
+    }
+
+    protected processStandings(standings: IUserPoints[]) {
+        const problems = new Set<number>();
+        for (const row of standings) {
+            if (row.perProblemJson) {
+                row.perProblem = JSON.parse(row.perProblemJson);
+                for (const problemId of Object.keys(row.perProblem)) {
+                    problems.add(Number(problemId));
+                }
+            }
+            row.perProblemJson = null;
+        }
+        for (const problemId of problems) {
+            const problem: ProblemColumn = {
+                id: problemId
+            };
+
+            this.competitionService.findProblem(/*competitionId*/ 0, problemId).subscribe(
+                (res: HttpResponse<IProblem>) => {
+                    const p: IProblem = res.body;
+                    problem.name = p.title;
+                    problem.competitionId = p.competitionId;
+                },
+                (res: HttpErrorResponse) => this.onError(res.message)
+            );
+            this.problems.push(problem);
+        }
     }
 
     protected paginateStandings(data: IUserPoints[], headers: HttpHeaders) {

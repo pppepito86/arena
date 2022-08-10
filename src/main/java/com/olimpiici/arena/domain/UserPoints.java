@@ -5,6 +5,7 @@ public class UserPoints implements Comparable<UserPoints> {
 	public String firstName;
 	public String lastName;
 	public Integer points;
+	public String perProblemJson;
 
 	public UserPoints(Long userId, String firstName, String lastName, Integer points) {
 		super();

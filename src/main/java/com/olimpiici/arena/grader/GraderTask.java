@@ -8,11 +8,11 @@ import org.pesho.grader.SubmissionScore;
 import org.pesho.grader.step.StepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
@@ -27,19 +27,15 @@ public class GraderTask {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-    private final SubmissionService submissionService;
-    private final CompetitionProblemService competitionProblemService;
-    public Worker worker;
+	@Autowired
+    private SubmissionService submissionService;
 
+    @Autowired
+    private CompetitionProblemService competitionProblemService;
 
-    public GraderTask(SubmissionService submissionService,
-    		CompetitionProblemService competitionProblemService,
-    		ApplicationProperties applicationProperties,
-    		WorkerPool workerPool) {
-        this.submissionService = submissionService;
-        this.competitionProblemService = competitionProblemService;
-        this.worker = workerPool.getOne();
-    }
+    @Autowired
+    public WorkerPool workerPool;
+
 
 	@Scheduled(fixedDelay = 3000)
 	public void gradeTask() throws IOException {
@@ -47,10 +43,10 @@ public class GraderTask {
 		submissions.addAll(submissionService.findSubmissionByVerdict("judging"));
 		submissions.addAll(submissionService.findSubmissionByVerdict("waiting"));
 
-		if (submissions.size() == 0) return;
+		if (submissions.isEmpty()) return;
 
-		if (!worker.isAlive()) {
-			log.warn("worker is not alive: " + worker.getUrl());
+		if (!workerPool.isAlive()) {
+			log.error("Worker pool is not alive.");
 			return;
 		}
 
@@ -69,7 +65,7 @@ public class GraderTask {
 		SubmissionScore score = new SubmissionScore();
 		try {
 			boolean isAuthor = submission.getUserId() == 4;
-			score = worker.grade(problemId, submissionId, this, isAuthor);
+			score = workerPool.getOne().grade(problemId, submissionId, this, isAuthor);
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
 			score.addFinalScore("system error", 0);

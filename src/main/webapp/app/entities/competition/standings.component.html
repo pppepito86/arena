@@ -21,26 +21,37 @@
                 <th width="3em"><span>#</span> </th>
                 <th><span jhiTranslate="arenaApp.standings.user">User</span> </th>
                 <th><span jhiTranslate="arenaApp.standings.points">Points</span> </th>
+                <th *ngFor="let problem of problems">
+                    <a *ngIf="problem.name && problem.competitionId"
+                        [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">
+                            {{problem.name}}
+                    </a>
+                </th>
             </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let userpoints of scores; let i = index">
+            <tr *ngFor="let userpoints of scores; let i = index"
+                    [ngStyle]="{fontWeight: getFontWeight(userpoints.userId)}">
                 <td>{{i + 1 + (page - 1) * itemsPerPage}}</td>
                 
-                <ng-container *ngIf="myPoints && userpoints.userId == myPoints.userId; else userIsNotCurrent">
-                    <td><b> {{userpoints.firstName}} {{userpoints.lastName}}</b></td>
-                    <td><b>{{userpoints.points}}</b></td>
-                </ng-container> 
+                <td>{{userpoints.firstName}} {{userpoints.lastName}}</td>
 
-                <ng-template #userIsNotCurrent>
-                    <td>{{userpoints.firstName}} {{userpoints.lastName}}</td>
-                    <td>{{userpoints.points}}</td>
-                </ng-template>
+                <td [ngStyle]="{
+                    backgroundColor: getPointsColor(problems.length == 0 ? 0 : userpoints.points/(100.0*problems.length))
+                }">
+                    {{userpoints.points}}
+                </td>
+
+                <td *ngFor="let problem of problems"
+                    [ngStyle]="{backgroundColor: getPointsColor(getPointsForProblem(userpoints, problem.id)/100.0)}">
+                    {{getPointsForProblem(userpoints, problem.id)}}
+                </td>
             </tr>
-            <tr *ngIf="myPoints && !currentUserIsInStandings">
+            <tr *ngIf="myPoints && !currentUserIsInStandings" [ngStyle]="{fontWeight: getFontWeight(myPoints.userId)}">
                 <td> ? </td>
-                <td><b>{{myPoints.firstName}} {{myPoints.lastName}}</b></td>
-                <td><b>{{myPoints.points}}</b></td>
+                <td>{{myPoints.firstName}} {{myPoints.lastName}}</td>
+                <td>{{myPoints.points}}</td>
+                <td *ngFor="let problem of problems">0</td>
             </tr>
             </tbody>
         </table>

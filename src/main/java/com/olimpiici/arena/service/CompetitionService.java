@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -49,47 +50,34 @@ public class CompetitionService {
 
     private final Logger log = LoggerFactory.getLogger(CompetitionService.class);
 
-    private final CompetitionRepository competitionRepository;
+    @Autowired
+    private CompetitionRepository competitionRepository;
 
-    private final CompetitionProblemRepository competitionProblemRepository;
+    @Autowired
+    private CompetitionProblemRepository competitionProblemRepository;
 
-    private final SubmissionRepository submissionRepository;
+    @Autowired
+    private SubmissionRepository submissionRepository;
 
-    private final CompetitionMapper competitionMapper;
+    @Autowired
+    private CompetitionMapper competitionMapper;
 
-    private final ProblemMapper problemMapper;
+    @Autowired
+    private ProblemMapper problemMapper;
 
-    private final CompetitionProblemMapper competitionProblemMapper;
+    @Autowired
+    private CompetitionProblemMapper competitionProblemMapper;
 
-    private final SubmissionMapper submissionMapper;
+    @Autowired
+    private SubmissionMapper submissionMapper;
 
-    private final SubmissionService submissionService;
+    @Autowired
+    private UserRepository userRepository;
 
-    private final UserRepository userRepository;
+	@Autowired
+    private ProblemRepository problemRepository;
 
-	private final ProblemRepository problemRepository;
-
-    public CompetitionService(CompetitionRepository competitionRepository,
-    		CompetitionProblemRepository competitionProblemRepository,
-    		CompetitionMapper competitionMapper,
-    		ProblemMapper problemMapper,
-    		CompetitionProblemMapper competitionProblemMapper,
-    		SubmissionRepository submissionRepository,
-    		SubmissionMapper submissionMapper,
-    		SubmissionService submissionService,
-    		UserRepository userRepository,
-    		ProblemRepository problemRepository) {
-        this.competitionRepository = competitionRepository;
-        this.competitionMapper = competitionMapper;
-        this.problemMapper = problemMapper;
-        this.competitionProblemRepository = competitionProblemRepository;
-        this.competitionProblemMapper = competitionProblemMapper;
-        this.submissionRepository = submissionRepository;
-        this.submissionMapper = submissionMapper;
-        this.submissionService = submissionService;
-        this.userRepository = userRepository;
-        this.problemRepository = problemRepository;
-    }
+	private final int MAX_PROBLEM_COLUMNS = 5;
 
     /**
      * Save a competition.
@@ -283,9 +271,18 @@ public class CompetitionService {
 			List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
 					.map(cp -> cp.getId())
 					.collect(Collectors.toList());
-			rawStandings = competitionRepository
-					.getStandingsForProblems(from, problems, pageable.getOffset(), pageable.getPageSize());
-			size = competitionRepository.getStandingsSizeForProblems(from, problems);
+
+			if (problems.size() <= MAX_PROBLEM_COLUMNS) {
+				rawStandings = competitionRepository
+						.getStandingsPerProblemForProblems(from, problems,
+								pageable.getOffset(), pageable.getPageSize());
+			} else {
+				rawStandings = competitionRepository
+						.getAggregatedStandingsForProblems(from, problems,
+								pageable.getOffset(), pageable.getPageSize());
+			}
+
+			size = competitionRepository.getAggregatedStandingsSizeForProblems(from, problems);
 		}
 
 		List<UserPoints> standings = rawStandings.stream()
@@ -299,9 +296,14 @@ public class CompetitionService {
 		List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
 				.map(cp -> cp.getId())
 				.collect(Collectors.toList());
-		List<Object[]> raw = competitionRepository.getUserPointsForProblems(from, problems, userId);
+
+		List<Object[]> raw = problems.size() <= MAX_PROBLEM_COLUMNS
+				? competitionRepository.getUserPointsPerProblem(from, problems, userId)
+				: competitionRepository.getAggregatedUserPointsForProblems(from, problems, userId);
+
 		if (raw.isEmpty()) {
-			return null;
+			User user = userRepository.findById(userId).get();
+			return new UserPoints(userId, user.getFirstName(), user.getLastName(), /*points=*/ 0);
 		}
 
 		return parseRawStandingsRow(raw.get(0));
@@ -309,8 +311,16 @@ public class CompetitionService {
 
 	private UserPoints parseRawStandingsRow(Object[] row) {
 		Long userId = ((BigInteger)row[0]).longValue();
+		String firstName = (String)row[1];
+		String lastName = (String)row[2];
 		Integer points = ((BigDecimal)row[3]).intValue();
-		return new UserPoints(userId, (String)row[1], (String)row[2], points);
+
+		UserPoints userPoints = new UserPoints(userId, firstName, lastName, points);
+		if (4 < row.length) {
+			userPoints.perProblemJson = ((String)row[4]);
+		}
+
+		return userPoints;
 	}
 
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {

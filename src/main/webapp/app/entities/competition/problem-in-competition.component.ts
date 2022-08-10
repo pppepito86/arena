@@ -14,6 +14,7 @@ import { ITag } from '../../shared/model/tag.model';
 import { CompetitionProblemService } from '../competition-problem';
 import { AccountService } from '../../core';
 import { ICompetitionProblem } from '../../shared/model/competition-problem.model';
+import { getPointsColor } from 'app/shared/util/points-color';
 
 @Component({
     selector: 'jhi-problem-in-competition',
