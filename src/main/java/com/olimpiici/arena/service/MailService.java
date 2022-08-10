@@ -1,11 +1,8 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.domain.User;
-
-import io.github.jhipster.config.JHipsterProperties;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+
 import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
@@ -17,6 +14,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+
+import com.olimpiici.arena.domain.User;
+
+import io.github.jhipster.config.JHipsterProperties;
 
 /**
  * Service for sending emails.

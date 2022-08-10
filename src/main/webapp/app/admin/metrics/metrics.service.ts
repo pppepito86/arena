@@ -16,6 +16,10 @@ export class JhiMetricsService {
         return this.http.get(SERVER_API_URL + 'management/stats');
     }
 
+    sendMail(): Observable<any> {
+        return this.http.post(SERVER_API_URL + 'management/debug/send-mail', {});
+    }
+
     threadDump(): Observable<any> {
         return this.http.get(SERVER_API_URL + 'management/threaddump');
     }

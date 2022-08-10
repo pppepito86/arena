@@ -64,6 +64,10 @@ public class AlertingService {
             .collect(Collectors.joining("</br>\n"));
         String message = "<p> There are " + badSubs.size() + " bad submissions. Here's a list of them: </p> \n" + list;
 
-        mailService.sendEmail(mail, badSubs.size() + " bad submissions", message, /*multpart*/ false, /*isHtml*/ true);
+        mailService.sendEmail(mail, badSubs.size() + " bad submissions", message, /*multipart=*/ false, /*isHtml=*/ true);
+    }
+
+    public void sendAlert(String content) {
+    	mailService.sendEmail(mail, /*title=*/content, /*body=*/"", /*multipart=*/ false, /*isHtml=*/ true);
     }
 }

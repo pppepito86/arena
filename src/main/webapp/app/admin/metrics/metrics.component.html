@@ -5,6 +5,8 @@
             <fa-icon [icon]="'sync'"></fa-icon> <span jhiTranslate="metrics.refresh.button">Refresh</span>
         </button>
     </h2>
+    <h3>Debug</h3>
+    <button (click)="sendMail()">Send Mail</button>
 
     <h3 *ngIf="stats">Stats</h3>
 

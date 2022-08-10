@@ -78,4 +78,8 @@ export class JhiMetricsMonitoringComponent implements OnInit {
         }
         return input;
     }
+
+    sendMail() {
+        this.metricsService.sendMail().subscribe();
+    }
 }
