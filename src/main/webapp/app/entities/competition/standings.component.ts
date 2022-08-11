@@ -44,7 +44,7 @@ export class StandingsComponent implements OnInit, OnDestroy {
     weeks: number = null;
     filter: string[] = [];
 
-    myPoints?: any;
+    myPoints?: IUserPoints;
     currentUserIsInStandings = false;
     problems: ProblemColumn[] = [];
     getPointsColor = getPointsColor;
@@ -77,8 +77,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
         });
 
         this.competitionService.getMyPoints(this.parentCompetition.id).subscribe(
-            (res: HttpResponse<any>) => {
+            (res: HttpResponse<IUserPoints>) => {
                 this.myPoints = res.body;
+                this.processStandingsRow(this.myPoints);
                 this.checkIfCurrUserIsInStandings();
             },
             (res: HttpErrorResponse) => this.onError(res.message)
@@ -177,19 +178,25 @@ export class StandingsComponent implements OnInit, OnDestroy {
         return 'unset';
     }
     getPointsForProblem(userPoints: IUserPoints, problemId: number) {
+        if (!userPoints.perProblem) return 0;
+
         return userPoints.perProblem[problemId] || 0;
     }
-
+    protected processStandingsRow(row: IUserPoints) {
+        if (row.perProblemJson) {
+            row.perProblem = JSON.parse(row.perProblemJson);
+            row.perProblemJson = null;
+        }
+    }
     protected processStandings(standings: IUserPoints[]) {
         const problems = new Set<number>();
         for (const row of standings) {
-            if (row.perProblemJson) {
-                row.perProblem = JSON.parse(row.perProblemJson);
+            this.processStandingsRow(row);
+            if (row.perProblem) {
                 for (const problemId of Object.keys(row.perProblem)) {
                     problems.add(Number(problemId));
                 }
             }
-            row.perProblemJson = null;
         }
         for (const problemId of Array.from(problems)) {
             const problem: ProblemColumn = {
