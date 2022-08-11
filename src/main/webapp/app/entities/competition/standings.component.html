@@ -50,8 +50,15 @@
             <tr *ngIf="myPoints && !currentUserIsInStandings" [ngStyle]="{fontWeight: getFontWeight(myPoints.userId)}">
                 <td> ? </td>
                 <td>{{myPoints.firstName}} {{myPoints.lastName}}</td>
-                <td>{{myPoints.points}}</td>
-                <td *ngFor="let problem of problems">0</td>
+                <td [ngStyle]="{
+                    backgroundColor: getPointsColor(problems.length == 0 ? 0 : myPoints.points/(100.0*problems.length))
+                }">
+                    {{myPoints.points}}
+                </td>
+                <td *ngFor="let problem of problems"
+                    [ngStyle]="{backgroundColor: getPointsColor(getPointsForProblem(myPoints, problem.id)/100.0)}">
+                    {{getPointsForProblem(myPoints, problem.id)}}
+                </td>
             </tr>
             </tbody>
         </table>
