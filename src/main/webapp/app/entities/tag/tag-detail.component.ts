@@ -78,16 +78,47 @@ export class TagDetailComponent implements OnInit {
         return p.path[pos];
     }
 
-    compareAtPos(a: ICompetitionProblem, b: ICompetitionProblem, pos: number) {
-        return this.getPathAtPos(a, pos).localeCompare(this.getPathAtPos(b, pos));
+    getGroup(p: ICompetitionProblem) {
+        if (!p.path) {
+            return 'z';
+        }
+        for (const comp of p.path) {
+            // Group can also have 2 letters, e.g. "AB".
+            if (comp.length <= 2) {
+                return comp;
+            }
+        }
+        return 'z';
+    }
+
+    getYear(p: ICompetitionProblem) {
+        if (!p.path) return 'z';
+        for (const comp of p.path) {
+            if (comp.length == 4) {
+                return comp;
+            }
+        }
+        return 'z';
+    }
+
+    getComp(p: ICompetitionProblem) {
+        if (!p.path) return '';
+        for (const comp of p.path) {
+            if (comp.length > 4) {
+                return comp;
+            }
+        }
+        return 'z';
+    }
+
+    compareAt(a: ICompetitionProblem, b: ICompetitionProblem, projector) {
+        return projector(a).localeCompare(projector(b));
     }
 
     sortProblems(problems: ICompetitionProblem[]) {
         problems.sort(
             (a: ICompetitionProblem, b: ICompetitionProblem) =>
-                this.compareAtPos(a, b, -1) || // group
-                this.compareAtPos(a, b, 0) || // comp name
-                this.compareAtPos(a, b, -2) // year
+                this.compareAt(a, b, this.getGroup) || this.compareAt(a, b, this.getComp) || this.compareAt(a, b, this.getYear)
         );
     }
 }
