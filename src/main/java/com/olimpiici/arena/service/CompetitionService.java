@@ -302,8 +302,14 @@ public class CompetitionService {
 	}
 
 	public Map<Long, Integer> findSimplePointsForUserPerProblem(List<Long> compProblemIds, Long userId) {
-		List<Object[]> raw = competitionRepository.getSimpleUserPointsPerProblem(compProblemIds, userId);
 		Map<Long, Integer> pointsPerProblem = new HashMap<Long, Integer>();
+		if (compProblemIds.isEmpty()) {
+			// The SQL query below will crash if the set is empty,
+			// so we prevent this by returning early.
+			return pointsPerProblem;
+		}
+
+		List<Object[]> raw = competitionRepository.getSimpleUserPointsPerProblem(compProblemIds, userId);
 		// 0 is the default if a problem is not returned but the SQL query
 		for (Long problemId : compProblemIds) {
 			pointsPerProblem.put(problemId, 0);
