@@ -1,6 +1,18 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.service.TagService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.Tag;
@@ -17,19 +29,6 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service ementation for managing Tag.
@@ -43,21 +42,21 @@ public class TagService {
     private final TagRepository tagRepository;
 
     private final TagMapper tagMapper;
-    
+
     private final TagCollectionTagRepository tagCollectionTagRepository;
-    
+
     private final ProblemRepository problemRepository;
 
     private final ProblemMapper problemMapper;
-    
+
     private final TagCollectionRepository tagCollectionRepository;
-    
+
     private final SubmissionRepository submissionRepository;
-    
+
     private final SubmissionMapper submissionMapper;
-    
-    public TagService(TagRepository tagRepository, 
-    		TagCollectionTagRepository tagCollectionTagRepository, 
+
+    public TagService(TagRepository tagRepository,
+    		TagCollectionTagRepository tagCollectionTagRepository,
     		TagCollectionRepository tagCollectionRepository,
     		ProblemRepository problemRepository,
     		TagMapper tagMapper,
@@ -80,7 +79,7 @@ public class TagService {
      * @param tagDTO the entity to save
      * @return the persisted entity
      */
-    
+
     public TagDTO save(TagDTO tagDTO) {
         log.debug("Request to save Tag : {}", tagDTO);
 
@@ -94,13 +93,13 @@ public class TagService {
      *
      * @return the list of entities
      */
-    
+
     @Transactional(readOnly = true)
     public List<TagDTO> findAll() {
         log.debug("Request to get all Tags");
-        
+
         Map<Long, Long> tagsByPopularity = tagsByPopularity();
-        
+
         return tagRepository.findAll().stream()
         	.map(tagMapper::toDto)
             .map(dto ->  {
@@ -110,10 +109,10 @@ public class TagService {
             .collect(Collectors.toList());
     }
 
-	
+
 	public List<TagDTO> findAllPublic() {
 		Map<Long, Long> tagsByPopularity = tagsByPopularity();
-		
+
 		return tagRepository.findByVisible(true).stream()
             .map(tagMapper::toDto)
             .map(dto ->  {
@@ -129,7 +128,7 @@ public class TagService {
      * @param id the id of the entity
      * @return the entity
      */
-    
+
     @Transactional(readOnly = true)
     public Optional<TagDTO> findOne(Long id) {
         log.debug("Request to get Tag : {}", id);
@@ -142,13 +141,13 @@ public class TagService {
      *
      * @param id the id of the entity
      */
-    
+
     public void delete(Long id) {
         log.debug("Request to delete Tag : {}", id);
         tagRepository.deleteById(id);
     }
 
-	
+
 	public List<ProblemDTO> problemsForTag(Long tagId) {
 		Tag tag = tagRepository.getOne(tagId);
 		return tagCollectionTagRepository
@@ -162,7 +161,7 @@ public class TagService {
 			.collect(Collectors.toList());
 	}
 
-	
+
 	public Tag findOrCreateNew(TagDTO dto) {
 		if (dto.getId() == null) {
 			Optional<Tag> res = tagRepository.findOneByTitle(dto.getTitle().trim());
@@ -176,9 +175,9 @@ public class TagService {
 		} else {
 			return tagRepository.findById(dto.getId()).get();
 		}
-	}	
-	
-	
+	}
+
+
 	public TagCollection updateTagsForCollection(TagCollection collection, List<TagDTO> newTags) {
 		if (collection == null) {
 			collection = new TagCollection();
@@ -186,21 +185,21 @@ public class TagService {
     	} else {
 	    	tagCollectionTagRepository.deleteByCollection(collection);
     	}
-    	
+
 		final TagCollection finalCollection = collection; // needed by map()
-		
+
     	List<TagCollectionTag> newTCT = newTags.stream()
     		.map(dto -> findOrCreateNew(dto))
     		.map(tag -> new TagCollectionTag()
     				.collection(finalCollection)
     				.tag(tag))
     		.collect(Collectors.toList());
-    	
+
     	tagCollectionTagRepository.saveAll(newTCT);
     	return collection;
 	}
 
-	
+
 	public Stream<Tag> findTagsForCollection(TagCollection collection) {
     	if (collection == null) {
     		return new ArrayList<Tag>().stream();
@@ -222,28 +221,31 @@ public class TagService {
 			.filter(optional -> optional.isPresent())
 			.map(optional -> optional.get());
 	}
-	
-	
+
+
 	public List<SubmissionDTO> submissionsForTag(Long id) {
 		return submissionsForTagImpl(id)
-			.map(submissionMapper::toDto)
-			.collect(Collectors.toList());
+			.map(submission -> {
+				SubmissionDTO dto = new SubmissionDTO();
+				dto.setId(submission.getId());
+				return dto;
+			}).collect(Collectors.toList());
 	}
 
-	
+
 	public Stream<CompetitionProblem> problemsTaggedByUsers(Long id) {
 		return submissionsForTagImpl(id)
 			.map(submission -> submission.getCompetitionProblem())
 			.distinct();
 	}
 
-	
+
 	public Map<Long, Long> tagsByPopularity() {
 		List<Object[]> tagsByPopularity = tagCollectionTagRepository.tagsByPopularity();
 		Map<Long, Long> res = new HashMap<>();
 		for (Object[] o : tagsByPopularity) {
 			Long tagId = (Long) o[0];
-			Long popularity = (Long) o[1]; 
+			Long popularity = (Long) o[1];
 			res.put(tagId, popularity);
 		}
 		return res;
