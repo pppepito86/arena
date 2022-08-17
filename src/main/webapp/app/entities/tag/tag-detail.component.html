@@ -24,13 +24,13 @@
                 <dd>
                     <table>
                         <tr *ngFor="let problem of problems">
-                            <td class="problem-cell">
+                            <td class="problem-cell" [ngStyle]="{backgroundColor: getPointsColor(problem.points/100.0)}">
                                 <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
                             </td>
                             <td>
-                                <span *ngFor="let ancestor of competitionIdToPath[problem.competitionId]; let i = index">
+                                <span *ngFor="let ancestor of problem.path; let i = index">
                                     <span *ngIf="i != 0">, </span>
-                                    {{ancestor.label}}
+                                    {{ancestor}}
                                 </span>
                             </td>
                         </tr>
@@ -44,9 +44,9 @@
                                 <a [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]">{{problem.title}}</a>
                             </td>
                             <td>
-                                <span *ngFor="let ancestor of competitionIdToPath[problem.competitionId]; let i = index">
+                                <span *ngFor="let ancestor of problem.path; let i = index">
                                     <span *ngIf="i != 0">, </span>
-                                    {{ancestor.label}}
+                                    {{ancestor}}
                                 </span>
                             </td>
                         </tr>

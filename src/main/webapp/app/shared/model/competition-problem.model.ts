@@ -5,6 +5,7 @@ export interface ICompetitionProblem {
     competitionId?: number;
     title?: string;
     points?: number;
+    path?: string[];
 }
 
 export class CompetitionProblem implements ICompetitionProblem {

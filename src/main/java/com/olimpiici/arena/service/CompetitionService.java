@@ -5,8 +5,10 @@ import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,7 +79,7 @@ public class CompetitionService {
 	@Autowired
     private ProblemRepository problemRepository;
 
-	private final int MAX_PROBLEM_COLUMNS = 5;
+	private final int MAX_PROBLEM_COLUMNS = 10;
 
     /**
      * Save a competition.
@@ -296,10 +298,29 @@ public class CompetitionService {
 		List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
 				.map(cp -> cp.getId())
 				.collect(Collectors.toList());
+		return findPointsForUser(problems, userId, from, filter);
+	}
 
-		List<Object[]> raw = problems.size() <= MAX_PROBLEM_COLUMNS
-				? competitionRepository.getUserPointsPerProblem(from, problems, userId)
-				: competitionRepository.getAggregatedUserPointsForProblems(from, problems, userId);
+	public Map<Long, Integer> findSimplePointsForUserPerProblem(List<Long> compProblemIds, Long userId) {
+		List<Object[]> raw = competitionRepository.getSimpleUserPointsPerProblem(compProblemIds, userId);
+		Map<Long, Integer> pointsPerProblem = new HashMap<Long, Integer>();
+		// 0 is the default if a problem is not returned but the SQL query
+		for (Long problemId : compProblemIds) {
+			pointsPerProblem.put(problemId, 0);
+		}
+
+		for (Object[] r : raw) {
+			Long problemId = ((BigInteger)r[0]).longValue();
+			Integer points = ((BigInteger)r[0]).intValue();
+			pointsPerProblem.put(problemId, points);
+		}
+		return pointsPerProblem;
+	}
+
+	public UserPoints findPointsForUser(List<Long> compProblemIds, Long userId, ZonedDateTime from, List<String> filter) {
+		List<Object[]> raw = compProblemIds.size() <= MAX_PROBLEM_COLUMNS
+				? competitionRepository.getUserPointsPerProblem(from, compProblemIds, userId)
+				: competitionRepository.getAggregatedUserPointsForProblems(from, compProblemIds, userId);
 
 		if (raw.isEmpty()) {
 			User user = userRepository.findById(userId).get();

@@ -150,4 +150,13 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	)
 	List<Object[]> getUserPointsPerProblem(ZonedDateTime timeSince, List<Long> problemIds, Long userId);
 
+	@Query(
+			value = "select competition_problem_id, max(points)"
+					+ " from submission"
+					+ " where user_id = ?2 "
+					+ " and competition_problem_id in ?1"
+					+ " group by 1;",
+			nativeQuery = true
+		)
+	List<Object[]> getSimpleUserPointsPerProblem(List<Long> compProblemIds, Long userId);
 }

@@ -1,6 +1,7 @@
 package com.olimpiici.arena.service.dto;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,11 +16,13 @@ public class CompetitionProblemDTO implements Serializable {
     private Long problemId;
 
     private Long competitionId;
-    
+
     private String title;
-    
+
     private Integer points;
-    
+
+    public List<String> path;
+
     public Integer getPoints() {
 		return points;
 	}
@@ -68,8 +71,9 @@ public class CompetitionProblemDTO implements Serializable {
         this.competitionId = competitionId;
     }
 
-    
-    public boolean equals(Object o) {
+
+    @Override
+	public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -84,13 +88,15 @@ public class CompetitionProblemDTO implements Serializable {
         return Objects.equals(getId(), competitionProblemDTO.getId());
     }
 
-    
-    public int hashCode() {
+
+    @Override
+	public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    
-    public String toString() {
+
+    @Override
+	public String toString() {
         return "CompetitionProblemDTO{" +
             "id=" + getId() +
             ", order=" + getOrder() +

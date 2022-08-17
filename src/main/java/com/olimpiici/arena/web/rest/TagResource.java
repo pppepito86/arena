@@ -1,26 +1,5 @@
 package com.olimpiici.arena.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.security.SecurityUtils;
-import com.olimpiici.arena.service.CompetitionProblemService;
-import com.olimpiici.arena.service.ProblemService;
-import com.olimpiici.arena.service.TagService;
-import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
-import com.olimpiici.arena.web.rest.util.HeaderUtil;
-import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
-import com.olimpiici.arena.service.dto.ProblemDTO;
-import com.olimpiici.arena.service.dto.SubmissionDTO;
-import com.olimpiici.arena.service.dto.TagDTO;
-import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
-
-import io.github.jhipster.web.util.ResponseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -28,6 +7,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.codahale.metrics.annotation.Timed;
+import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.repository.UserRepository;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.security.SecurityUtils;
+import com.olimpiici.arena.service.CompetitionProblemService;
+import com.olimpiici.arena.service.CompetitionService;
+import com.olimpiici.arena.service.TagService;
+import com.olimpiici.arena.service.dto.CompetitionProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.SubmissionDTO;
+import com.olimpiici.arena.service.dto.TagDTO;
+import com.olimpiici.arena.service.mapper.CompetitionProblemMapper;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
+import com.olimpiici.arena.web.rest.util.HeaderUtil;
+
+import io.github.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing Tag.
@@ -40,23 +52,20 @@ public class TagResource {
 
     private static final String ENTITY_NAME = "tag";
 
-    private final TagService tagService;
+    @Autowired
+    private TagService tagService;
 
-    private final CompetitionProblemService competitionProblemService;
-    
-    private final ProblemService problemService;
-    
-    private final CompetitionProblemMapper competitionProblemMapper;
-    
-    public TagResource(TagService tagService,
-    		CompetitionProblemService competitionProblemService,
-    		ProblemService problemService,
-    		CompetitionProblemMapper competitionProblemMapper) {
-        this.tagService = tagService;
-        this.competitionProblemService = competitionProblemService;
-        this.competitionProblemMapper = competitionProblemMapper;
-        this.problemService = problemService;
-    }
+    @Autowired
+    private CompetitionProblemService competitionProblemService;
+
+    @Autowired
+    private CompetitionProblemMapper competitionProblemMapper;
+
+    @Autowired
+    private CompetitionService competitionService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * POST  /tags : Create a new tag.
@@ -132,56 +141,80 @@ public class TagResource {
         Optional<TagDTO> tagDTO = tagService.findOne(id);
         return ResponseUtil.wrapOrNotFound(tagDTO);
     }
-    
+
     @GetMapping("/tags/{id}/problems")
     @Timed
     public List<CompetitionProblemDTO> getTagProblem(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
-        
+
         List<ProblemDTO> problems = tagService.problemsForTag(id);
-        Map<Long, ProblemDTO> idToProblem = new HashMap<>();;
+        Map<Long, ProblemDTO> idToProblem = new HashMap<>();
         problems.stream()
         	.forEach(problem -> idToProblem.put(problem.getId(), problem));
-        
-        List<CompetitionProblemDTO> problemsDTO = problems  
+
+        List<Long> problemIds = problems.stream()
+        		.map(p -> p.getId())
+        		.collect(Collectors.toList());
+
+        Long userId = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId();
+        Map<Long, Integer> pointsPerProblem = competitionService.findSimplePointsForUserPerProblem(problemIds, userId);
+
+        List<CompetitionProblemDTO> problemsDTO = problems
         		.stream()
         		.map(cp -> competitionProblemService.findOneByProblem(cp.getId()))
         		.filter(optional -> optional.isPresent())
         		.map(optional -> optional.get())
         		.map(dto -> {
         			dto.setTitle(idToProblem.get(dto.getProblemId()).getTitle());
+        			dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
+        					.stream()
+        					.map(comp -> comp.getLabel())
+        					.collect(Collectors.toList());
+        			dto.setPoints(pointsPerProblem.get(dto.getProblemId()));
         			return dto;
         		}).collect(Collectors.toList());
-        
+
         return problemsDTO;
     }
-    
+
     @GetMapping("/tags/{id}/submissions")
     @Timed
     public List<SubmissionDTO> getTagSubmissions(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
         return tagService.submissionsForTag(id);
     }
-    
+
     /**
-     * Returns problem which don't have an official tag with id {id}, but 
-     * have a submission tagged with {id}. 
+     * Returns problem which have a submission tagged with {id}.
      * @param id
      * @return
      */
     @GetMapping("/tags/{id}/problems-tagged-by-users")
     @Timed
-    public List<CompetitionProblemDTO> getProblemTaggedOnlyByUser(@PathVariable Long id) {
+    public List<CompetitionProblemDTO> getProblemTaggedByUser(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
-        return tagService.problemsTaggedByUsers(id)
-        		.map(competitionProblem -> {
+
+        List<CompetitionProblem> cps =
+        		tagService.problemsTaggedByUsers(id).collect(Collectors.toList());
+
+        List<Long> problemIds = cps.stream().map(cp -> cp.getId()).collect(Collectors.toList());
+        Long userId = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId();
+        Map<Long, Integer> pointsPerProblem = competitionService.findSimplePointsForUserPerProblem(problemIds, userId);
+
+        return cps.stream().map(competitionProblem -> {
         			CompetitionProblemDTO dto = competitionProblemMapper.toDto(competitionProblem);
         			dto.setTitle(competitionProblem.getProblem().getTitle());
+
+        			dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
+        					.stream()
+        					.map(comp -> comp.getLabel())
+        					.collect(Collectors.toList());
+        			dto.setPoints(pointsPerProblem.get(dto.getProblemId()));
         			return dto;
         		})
         		.collect(Collectors.toList());
     }
-    
+
 
     /**
      * DELETE  /tags/:id : delete the "id" tag.
