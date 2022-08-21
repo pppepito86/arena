@@ -49,7 +49,9 @@ export class SubmissionDetailComponent implements OnInit {
             res => {
                 this.submission = res.body;
 
-                this.submissionDetails = JSON.parse(res.body.details);
+                if (res.body.details) {
+                    this.submissionDetails = JSON.parse(res.body.details);
+                }
                 this.parseTestDetails();
                 this.submissionId = this.submission.id;
 
@@ -57,7 +59,9 @@ export class SubmissionDetailComponent implements OnInit {
                     this.refreshInterval = setInterval(() => {
                         this.submissionService.find(this.submissionId).subscribe(res => {
                             this.submission = res.body;
-                            this.submissionDetails = JSON.parse(res.body.details);
+                            if (res.body.details) {
+                                this.submissionDetails = JSON.parse(res.body.details);
+                            }
                             this.parseTestDetails();
                             if (this.isJudged(this.submission)) {
                                 clearInterval(this.refreshInterval);
