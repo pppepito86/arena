@@ -6,6 +6,7 @@
 
                 <div *ngIf="currentAccount !== null">
                     <button class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['submissions']">
+                        <fa-icon icon="file"></fa-icon>
                         <span jhiTranslate="arenaApp.competition.submissions">
                             Submissions
                         </span>
@@ -13,6 +14,7 @@
                 
                     <a class="btn btn-primary float-right" style="margin-right: 0.5em;"
                         href="api/public/problems/{{problem.id}}/zip?download=true" target="_blank">
+                        <fa-icon icon="download"></fa-icon>
                         <span jhiTranslate="arenaApp.problem.downloadZip">
                             Download ZIP
                         </span>
@@ -80,16 +82,16 @@
             </div>
 
             <dl class="row-md jh-entity-details">
-                <dt><span jhiTranslate="arenaApp.problem.statement">Statement</span></dt>
+                <dt>
+                    <!-- <span jhiTranslate="arenaApp.problem.statement">Statement</span> -->
+                </dt>
                 <dd>
                     <a class="btn btn-primary"
                        href="api/public/problems/{{problem.id}}/pdf" target="_blank">
-                        <span jhiTranslate="arenaApp.problem.open">
-                            Open
-                        </span>
+                        <span jhiTranslate="arenaApp.problem.statement">Statement</span>
                     </a>
-                    <a class="btn btn-primary"
-                            href="api/public/problems/{{problem.id}}/pdf?download=true" target="_blank">
+                    <a href="api/public/problems/{{problem.id}}/pdf?download=true" target="_blank" style="margin-left:1em">
+                        <fa-icon icon="download"></fa-icon>
                         <span jhiTranslate="arenaApp.problem.download">
                             Download
                         </span>

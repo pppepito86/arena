@@ -5,6 +5,7 @@
         <button *ngIf="currentAccount !== null"
                 class="btn btn-primary float-right"
                 [routerLink]="['submissions']">
+            <fa-icon icon="file"></fa-icon>
             <span  jhiTranslate="arenaApp.competition.submissions">
             Submissions
             </span>
@@ -12,7 +13,8 @@
         <button style="margin-right: 0.5em;"
                 class="btn btn-primary float-right"
                 [routerLink]="['standings']">
-            <span  jhiTranslate="arenaApp.standings.title">
+            <fa-icon icon="medal"></fa-icon>
+            <span jhiTranslate="arenaApp.standings.title">
             Класиране
             </span>
         </button>
@@ -20,7 +22,8 @@
                 style="margin-right: 0.5em;"
                 class="btn btn-primary float-right"
                 [routerLink]="['/competition', id, 'edit']">
-            <span>
+            <fa-icon icon="edit"></fa-icon>
+            <span jhiTranslate="arenaApp.standings.title">
             Edit
             </span>
         </button>

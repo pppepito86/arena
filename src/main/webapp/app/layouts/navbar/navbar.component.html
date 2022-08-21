@@ -27,7 +27,7 @@
             <li ngbDropdown class="nav-item dropdown pointer">
                 <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="standingsDropdown">
                     <span>
-                        <fa-icon icon="th-list"></fa-icon>
+                        <fa-icon icon="medal"></fa-icon>
                         <span jhiTranslate="global.menu.standings.main">Standings</span>
                     </span>
                 </a>
@@ -35,41 +35,41 @@
                     <li>
                         <a class="dropdown-item" routerLink="standings" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.general">General</span>
                         </a>
                     </li>
                     <li><a class="dropdown-item" routerLink="standings" [queryParams]="{f: 'A'}" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.groupA">Group A</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" routerLink="standings" [queryParams]="{f: 'B'}" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.groupB">Group B</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" routerLink="standings" [queryParams]="{f: 'C'}" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.groupC">Group C</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" routerLink="standings" [queryParams]="{f: 'D'}" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.groupD">Group D</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" routerLink="standings" [queryParams]="{f: 'E'}" routerLinkActive="active"
                             [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="asterisk" fixedWidth="true"></fa-icon>
+                            <fa-icon icon="medal" fixedWidth="true"></fa-icon>
                             <span jhiTranslate="global.menu.standings.groupE">Group E</span>
                         </a>
                     </li>
@@ -79,7 +79,7 @@
             <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
                 <a class="nav-link" routerLink="tag" (click)="collapseNavbar()">
                     <span>
-                        <fa-icon icon="th-list"></fa-icon>
+                        <fa-icon icon="tag"></fa-icon>
                     </span>
                     <span jhiTranslate="global.menu.entities.tag">Tags</span>
                 </a>
