@@ -120,9 +120,9 @@ public class CompetitionProblemService {
     }
 
 
-	public Optional<CompetitionProblemDTO> findOneByProblem(Long id) {
-		Optional<CompetitionProblem> cp = competitionProblemRepository.findOneByProblemId(id);
-		if(cp.isPresent()) {
+	public Optional<CompetitionProblemDTO> findOneByProblem(Long problemId) {
+		Optional<CompetitionProblem> cp = competitionProblemRepository.findOneByProblemId(problemId);
+		if (cp.isPresent()) {
 			return Optional.of(competitionProblemMapper.toDto(cp.get()));
 		} else {
 			return Optional.empty();

@@ -317,7 +317,7 @@ public class CompetitionService {
 
 		for (Object[] r : raw) {
 			Long problemId = ((BigInteger)r[0]).longValue();
-			Integer points = ((BigInteger)r[0]).intValue();
+			Integer points = (Integer)r[1];
 			pointsPerProblem.put(problemId, points);
 		}
 		return pointsPerProblem;

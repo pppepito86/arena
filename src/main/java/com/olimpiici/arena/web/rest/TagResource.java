@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
-import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
@@ -152,16 +151,9 @@ public class TagResource {
         problems.stream()
         	.forEach(problem -> idToProblem.put(problem.getId(), problem));
 
-        List<Long> problemIds = problems.stream()
-        		.map(p -> p.getId())
-        		.collect(Collectors.toList());
-
-        Long userId = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId();
-        Map<Long, Integer> pointsPerProblem = competitionService.findSimplePointsForUserPerProblem(problemIds, userId);
-
         List<CompetitionProblemDTO> problemsDTO = problems
         		.stream()
-        		.map(cp -> competitionProblemService.findOneByProblem(cp.getId()))
+        		.map(problem -> competitionProblemService.findOneByProblem(problem.getId()))
         		.filter(optional -> optional.isPresent())
         		.map(optional -> optional.get())
         		.map(dto -> {
@@ -170,11 +162,23 @@ public class TagResource {
         					.stream()
         					.map(comp -> comp.getLabel())
         					.collect(Collectors.toList());
-        			dto.setPoints(pointsPerProblem.get(dto.getProblemId()));
         			return dto;
         		}).collect(Collectors.toList());
+        
+        addPointsToDto(problemsDTO);
 
         return problemsDTO;
+    }
+
+    private void addPointsToDto(List<CompetitionProblemDTO> problemsDTO) {
+        List<Long> compProblemIds = problemsDTO.stream()
+                .map(cp -> cp.getId())
+                .collect(Collectors.toList());
+        Long userId = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId();
+        Map<Long, Integer> pointsPerProblem = competitionService.findSimplePointsForUserPerProblem(compProblemIds, userId);
+        for (CompetitionProblemDTO dto : problemsDTO) {
+            dto.setPoints(pointsPerProblem.get(dto.getId()));
+        }
     }
 
     @GetMapping("/tags/{id}/submissions")
@@ -194,14 +198,9 @@ public class TagResource {
     public List<CompetitionProblemDTO> getProblemTaggedByUser(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
 
-        List<CompetitionProblem> cps =
-        		tagService.problemsTaggedByUsers(id).collect(Collectors.toList());
-
-        List<Long> problemIds = cps.stream().map(cp -> cp.getId()).collect(Collectors.toList());
-        Long userId = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId();
-        Map<Long, Integer> pointsPerProblem = competitionService.findSimplePointsForUserPerProblem(problemIds, userId);
-
-        return cps.stream().map(competitionProblem -> {
+        List<CompetitionProblemDTO> problemsDTO = tagService
+                .problemsTaggedByUsers(id)
+                .map(competitionProblem -> {
         			CompetitionProblemDTO dto = competitionProblemMapper.toDto(competitionProblem);
         			dto.setTitle(competitionProblem.getProblem().getTitle());
 
@@ -209,10 +208,12 @@ public class TagResource {
         					.stream()
         					.map(comp -> comp.getLabel())
         					.collect(Collectors.toList());
-        			dto.setPoints(pointsPerProblem.get(dto.getProblemId()));
         			return dto;
         		})
         		.collect(Collectors.toList());
+
+        addPointsToDto(problemsDTO);
+        return problemsDTO;
     }
 
 
