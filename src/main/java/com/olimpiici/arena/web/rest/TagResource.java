@@ -158,10 +158,12 @@ public class TagResource {
         		.map(optional -> optional.get())
         		.map(dto -> {
         			dto.setTitle(idToProblem.get(dto.getProblemId()).getTitle());
-        			dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
-        					.stream()
-        					.map(comp -> comp.getLabel())
-        					.collect(Collectors.toList());
+                    if (dto.getCompetitionId() != null) {
+                        dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
+                                .stream()
+                                .map(comp -> comp.getLabel())
+                                .collect(Collectors.toList());
+                    }
         			return dto;
         		}).collect(Collectors.toList());
         
