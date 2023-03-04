@@ -49,6 +49,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " join jhi_user"
 			+ " on jhi_user.id = user_points_all.user_id"
 			+ " where user_points_all.user_id != 4"  // Not the author
+			+ " and user_points_all.user_id != 2032"  // Not Pesho Orgov
 			+ " group by user_id"
 			+ " order by total_points desc"
 			+ " limit ?, ?;",
@@ -61,6 +62,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			"select count(distinct user_id)"
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
+			+ " and user_id != 2032"  // Not Pesho Orgov
 			+ " and upload_date > ?1 ;",
 		nativeQuery = true
 	)
@@ -85,6 +87,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " on jhi_user.id = user_points_all.user_id"
 			+ " where user_points_all.competition_problem_id in ?2"
 			+ " 	and user_points_all.user_id != 4"  // Not the author
+			+ " 	and user_points_all.user_id != 2032"  // Not Pesho Orgov
 			+ " group by user_id";
 
 	String aggregatedStandingsCommonQuery =
@@ -108,6 +111,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			"select count(distinct user_id)"
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
+			+ " and user_id != 2032"  // Not Pesho Orgov
 			+ " and upload_date > ?1"
 			+ " and competition_problem_id in ?2 ;",
 		nativeQuery = true
@@ -133,7 +137,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ "			), "
 		    + "         CHAR"
 		    + " 	) as problems "
-			+ " from" + tableWithStandingsPerProblem; // Not the author
+			+ " from" + tableWithStandingsPerProblem;
 
 	@Query(
 			value = standingsPerProblemCommonQuery
