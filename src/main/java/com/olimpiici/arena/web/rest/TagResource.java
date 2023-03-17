@@ -205,11 +205,12 @@ public class TagResource {
                 .map(competitionProblem -> {
         			CompetitionProblemDTO dto = competitionProblemMapper.toDto(competitionProblem);
         			dto.setTitle(competitionProblem.getProblem().getTitle());
-
-        			dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
-        					.stream()
-        					.map(comp -> comp.getLabel())
-        					.collect(Collectors.toList());
+                    if (dto.getCompetitionId() != null) {
+                        dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
+                                .stream()
+                                .map(comp -> comp.getLabel())
+                                .collect(Collectors.toList());
+                    }
         			return dto;
         		})
         		.collect(Collectors.toList());

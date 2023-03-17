@@ -152,6 +152,10 @@ public class CompetitionService {
 
 
 	public List<CompetitionDTO> findPathFromRoot(Long id) {
+		if (id == null) {
+			log.error("findPathFromRoot called for null id");
+			return new ArrayList<CompetitionDTO>();
+		}
 		Optional<CompetitionDTO> res = competitionRepository.findById(id)
 				.map(competitionMapper::toDto);
 		if (!res.isPresent()) return null;
