@@ -29,7 +29,7 @@ export class TagComponent implements OnInit, OnDestroy {
             (res: HttpResponse<ITag[]>) => {
                 this.tags = res.body;
                 // Sort by popularity
-                this.tags.sort((a, b) => (a.popularity > b.popularity ? -1 : b.popularity > a.popularity ? 1 : 0));
+                this.tags.sort((a, b) => this.valueOr(b.popularity, 0) - this.valueOr(a.popularity, 0));
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
@@ -53,6 +53,13 @@ export class TagComponent implements OnInit, OnDestroy {
 
     registerChangeInTags() {
         this.eventSubscriber = this.eventManager.subscribe('tagListModification', response => this.loadAll());
+    }
+
+    valueOr(value, defaultValue) {
+        if (value) {
+            return value;
+        }
+        return defaultValue;
     }
 
     protected onError(errorMessage: string) {
