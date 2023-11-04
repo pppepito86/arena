@@ -31,12 +31,10 @@ import com.olimpiici.arena.domain.CompetitionProblem;
 import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.TagCollection;
-import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.ProblemRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
-import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
@@ -73,6 +71,9 @@ public class ProblemService {
     private final TagMapper tagMapper;
 
     private final TagService tagService;
+
+	@Autowired
+	private UserService userService;
 
     @Autowired
     private ApplicationProperties applicationProperties;
@@ -153,7 +154,7 @@ public class ProblemService {
         	.collect(Collectors.toList());
 
         boolean problemHasUserSubmissions = submissions.stream()
-        	.anyMatch(s -> s.getUser().getId() != 4 && !isUserAdmin(s.getUser()));
+        	.anyMatch(s -> s.getUser().getId() != UserService.AUTHOR_ID && !userService.isUserAdmin(s.getUser()));
         if (problemHasUserSubmissions) {
         	throw new IllegalStateException("Cannot delete problem " +
         			id + " because there are user submissions");
@@ -175,13 +176,7 @@ public class ProblemService {
         }
 
         workerPool.deleteProblem(id);
-    }
-
-    private static boolean isUserAdmin(User user) {
-    	return user.getAuthorities()
-        		.stream()
-        		.anyMatch(authority -> authority.getName().equals(AuthoritiesConstants.ADMIN));
-    }
+    }    
 
     public List<TagDTO> findTags(Long id) {
     	Problem problem = problemRepository.getOne(id);

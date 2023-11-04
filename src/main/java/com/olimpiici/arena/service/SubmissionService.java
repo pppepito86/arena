@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +14,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,7 @@ import com.olimpiici.arena.service.dto.SubmissionDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 
 /**
  * Service ementation for managing Submission.
@@ -39,22 +44,24 @@ import com.olimpiici.arena.service.mapper.TagMapper;
 public class SubmissionService {
 
     private final Logger log = LoggerFactory.getLogger(SubmissionService.class);
-
     private final SubmissionRepository submissionRepository;
-
     private final UserRepository userRepository;
-
+	@Autowired
+	private UserService userService;
     private final CompetitionRepository competitionRepository;
-
     private final CompetitionProblemRepository competitionProblemRepository;
-
+	@Autowired
+	private CompetitionProblemService competitionProblemService;
     private final SubmissionMapper submissionMapper;
-
     private final ApplicationProperties applicationProperties;
-
     private final TagService tagService;
-
     private final TagMapper tagMapper;
+	@Autowired
+	private ProblemService problemService;
+
+	private final String BANNED_VERDICT = "banned";
+    private final static Duration DURATION_BETWEEN_SUBMITS = Duration.ofSeconds(20);
+    private final static int MAX_SUBMISSIONS_PER_DAY = 150;
 
     public SubmissionService(SubmissionRepository submissionRepository,
     		SubmissionMapper submissionMapper,
@@ -73,6 +80,91 @@ public class SubmissionService {
         this.tagService = tagService;
         this.tagMapper = tagMapper;
     }
+
+	/**
+     * Not activated users should be automatically deleted after 3 days.
+     * <p>
+     * This is scheduled to get fired everyday, at 01:00 (am).
+     */
+	// @Scheduled(cron = "0 0 1 * * ?") 
+	@Scheduled(fixedDelay = 24*60*60*1000)
+	@Transactional
+    public void banAuthorSubmissions() {
+		log.error("banAuthorSubmissions - start");
+		List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(365*10, 1);
+		log.error("banAuthorSubmissions - {} submissions to check", submissions.size());
+		int numBanned = 0;
+		for (Submission submission : submissions) {
+			try {
+				if (maybeBanSubmission(submission)) numBanned++;
+			} catch (IOException e) {
+				log.error("Exception while processing submission " + submission.getId(), e);
+			}
+		}
+		log.error("banAuthorSubmissions - done, banned {} submissions", numBanned);
+	}
+
+	public boolean maybeBanSubmission(Submission submission) throws IOException {
+	 	if (submission.getVerdict().equals(BANNED_VERDICT)) {
+			// Already banned.
+			return false;
+		}
+		
+		if (submission.getPoints() == 0) {
+			return false;
+		}
+
+		if (userService.isUserExemptFromPolicyChecks(submission.getUser())) {
+			return false;
+		}
+
+		Optional<File> userFile = findSubmissionFile(applicationProperties.getWorkDir(), submission.getId());
+        if (!userFile.isPresent()) {
+			return false;
+		}
+		String encoding = null;
+		String userSolution = FileUtils.readFileToString(userFile.get(), encoding);
+		userSolution = userSolution.replaceAll("\\s+","");
+		
+    	Long problemId = submission.getCompetitionProblem().getProblem().getId();
+		Optional<File> authorFile = problemService
+    			.getAuthorSolution(applicationProperties.getWorkDir(), problemId);
+    	if (!authorFile.isPresent()) {
+    		return false;
+    	}
+    	String authorSolution = FileUtils.readFileToString(authorFile.get(), encoding);
+		authorSolution = authorSolution.replaceAll("\\s+","");
+		
+		if (!userSolution.equals(authorSolution)) {
+			return false;
+		}
+
+		// User solution matches author solution -> mark as banned.
+		// submission.setVerdict(BANNED_VERDICT);
+		// submission.setPoints(0);
+		log.debug("Submission {} is banned.", submission.getId());
+		return true;
+	}
+
+	public void maybeThrottleSubmission(Long userId) {
+		User user = userRepository.findById(userId).get();
+		if (userService.isUserExemptFromPolicyChecks(user)) {
+            return;
+        }
+        Optional<java.sql.Timestamp > lastSubmission = submissionRepository.findLastByUser(userId);
+        if (!lastSubmission.isPresent())  {
+            return;
+        }
+        Duration d = Duration.between(lastSubmission.get().toInstant(), ZonedDateTime.now());
+        
+        if (d.compareTo(DURATION_BETWEEN_SUBMITS) < 0) {
+            throw new BadRequestAlertException("Submission throttled.", "submission", "submission-throttled");
+        }
+
+        if (submissionRepository.numSubmissionsLastDay(userId) > MAX_SUBMISSIONS_PER_DAY) {
+            throw new BadRequestAlertException("Submission throttled.", "submission", "too-many-submissions-per-day");
+        }
+	}
 
     /**
      * Save a submission.
@@ -120,6 +212,7 @@ public class SubmissionService {
     @Transactional(readOnly = true)
     public Optional<SubmissionDTO> findOne(Long id) {
         log.debug("Request to get Submission : {}", id);
+
         return submissionRepository.findById(id)
             .map(submissionMapper::toDto)
             .map(dto -> {

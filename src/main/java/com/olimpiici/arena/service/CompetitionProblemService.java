@@ -177,17 +177,16 @@ public class CompetitionProblemService {
             .getContent();
 
 
-        final int authorUserId = 4;
         final int numSolutions = 3;
 
         boolean hasEnoughGoodSubmitions = submissions
                             .stream()
-                            .filter(s -> s.getUserId() == authorUserId && s.getPoints() != null && s.getPoints() == 100)
+                            .filter(s -> s.getUserId() == UserService.AUTHOR_ID && s.getPoints() != null && s.getPoints() == 100)
                             .count() >= numSolutions;
 
         if (hasEnoughGoodSubmitions) {
             List<Integer> times = submissions.stream()
-                    .filter(s -> s.getUserId() == authorUserId && s.getPoints() != null && s.getPoints() == 100)
+                    .filter(s -> s.getUserId() == UserService.AUTHOR_ID && s.getPoints() != null && s.getPoints() == 100)
                     .limit(numSolutions)
                     .map(s -> s.getTimeInMillis())
                     .collect(Collectors.toList());

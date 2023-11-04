@@ -1,15 +1,13 @@
 package com.olimpiici.arena.service;
 
-import com.olimpiici.arena.config.Constants;
-import com.olimpiici.arena.domain.Authority;
-import com.olimpiici.arena.domain.User;
-import com.olimpiici.arena.repository.AuthorityRepository;
-import com.olimpiici.arena.repository.UserRepository;
-import com.olimpiici.arena.security.AuthoritiesConstants;
-import com.olimpiici.arena.security.SecurityUtils;
-import com.olimpiici.arena.service.dto.UserDTO;
-import com.olimpiici.arena.service.util.RandomUtil;
-import com.olimpiici.arena.web.rest.errors.*;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +19,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.olimpiici.arena.config.Constants;
+import com.olimpiici.arena.domain.Authority;
+import com.olimpiici.arena.domain.User;
+import com.olimpiici.arena.repository.AuthorityRepository;
+import com.olimpiici.arena.repository.UserRepository;
+import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.security.SecurityUtils;
+import com.olimpiici.arena.service.dto.UserDTO;
+import com.olimpiici.arena.service.util.RandomUtil;
+import com.olimpiici.arena.web.rest.errors.EmailAlreadyUsedException;
+import com.olimpiici.arena.web.rest.errors.InvalidPasswordException;
+import com.olimpiici.arena.web.rest.errors.LoginAlreadyUsedException;
 
 /**
  * Service class for managing users.
@@ -43,11 +49,31 @@ public class UserService {
 
     private final CacheManager cacheManager;
 
+    public final static int AUTHOR_ID = 4;
+    public final static int PESHO_ORGOV_ID = 2032;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+    }
+
+    public boolean isUserAdmin(User user) {
+        // Query the repo again, because this might be called from external service 
+        // and then we don't have Session to expand getAuthorities().
+        user = userRepository.getOne(user.getId());
+    	return user.getAuthorities()
+        		.stream()
+        		.anyMatch(authority -> authority.getName().equals(AuthoritiesConstants.ADMIN));
+    }
+
+    public boolean isUserExemptFromPolicyChecks(User user) {
+        if (isUserAdmin(user)) {
+            return true;
+        }
+        Long userId = user.getId();
+        return userId == AUTHOR_ID || userId == PESHO_ORGOV_ID;
     }
 
     public Optional<User> activateRegistration(String key) {

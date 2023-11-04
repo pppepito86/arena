@@ -40,6 +40,15 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<ZonedDateTime> findAllUploadDates();
 
     @Query(
+        value =
+            " select * from submission" +
+            " where upload_date " + 
+            "   between DATE_SUB(NOW(), INTERVAL ?1 DAY) and DATE_SUB(NOW(), INTERVAL ?2 DAY)",
+        nativeQuery = true
+    )
+    List<Submission> findSubmissionsInPeriod(Integer fromDaysBack, Integer toDaysBack);
+
+    @Query(
 		value =
     		" select count(distinct user_id)" +
     		" from submission" +

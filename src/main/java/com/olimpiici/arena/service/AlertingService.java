@@ -26,7 +26,7 @@ public class AlertingService {
     boolean queueSignaled = false;
 
     @Scheduled(fixedDelay = 1*60*60*1000) // 1 hr
-    public void checkQeueueAndAlert() {
+    public void checkQueueAndAlert() {
         List<Submission> submissionsInQueue = submissionRepository.findQueue();
 
         long ageMins = -1;

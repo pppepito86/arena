@@ -5,7 +5,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.time.Duration;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -72,11 +71,6 @@ public class CompetitionResource {
     private final ProblemService problemService;
     @Autowired
     private ApplicationProperties applicationProperties;
-
-    private final static int AUTHOR_ID = 4;
-    private final static int PESHO_ORGOV_ID = 2032;
-    private final static Duration DURATION_BETWEEN_SUBMITS = Duration.ofSeconds(20);
-    private final static int MAX_SUBMISSIONS_PER_DAY = 150;
 
     public CompetitionResource(CompetitionService competitionService,
     		UserRepository userRepository,
@@ -261,30 +255,6 @@ public class CompetitionResource {
         return ResponseEntity.ok(problem);
     }
 
-    private void maybeThrottleSubmission(Long userId) {
-        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
-            return;
-        }
-        
-        if (userId == AUTHOR_ID || userId == PESHO_ORGOV_ID) {
-            return;
-        }
-
-        Optional<java.sql.Timestamp > lastSubmission = submissionRepository.findLastByUser(userId);
-        if (!lastSubmission.isPresent())  {
-            return;
-        }
-        Duration d = Duration.between(lastSubmission.get().toInstant(), ZonedDateTime.now());
-        log.error("Duration " + d.toMillis()/1000);
-        if (d.compareTo(DURATION_BETWEEN_SUBMITS) < 0) {
-            throw new BadRequestAlertException("Submission throttled.", "submission", "submission-throttled");
-        }
-
-        if (submissionRepository.numSubmissionsLastDay(userId) > MAX_SUBMISSIONS_PER_DAY) {
-            throw new BadRequestAlertException("Submission throttled.", "submission", "too-many-submissions-per-day");
-        }
-    }
-
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
     @Timed
@@ -294,7 +264,7 @@ public class CompetitionResource {
         log.debug("REST request to submit solution : {}", solution);
         User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         
-        maybeThrottleSubmission(user.getId());
+        submissionService.maybeThrottleSubmission(user.getId());
 
         SubmissionDTO submission = new SubmissionDTO();
         submission.setUserId(user.getId());
