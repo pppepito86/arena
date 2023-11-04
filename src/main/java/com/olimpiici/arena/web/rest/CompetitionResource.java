@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.time.Duration;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -33,6 +34,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.domain.UserPoints;
+import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.security.SecurityUtils;
@@ -59,22 +61,21 @@ import io.github.jhipster.web.util.ResponseUtil;
 public class CompetitionResource {
 
     private final Logger log = LoggerFactory.getLogger(CompetitionResource.class);
-
     private static final String ENTITY_NAME = "competition";
-
     private final CompetitionService competitionService;
-
     @Autowired
     private CompetitionProblemService competitionProblemService;
-
+    @Autowired
+    private SubmissionRepository submissionRepository;
     private final SubmissionService submissionService;
-
     private final UserRepository userRepository;
-
     private final ProblemService problemService;
-
     @Autowired
     private ApplicationProperties applicationProperties;
+
+    private final static int AUTHOR_ID = 4;
+    private final static int PESHO_ORGOV_ID = 2032;
+    private final static Duration DURATION_BETWEEN_SUBMITS = Duration.ofSeconds(30);
 
     public CompetitionResource(CompetitionService competitionService,
     		UserRepository userRepository,
@@ -259,6 +260,20 @@ public class CompetitionResource {
         return ResponseEntity.ok(problem);
     }
 
+    private boolean shouldThrottleSubmission(User user) {
+        if (user.getId() == AUTHOR_ID || user.getId() == PESHO_ORGOV_ID) {
+            return false;
+        }
+
+        Optional<java.sql.Timestamp > lastSubmission = submissionRepository.findLastByUser(user.getId());
+        if (!lastSubmission.isPresent())  {
+            return false;
+        }
+        Duration d = Duration.between(lastSubmission.get().toInstant(), ZonedDateTime.now());
+        log.error("Duration " + d.toMillis()/1000);
+        return d.compareTo(DURATION_BETWEEN_SUBMITS) < 0;
+    }
+
     @PostMapping("/competitions/{id}/problem/{compProb}/submit")
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
     @Timed
@@ -266,9 +281,14 @@ public class CompetitionResource {
     		@PathVariable Long compProb,
     		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        
+        if (shouldThrottleSubmission(user)) {
+            throw new BadRequestAlertException("Submission throttled.", "submission", "submission-throttled");
+        }
 
         SubmissionDTO submission = new SubmissionDTO();
-        submission.setUserId(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get().getId());
+        submission.setUserId(user.getId());
         submission.setCompetitionProblemId(compProb);
         submission.setUploadDate(ZonedDateTime.now());
         submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());

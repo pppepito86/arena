@@ -148,7 +148,8 @@
         "userexists": "Login name already used!",
         "emailexists": "Email is already in use!",
         "idexists": "A new {{ entityName }} cannot already have an ID",
-        "idnull": "Invalid ID"
+        "idnull": "Invalid ID",
+        "submission-throttled": "Submission sent too soon after the previous submission. Try again in a few seconds."
     },
     "footer": "Made with ❤️  by Pesho and Marin at <a href='http://olimpiici.com/'> Olimpiici</a>"
 }

@@ -50,6 +50,17 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 	)
     Integer findNumSubmitters(ZonedDateTime from, ZonedDateTime to);
 
+    @Query(
+        value =
+            " select upload_date " +
+            " from submission" +
+            " where user_id = ?" +
+            " order by id desc " +
+            " limit 1",
+        nativeQuery = true
+    )
+    Optional<java.sql.Timestamp> findLastByUser(Long userId);
+
     List<Submission> findByUser(User user);
 
     Page<Submission> findByUser(User user, Pageable pageable);
