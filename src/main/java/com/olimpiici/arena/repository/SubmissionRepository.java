@@ -61,6 +61,16 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     )
     Optional<java.sql.Timestamp> findLastByUser(Long userId);
 
+    @Query(
+        value =
+            " select count(*) " +
+            " from submission" +
+            " where user_id = ?" +
+            " and upload_date > DATE_SUB(NOW(), INTERVAL 1 DAY)",
+        nativeQuery = true
+    )
+    Integer numSubmissionsLastDay(Long userId);
+
     List<Submission> findByUser(User user);
 
     Page<Submission> findByUser(User user, Pageable pageable);
