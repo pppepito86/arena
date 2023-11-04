@@ -1,7 +1,23 @@
 package com.olimpiici.arena.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
+import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.SecurityUtils;
@@ -9,19 +25,14 @@ import com.olimpiici.arena.service.MailService;
 import com.olimpiici.arena.service.UserService;
 import com.olimpiici.arena.service.dto.PasswordChangeDTO;
 import com.olimpiici.arena.service.dto.UserDTO;
-import com.olimpiici.arena.web.rest.errors.*;
+import com.olimpiici.arena.service.util.RandomUtil;
+import com.olimpiici.arena.web.rest.errors.EmailAlreadyUsedException;
+import com.olimpiici.arena.web.rest.errors.EmailNotFoundException;
+import com.olimpiici.arena.web.rest.errors.InternalServerErrorException;
+import com.olimpiici.arena.web.rest.errors.InvalidPasswordException;
+import com.olimpiici.arena.web.rest.errors.LoginAlreadyUsedException;
 import com.olimpiici.arena.web.rest.vm.KeyAndPasswordVM;
 import com.olimpiici.arena.web.rest.vm.ManagedUserVM;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.*;
 
 /**
  * REST controller for managing the current user's account.
@@ -121,12 +132,27 @@ public class AccountResource {
         if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
             throw new EmailAlreadyUsedException();
         }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
-        if (!user.isPresent()) {
+        Optional<User> maybeUser = userRepository.findOneByLogin(userLogin);
+        if (!maybeUser.isPresent()) {
             throw new InternalServerErrorException("User could not be found");
         }
         userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(),
             userDTO.getLangKey(), userDTO.getImageUrl());
+        
+        User user = maybeUser.get();
+        String newEmail = userDTO.getEmail();
+        String oldEmail = user.getEmail();
+
+        // The email changed, so the user has to be activated again.
+        if (!newEmail.equals(oldEmail)) {
+            // Upate the user object, so it contains the new email.
+            user = userRepository.findOneByLogin(userLogin).get();
+            user.setActivationKey(RandomUtil.generateActivationKey());
+            user.setActivated(false);
+            user = userRepository.save(user);
+            
+            mailService.sendActivationEmail(user);
+        }
     }
 
     /**
