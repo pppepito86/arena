@@ -1,3 +1,5 @@
+#!/bin/bash
+
 curr_date=`date '+%Y-%m-%d'`
 
 mkdir ~/arena/workdir/problems_to_backup
