@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,7 +86,7 @@ public class SubmissionService {
      * This is scheduled to get fired everyday, at 01:00 (am).
      */
 	// @Scheduled(cron = "0 0 1 * * ?") 
-	@Scheduled(fixedDelay = 24*60*60*1000)
+	// @Scheduled(fixedDelay = 24*60*60*1000)
 	@Transactional
     public void banAuthorSubmissions() {
 		log.error("banAuthorSubmissions - start");
