@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,30 +86,32 @@ public class SubmissionService {
      * This is scheduled to get fired everyday, at 01:00 (am).
      */
 	// @Scheduled(cron = "0 0 1 * * ?") 
-	// @Scheduled(fixedDelay = 24*60*60*1000)
+	@Scheduled(fixedDelay = 24*60*60*1000)
 	@Transactional
     public void banAuthorSubmissions() {
 		log.error("banAuthorSubmissions - start");
-		List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(365*10, 1);
-		log.error("banAuthorSubmissions - {} submissions to check", submissions.size());
 		int numBanned = 0;
-		for (Submission submission : submissions) {
-			try {
-				if (maybeBanSubmission(submission)) numBanned++;
-			} catch (IOException e) {
-				log.error("Exception while processing submission " + submission.getId(), e);
+		for (int days_back_start = 365*5; days_back_start-10 > 1; days_back_start -= 10) {
+			List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(days_back_start, Math.max(days_back_start-10, 1));
+			// log.error("banAuthorSubmissions - {} submissions to check", submissions.size());
+			for (Submission submission : submissions) {
+				try {
+					if (maybeBanSubmission(submission)) numBanned++;
+				} catch (IOException e) {
+					log.error("Exception while processing submission " + submission.getId(), e);
+				}
 			}
 		}
 		log.error("banAuthorSubmissions - done, banned {} submissions", numBanned);
 	}
 
 	public boolean maybeBanSubmission(Submission submission) throws IOException {
-	 	if (submission.getVerdict().equals(BANNED_VERDICT)) {
+	 	if (BANNED_VERDICT.equals(submission.getVerdict())) {
 			// Already banned.
 			return false;
 		}
 		
-		if (submission.getPoints() == 0) {
+		if (submission.getPoints() == null || submission.getPoints().intValue() == 0) {
 			return false;
 		}
 
