@@ -49,8 +49,7 @@ public class SubmissionService {
 	private UserService userService;
     private final CompetitionRepository competitionRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
-	@Autowired
-	private CompetitionProblemService competitionProblemService;
+
     private final SubmissionMapper submissionMapper;
     private final ApplicationProperties applicationProperties;
     private final TagService tagService;
