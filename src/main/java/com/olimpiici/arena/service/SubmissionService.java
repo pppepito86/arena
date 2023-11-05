@@ -85,26 +85,27 @@ public class SubmissionService {
      * <p>
      * This is scheduled to get fired everyday, at 01:00 (am).
      */
-	// @Scheduled(cron = "0 0 1 * * ?") 
-	@Scheduled(fixedDelay = 24*60*60*1000)
+	@Scheduled(cron = "0 0 1 * * ?") 
+	// @Scheduled(fixedDelay = 24*60*60*1000)
 	@Transactional
     public void banAuthorSubmissions() {
-		log.error("banAuthorSubmissions - start");
+		log.warn("banAuthorSubmissions - start");
 		int numBanned = 0;
-		for (int days_back_start = 365*5; days_back_start-10 > 1; days_back_start -= 10) {
-			List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(days_back_start, Math.max(days_back_start-10, 1));
-			// log.error("banAuthorSubmissions - {} submissions to check", submissions.size());
-			for (Submission submission : submissions) {
-				try {
-					if (maybeBanSubmission(submission)) numBanned++;
-				} catch (IOException e) {
-					log.error("Exception while processing submission " + submission.getId(), e);
-				}
+		// for (int days_back_start = 365*5; days_back_start-10 > 1; days_back_start -= 10) {
+		List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(5, 1);
+		log.warn("banAuthorSubmissions - {} submissions to check", submissions.size());
+		for (Submission submission : submissions) {
+			try {
+				if (maybeBanSubmission(submission)) numBanned++;
+			} catch (IOException e) {
+				log.error("Exception while processing submission " + submission.getId(), e);
 			}
 		}
-		log.error("banAuthorSubmissions - done, banned {} submissions", numBanned);
+		// }
+		log.warn("banAuthorSubmissions - done, banned {} submissions", numBanned);
 	}
 
+	@Transactional
 	public boolean maybeBanSubmission(Submission submission) throws IOException {
 	 	if (BANNED_VERDICT.equals(submission.getVerdict())) {
 			// Already banned.
@@ -141,8 +142,9 @@ public class SubmissionService {
 		}
 
 		// User solution matches author solution -> mark as banned.
-		// submission.setVerdict(BANNED_VERDICT);
-		// submission.setPoints(0);
+		submission.setVerdict(BANNED_VERDICT);
+		submission.setPoints(0);
+		submissionRepository.save(submission);
 		log.debug("Submission {} is banned.", submission.getId());
 		return true;
 	}
