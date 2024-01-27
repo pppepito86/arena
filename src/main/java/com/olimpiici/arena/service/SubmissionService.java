@@ -154,6 +154,9 @@ public class SubmissionService {
 		if (userService.isUserExemptFromPolicyChecks(user)) {
             return;
         }
+        if (!user.getActivated()) {
+            throw new BadRequestAlertException("Account not activated.", "submission", "account-not-activated");
+        }
         Optional<java.sql.Timestamp > lastSubmission = submissionRepository.findLastByUser(userId);
         if (!lastSubmission.isPresent())  {
             return;

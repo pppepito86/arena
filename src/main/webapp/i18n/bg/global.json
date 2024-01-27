@@ -150,7 +150,8 @@
         "idexists": "A new {{ entityName }} cannot already have an ID",
         "idnull": "Invalid ID",
         "submission-throttled": "Решението е изпратено много скоро след последното решение. Опитайте пак след малко.",
-        "too-many-submissions-per-day": "Решението надвишава позволения брой решения за един ден. Опитайте пак утре."
+        "too-many-submissions-per-day": "Решението надвишава позволения брой решения за един ден. Опитайте пак утре.",
+        "account-not-activated": "Акаунтът не е активиран."
     },
     "footer": "Направено с ❤️  от Пешо и Марин в <a href='http://olimpiici.com/'>школа Олимпийци</a>"
 }
