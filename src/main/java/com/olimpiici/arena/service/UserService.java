@@ -126,6 +126,9 @@ public class UserService {
                 throw new EmailAlreadyUsedException();
             }
         });
+        if (userDTO.getEmail().toLowerCase().contains("@xitroo")) {
+            throw new EmailAlreadyUsedException();
+        }
         User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setLogin(userDTO.getLogin().toLowerCase());
