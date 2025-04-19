@@ -120,14 +120,12 @@ public class CompetitionProblemService {
     }
 
 
-	public Optional<CompetitionProblemDTO> findOneByProblem(Long problemId) {
-		Optional<CompetitionProblem> cp = competitionProblemRepository.findOneByProblemId(problemId);
-		if (cp.isPresent()) {
-			return Optional.of(competitionProblemMapper.toDto(cp.get()));
-		} else {
-			return Optional.empty();
-		}
-	}
+    public List<CompetitionProblemDTO> findAllByProblem(Long problemId) {
+        List<CompetitionProblem> competitionProblems = competitionProblemRepository.findByProblemId(problemId);
+        return competitionProblems.stream()
+            .map(competitionProblemMapper::toDto)
+            .collect(Collectors.toList());
+    }
 
 	public void submitAuthorsIfNeeded(Long id) throws IOException {
     	CompetitionProblemDTO competitionProblemDTO = findOne(id).get();

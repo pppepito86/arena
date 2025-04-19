@@ -170,14 +170,14 @@ public class ProblemResource {
 
         workerPool.deleteProblem(id);
 
-        competitionProblemService.findOneByProblem(id)
-			.ifPresent(cp -> {
-				try {
-					competitionProblemService.submitAuthorsIfNeeded(cp.getId());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
+        competitionProblemService.findAllByProblem(id)
+            .forEach(cp -> {
+            try {
+                competitionProblemService.submitAuthorsIfNeeded(cp.getId());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            });
 
         return ResponseEntity.ok().build();
     }

@@ -152,20 +152,18 @@ public class TagResource {
         	.forEach(problem -> idToProblem.put(problem.getId(), problem));
 
         List<CompetitionProblemDTO> problemsDTO = problems
-        		.stream()
-        		.map(problem -> competitionProblemService.findOneByProblem(problem.getId()))
-        		.filter(optional -> optional.isPresent())
-        		.map(optional -> optional.get())
-        		.map(dto -> {
-        			dto.setTitle(idToProblem.get(dto.getProblemId()).getTitle());
-                    if (dto.getCompetitionId() != null) {
-                        dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
-                                .stream()
-                                .map(comp -> comp.getLabel())
-                                .collect(Collectors.toList());
-                    }
-        			return dto;
-        		}).collect(Collectors.toList());
+            .stream()
+            .flatMap(problem -> competitionProblemService.findAllByProblem(problem.getId()).stream())
+            .map(dto -> {
+                dto.setTitle(idToProblem.get(dto.getProblemId()).getTitle());
+                if (dto.getCompetitionId() != null) {
+                dto.path = competitionService.findPathFromRoot(dto.getCompetitionId())
+                    .stream()
+                    .map(comp -> comp.getLabel())
+                    .collect(Collectors.toList());
+                }
+                return dto;
+            }).collect(Collectors.toList());
         
         addPointsToDto(problemsDTO);
 
