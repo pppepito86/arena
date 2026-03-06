@@ -44,7 +44,10 @@ import com.olimpiici.arena.service.mapper.SubmissionMapper;
 import com.olimpiici.arena.service.util.IntUtil;
 
 /**
- * Service ementation for managing Competition.
+ * Service implementation for managing Competition.
+ * <p>
+ * This service handles the competition hierarchy, problem assignment within
+ * competitions, and complex point/standings calculations across the competition tree.
  */
 @Service
 @Transactional
@@ -87,7 +90,6 @@ public class CompetitionService {
      * @param competitionDTO the entity to save
      * @return the persisted entity
      */
-
     public CompetitionDTO save(CompetitionDTO competitionDTO) {
         log.debug("Request to save Competition : {}", competitionDTO);
 
@@ -96,15 +98,12 @@ public class CompetitionService {
         return competitionMapper.toDto(competition);
     }
 
-
-
     /**
      * Get all the competitions.
      *
      * @param pageable the pagination information
      * @return the list of entities
      */
-
     @Transactional(readOnly = true)
     public Page<CompetitionDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Competitions");
@@ -112,14 +111,12 @@ public class CompetitionService {
             .map(competitionMapper::toDto);
     }
 
-
     /**
      * Get one competition by id.
      *
      * @param id the id of the entity
      * @return the entity
      */
-
     @Transactional(readOnly = true)
     public Optional<CompetitionDTO> findOne(Long id) {
         log.debug("Request to get Competition : {}", id);
@@ -132,13 +129,18 @@ public class CompetitionService {
      *
      * @param id the id of the entity
      */
-
     public void delete(Long id) {
         log.debug("Request to delete Competition : {}", id);
         competitionRepository.deleteById(id);
     }
 
-
+	/**
+	 * Finds all immediate child competitions for a given parent.
+	 *
+	 * @param id parent competition ID
+	 * @param pageable pagination info
+	 * @return page of child competitions
+	 */
 	public Page<CompetitionDTO> findChildren(Long id, Pageable pageable) {
 		log.debug("Request to get all children for Competition {}", id);
 		Optional<Competition> parent = competitionRepository.findById(id);
@@ -150,7 +152,12 @@ public class CompetitionService {
 		}
 	}
 
-
+	/**
+	 * Generates the breadcrumb path from the root competition to the specified competition.
+	 *
+	 * @param id the competition ID
+	 * @return list of competitions in the path, starting from the root
+	 */
 	public List<CompetitionDTO> findPathFromRoot(Long id) {
 		if (id == null) {
 			log.error("findPathFromRoot called for null id");
@@ -179,7 +186,13 @@ public class CompetitionService {
 		return path;
 	}
 
-
+	/**
+	 * Finds all problems assigned to a specific competition.
+	 *
+	 * @param id competition ID
+	 * @param pageable pagination info
+	 * @return page of competition problems
+	 */
 	public Page<CompetitionProblemDTO> findProblems(Long id, Pageable pageable) {
 		log.debug("Request to get all problems for Competition {}", id);
 		Competition competition = competitionRepository.findById(id).get();
@@ -196,7 +209,9 @@ public class CompetitionService {
 		return problems;
 	}
 
-
+	/**
+	 * Returns the underlying problem definition for a competition problem.
+	 */
 	public ProblemDTO findProblem(Long competitionProblem) {
 		Problem problem = competitionProblemRepository
 			.findById(competitionProblem)
@@ -207,14 +222,18 @@ public class CompetitionService {
 		return dto;
 	}
 
-
+	/**
+	 * Calculates the maximum points achieved by a user for a specific problem.
+	 */
 	public Integer findPointsForCompetitionProblem(User user, Long competitionProblemId) {
 		CompetitionProblem competitionProblem = competitionProblemRepository
 				.findById(competitionProblemId).get();
 		return findPointsForCompetitionProblem(user, competitionProblem);
 	}
 
-
+	/**
+	 * Calculates the maximum points achieved by a user for a specific problem.
+	 */
 	public Integer findPointsForCompetitionProblem(User user, CompetitionProblem competitionProblem) {
 		return submissionRepository
 				.findByCompetitionProblemAndUser(competitionProblem, user)
@@ -223,7 +242,10 @@ public class CompetitionService {
 				.reduce(0, IntUtil::safeMax);
 	}
 
-
+	/**
+	 * Calculates the sum of maximum points achieved by a user across all
+	 * problems in a specific competition.
+	 */
 	public Integer findPointsForCompetition(User user, Long competitionId) {
 		Competition competition = competitionRepository.getOne(competitionId);
 		return competitionProblemRepository
@@ -233,7 +255,9 @@ public class CompetitionService {
 				.reduce(0, IntUtil::safeSum);
 	}
 
-
+	/**
+	 * Calculates the total points achievement for a user across the entire platform.
+	 */
 	public Integer findTotalPoints(User user) {
 		return submissionRepository
 				.findByUser(user)
@@ -297,6 +321,9 @@ public class CompetitionService {
 		return new PageImpl<>(standings, pageable, size);
 	}
 
+	/**
+	 * Gets the points for a specific user within a competition subtree.
+	 */
 	public UserPoints findPointsForUser(Long competitionId, Long userId, ZonedDateTime from, List<String> filter) {
 		Competition competition = competitionRepository.getOne(competitionId);
 		List<Long> problems = findAllProblemsInSubTree(competition, filter).stream()
@@ -305,6 +332,9 @@ public class CompetitionService {
 		return findPointsForUser(problems, userId, from, filter);
 	}
 
+	/**
+	 * Gets a map of maximum points per problem for a user.
+	 */
 	public Map<Long, Integer> findSimplePointsForUserPerProblem(List<Long> compProblemIds, Long userId) {
 		Map<Long, Integer> pointsPerProblem = new HashMap<Long, Integer>();
 		if (compProblemIds.isEmpty()) {
@@ -327,7 +357,15 @@ public class CompetitionService {
 		return pointsPerProblem;
 	}
 
+	/**
+	 * Calculates points for a specific user across a list of problems.
+	 */
 	public UserPoints findPointsForUser(List<Long> compProblemIds, Long userId, ZonedDateTime from, List<String> filter) {
+		if (compProblemIds.isEmpty()) {
+			User user = userRepository.findById(userId).get();
+			return new UserPoints(userId, user.getFirstName(), user.getLastName(), 0);
+		}
+
 		List<Object[]> raw = compProblemIds.size() <= MAX_PROBLEM_COLUMNS
 				? competitionRepository.getUserPointsPerProblem(from, compProblemIds, userId)
 				: competitionRepository.getAggregatedUserPointsForProblems(from, compProblemIds, userId);
@@ -340,6 +378,9 @@ public class CompetitionService {
 		return parseRawStandingsRow(raw.get(0));
 	}
 
+	/**
+	 * Maps raw database rows (Object[]) to UserPoints objects.
+	 */
 	private UserPoints parseRawStandingsRow(Object[] row) {
 		Long userId = ((BigInteger)row[0]).longValue();
 		String firstName = (String)row[1];
@@ -354,6 +395,9 @@ public class CompetitionService {
 		return userPoints;
 	}
 
+	/**
+	 * Finds all competitions in the subtree of the given competition.
+	 */
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition) {
 		return findAllCompetitionsInSubTree(competition, null);
 	}
@@ -370,6 +414,9 @@ public class CompetitionService {
 		return false;
 	}
 
+	/**
+	 * Finds and filters competitions in the subtree.
+	 */
 	public List<Competition> findAllCompetitionsInSubTree(Competition competition, List<String> filter) {
 		List<Competition> bfs = new ArrayList<>();
 		List<Competition> filteredCompetitions = new ArrayList<>();
@@ -405,10 +452,16 @@ public class CompetitionService {
 		return result;
 	}
 
+	/**
+	 * Finds all competition problems in the subtree of the given competition.
+	 */
 	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition) {
 		return findAllProblemsInSubTree(competition, null);
 	}
 
+	/**
+	 * Finds all competition problems in the filtered subtree of the given competition.
+	 */
 	public List<CompetitionProblem> findAllProblemsInSubTree(Competition competition, List<String> filter) {
 		List<Competition> competitions = findAllCompetitionsInSubTree(competition, filter);
 		List<CompetitionProblem> problems = competitionProblemRepository
@@ -416,7 +469,9 @@ public class CompetitionService {
 		return problems;
 	}
 
-
+	/**
+	 * Retrieves submissions for all problems in a competition subtree.
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetition(
 			Long competitionId, Pageable pageable) {
 		Competition competition = competitionRepository.getOne(competitionId);
@@ -428,15 +483,18 @@ public class CompetitionService {
 		return submissions;
 	}
 
-
-
+	/**
+	 * Retrieves submissions for a user within a competition subtree.
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(Long userId, Long competitionId,
 			Pageable pageable) {
 		User user = userRepository.findById(userId).get();
 		return findSubmissionsByCompetitionAndUser(user, competitionId, pageable);
 	}
 
-
+	/**
+	 * Retrieves submissions for a user within a competition subtree.
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionAndUser(User user, Long competitionId, Pageable pageable) {
 		Competition competition = competitionRepository.getOne(competitionId);
 		List<CompetitionProblem> problems =
@@ -447,7 +505,10 @@ public class CompetitionService {
 		return submissions;
 	}
 
-
+	/**
+	 * Synchronizes sub-competitions for a parent competition.
+	 * Updates order and parent references, and removes parent links from omitted children.
+	 */
 	public void updateSubCompetitions(Long parentId, List<CompetitionDTO> newSubCompetitions) {
 		Competition parent = competitionRepository.getOne(parentId);
 		for (int i = 0; i < newSubCompetitions.size(); i++) {
@@ -485,7 +546,10 @@ public class CompetitionService {
 			});
 	}
 
-
+	/**
+	 * Synchronizes sub-problems for a competition.
+	 * Handles creation of new CompetitionProblem entries and updates order.
+	 */
 	public void updateSubProblems(Long parentId, List<CompetitionProblemDTO> newSubProblems) {
 		Competition parent = competitionRepository.getOne(parentId);
 		for (int i = 0; i < newSubProblems.size(); i++) {
