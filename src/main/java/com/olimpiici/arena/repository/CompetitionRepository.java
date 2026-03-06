@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.olimpiici.arena.domain.Competition;
@@ -58,7 +59,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ "     ("
 			+ "         select user_id, competition_problem_id, max(points) as max_points"
 			+ "         from submission"
-			+ "         where upload_date < ?"
+			+ "         where upload_date < :timeSince"
 			+ "         group by user_id, competition_problem_id"
 			+ "     ) as user_points_old"
 			+ "     right join"
@@ -75,10 +76,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " and user_points_all.user_id != 2032"  // Not Pesho Orgov
 			+ " group by user_points_all.user_id"
 			+ " order by total_points desc"
-			+ " limit ?, ?;",
+			+ " limit :pageOffset, :pageSize ;",
 		nativeQuery = true
 	)
-	List<Object[]> getRootStandings(ZonedDateTime timeSince, long pageOffset, long pageSize);
+	List<Object[]> getRootStandings(@Param("timeSince") ZonedDateTime timeSince, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
 	 * Gets the total number of unique users who have made at least one submission 
@@ -91,10 +92,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
 			+ " and user_id != 2032"  // Not Pesho Orgov
-			+ " and upload_date > ?1 ;",
+			+ " and upload_date > :timeSince ;",
 		nativeQuery = true
 	)
-	Integer getRootStandingsSize(ZonedDateTime timeSince);
+	Integer getRootStandingsSize(@Param("timeSince") ZonedDateTime timeSince);
 
 	/**
 	 * Internal query snippet that calculates point deltas for a specific set of problems.
@@ -103,7 +104,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			  "     ("
 			+ "         select user_id, competition_problem_id, max(points) as max_points"
 			+ "         from submission"
-			+ "         where upload_date < ?1"
+			+ "         where upload_date < :timeSince"
 			+ "         group by user_id, competition_problem_id"
 			+ "     ) as user_points_old"
 			+ "     right join"
@@ -116,7 +117,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ "     	and user_points_old.competition_problem_id = user_points_all.competition_problem_id"
 			+ " join jhi_user"
 			+ " on jhi_user.id = user_points_all.user_id"
-			+ " where user_points_all.competition_problem_id in ?2"
+			+ " where user_points_all.competition_problem_id in :problemIds"
 			+ " 	and user_points_all.user_id != 4"  // Not the author
 			+ " 	and user_points_all.user_id != 2032"; // Not Pesho Orgov
 
@@ -144,10 +145,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	@Query(
 		value = aggregatedStandingsCommonQuery
 			+ " order by total_points desc"
-			+ " limit ?3 , ?4 ;",
+			+ " limit :pageOffset , :pageSize ;",
 		nativeQuery = true
 	)
-	List<Object[]> getAggregatedStandingsForProblems(ZonedDateTime timeSince, List<Long> problemIds, long pageOffset, long pageSize);
+	List<Object[]> getAggregatedStandingsForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
 	 * Gets the total number of unique users who submitted solutions to the 
@@ -159,21 +160,21 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ " from submission"
 			+ " where user_id != 4 " // Not the author
 			+ " and user_id != 2032"  // Not Pesho Orgov
-			+ " and upload_date > ?1"
-			+ " and competition_problem_id in ?2 ;",
+			+ " and upload_date > :timeSince"
+			+ " and competition_problem_id in :problemIds ;",
 		nativeQuery = true
 	)
-	Integer getAggregatedStandingsSizeForProblems(ZonedDateTime timeSince, List<Long> problemIds);
+	Integer getAggregatedStandingsSizeForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds);
 
 	/**
 	 * Calculates the total points gained by a specific user for a specific set of problems.
 	 */
 	@Query(
 		value = aggregatedStandingsCommonQuery
-			+ " having user_points_all.user_id = ?3 ;",
+			+ " having user_points_all.user_id = :userId ;",
 		nativeQuery = true
 	)
-	List<Object[]> getAggregatedUserPointsForProblems(ZonedDateTime timeSince, List<Long> problemIds, Long userId);
+	List<Object[]> getAggregatedUserPointsForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("userId") Long userId);
 
 	/**
 	 * Base query for calculating standings per problem, including a JSON breakdown of scores.
@@ -206,10 +207,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	@Query(
 			value = standingsPerProblemCommonQuery
 				+ " order by total_points desc"
-				+ " limit ?3 , ?4 ;",
+				+ " limit :pageOffset , :pageSize ;",
 			nativeQuery = true
 		)
-	List<Object[]> getStandingsPerProblemForProblems(ZonedDateTime timeSince, List<Long> problemIds, long pageOffset, long pageSize);
+	List<Object[]> getStandingsPerProblemForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
 	 * Gets the detailed point breakdown (including per-problem scores) for a 
@@ -217,10 +218,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	 */
 	@Query(
 		value = standingsPerProblemCommonQuery
-			+ " having user_points_all.user_id = ?3 ;",
+			+ " having user_points_all.user_id = :userId ;",
 		nativeQuery = true
 	)
-	List<Object[]> getUserPointsPerProblem(ZonedDateTime timeSince, List<Long> problemIds, Long userId);
+	List<Object[]> getUserPointsPerProblem(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("userId") Long userId);
 
 	/**
 	 * Retrieves the maximum points achieved by a specific user for each problem 
@@ -234,10 +235,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	@Query(
 			value = "select competition_problem_id, max(points)"
 					+ " from submission"
-					+ " where user_id = ?2 "
-					+ " and competition_problem_id in ?1"
+					+ " where user_id = :userId "
+					+ " and competition_problem_id in :compProblemIds"
 					+ " group by 1;",
 			nativeQuery = true
 		)
-	List<Object[]> getSimpleUserPointsPerProblem(List<Long> compProblemIds, Long userId);
+	List<Object[]> getSimpleUserPointsPerProblem(@Param("compProblemIds") List<Long> compProblemIds, @Param("userId") Long userId);
 }
