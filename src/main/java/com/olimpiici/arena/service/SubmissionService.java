@@ -37,7 +37,7 @@ import com.olimpiici.arena.service.mapper.TagMapper;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 
 /**
- * Service ementation for managing Submission.
+ * Service implementation for managing Submission.
  */
 @Service
 @Transactional
@@ -81,11 +81,11 @@ public class SubmissionService {
     }
 
 	/**
-     * Not activated users should be automatically deleted after 3 days.
+     * Scheduled task to ban submissions that match the author's solution.
      * <p>
      * This is scheduled to get fired everyday, at 01:00 (am).
      */
-	@Scheduled(cron = "0 0 1 * * ?") 
+	@Scheduled(cron = "0 0 1 * * ?")
 	// @Scheduled(fixedDelay = 24*60*60*1000)
 	@Transactional
     public void banAuthorSubmissions() {
@@ -105,13 +105,21 @@ public class SubmissionService {
 		log.warn("banAuthorSubmissions - done, banned {} submissions", numBanned);
 	}
 
+	/**
+	 * Checks if a submission should be banned and applies the ban if necessary.
+	 * A submission is banned if its source code matches the author's solution.
+	 *
+	 * @param submission the submission to check
+	 * @return true if the submission was banned, false otherwise
+	 * @throws IOException if there's an error reading solution files
+	 */
 	@Transactional
 	public boolean maybeBanSubmission(Submission submission) throws IOException {
 	 	if (BANNED_VERDICT.equals(submission.getVerdict())) {
 			// Already banned.
 			return false;
 		}
-		
+
 		if (submission.getPoints() == null || submission.getPoints().intValue() == 0) {
 			return false;
 		}
@@ -127,7 +135,7 @@ public class SubmissionService {
 		String encoding = null;
 		String userSolution = FileUtils.readFileToString(userFile.get(), encoding);
 		userSolution = userSolution.replaceAll("\\s+","");
-		
+
     	Long problemId = submission.getCompetitionProblem().getProblem().getId();
 		Optional<File> authorFile = problemService
     			.getAuthorSolution(applicationProperties.getWorkDir(), problemId);
@@ -136,7 +144,7 @@ public class SubmissionService {
     	}
     	String authorSolution = FileUtils.readFileToString(authorFile.get(), encoding);
 		authorSolution = authorSolution.replaceAll("\\s+","");
-		
+
 		if (!userSolution.equals(authorSolution)) {
 			return false;
 		}
@@ -149,6 +157,13 @@ public class SubmissionService {
 		return true;
 	}
 
+	/**
+	 * Throttles submissions from a user if they exceed rate limits.
+	 * Checks for account activation, time since last submission, and daily submission count.
+	 *
+	 * @param userId the ID of the user to check
+	 * @throws BadRequestAlertException if the user is throttled or account not activated
+	 */
 	public void maybeThrottleSubmission(Long userId) {
 		User user = userRepository.findById(userId).get();
 		if (userService.isUserExemptFromPolicyChecks(user)) {
@@ -162,7 +177,7 @@ public class SubmissionService {
             return;
         }
         Duration d = Duration.between(lastSubmission.get().toInstant(), ZonedDateTime.now());
-        
+
         if (d.compareTo(DURATION_BETWEEN_SUBMITS) < 0) {
             throw new BadRequestAlertException("Submission throttled.", "submission", "submission-throttled");
         }
@@ -178,7 +193,6 @@ public class SubmissionService {
      * @param submissionDTO the entity to save
      * @return the persisted entity
      */
-
     public SubmissionDTO save(SubmissionDTO submissionDTO) {
         log.debug("Request to save Submission : {}", submissionDTO);
 
@@ -193,7 +207,6 @@ public class SubmissionService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-
     @Transactional(readOnly = true)
     public Page<SubmissionDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Submissions");
@@ -201,12 +214,17 @@ public class SubmissionService {
             .map(submissionMapper::toDto);
     }
 
-
+	/**
+	 * Get submissions by user.
+	 *
+	 * @param user the user whose submissions to find
+	 * @param pageable the pagination information
+	 * @return the list of entities
+	 */
 	public Page<SubmissionDTO> findByUser(User user, Pageable pageable) {
 		return submissionRepository.findByUser(user, pageable)
 				.map(submissionMapper::toDto);
 	}
-
 
     /**
      * Get one submission by id.
@@ -214,7 +232,6 @@ public class SubmissionService {
      * @param id the id of the entity
      * @return the entity
      */
-
     @Transactional(readOnly = true)
     public Optional<SubmissionDTO> findOne(Long id) {
         log.debug("Request to get Submission : {}", id);
@@ -232,7 +249,6 @@ public class SubmissionService {
      *
      * @param id the id of the entity
      */
-
     public void delete(Long id) {
         log.debug("Request to delete Submission : {}", id);
         Optional<File> file = findSubmissionFile(applicationProperties.getWorkDir(), id);
@@ -244,7 +260,14 @@ public class SubmissionService {
         submissionRepository.deleteById(id);
     }
 
-
+	/**
+	 * Find submissions for a user and a competition problem.
+	 *
+	 * @param userId the ID of the user
+	 * @param competitionProblemId the ID of the competition problem
+	 * @param pageable pagination info
+	 * @return the page of submissions
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(Long userId,
 			Long competitionProblemId, Pageable pageable) {
 		log.debug("Request to get all submissions for CompetitionProblem {}", competitionProblemId);
@@ -252,7 +275,14 @@ public class SubmissionService {
 		return findSubmissionsByCompetitionProblemAndUser(user, competitionProblemId, pageable);
 	}
 
-
+	/**
+	 * Find submissions for a user and a competition problem.
+	 *
+	 * @param user the user
+	 * @param competitionProblemId the ID of the competition problem
+	 * @param pageable pagination info
+	 * @return the page of submissions
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemAndUser(User user,
 			Long competitionProblemId,
 			Pageable pageable) {
@@ -265,7 +295,14 @@ public class SubmissionService {
 		return submissions;
 	}
 
-
+	/**
+	 * Find submissions for a user across multiple competition problems.
+	 *
+	 * @param user the user
+	 * @param competitionProblems list of competition problems
+	 * @param pageable pagination info
+	 * @return the page of submissions
+	 */
 	public Page<SubmissionDTO> findSubmissionsByUserAndCompetitionProblemIn(User user,
 			List<CompetitionProblem> competitionProblems, Pageable pageable) {
 		return submissionRepository
@@ -273,7 +310,13 @@ public class SubmissionService {
 				.map(submissionMapper::toDto);
 	}
 
-
+	/**
+	 * Find all submissions for a competition problem.
+	 *
+	 * @param competitionProblemId the ID of the competition problem
+	 * @param pageable pagination info
+	 * @return the page of submissions
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblem(
 			Long competitionProblemId, Pageable pageable) {
 		CompetitionProblem competitionProblem =
@@ -284,7 +327,13 @@ public class SubmissionService {
 		return submissions;
 	}
 
-
+	/**
+	 * Find submissions for multiple competition problems.
+	 *
+	 * @param competitionProblems list of competition problems
+	 * @param pageable pagination info
+	 * @return the page of submissions
+	 */
 	public Page<SubmissionDTO> findSubmissionsByCompetitionProblemIn(
 			List<CompetitionProblem> competitionProblems, Pageable pageable) {
 		return submissionRepository
@@ -292,7 +341,12 @@ public class SubmissionService {
 				.map(submissionMapper::toDto);
 	}
 
-
+	/**
+	 * Find submissions by verdict.
+	 *
+	 * @param verdict the verdict to filter by
+	 * @return the list of submission DTOs
+	 */
 	public List<SubmissionDTO> findSubmissionByVerdict(String verdict) {
 		return submissionRepository
 				.findByVerdict(verdict)
@@ -301,6 +355,12 @@ public class SubmissionService {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * Find the code for a submission.
+	 *
+	 * @param id the submission ID
+	 * @return the code as a string, or null if not found
+	 */
 	public String findSubmissionCode(Long id) {
 		Optional<File> file = findSubmissionFile(applicationProperties.getWorkDir(), id);
 		if (!file.isPresent()) {
@@ -316,6 +376,13 @@ public class SubmissionService {
 		}
 	}
 
+	/**
+	 * Static helper to find the solution file for a submission.
+	 *
+	 * @param workdir the application working directory
+	 * @param id the submission ID
+	 * @return Optional containing the file if found
+	 */
 	public static Optional<File> findSubmissionFile(String workdir, Long id) {
 		File submissionDir = Paths.get(workdir, "submissions", ""+id).toFile();
 		File[] filesInSubmssionDir = submissionDir.listFiles();
@@ -329,6 +396,12 @@ public class SubmissionService {
 			.findFirst();
 	}
 
+	/**
+	 * Find tags for a submission.
+	 *
+	 * @param id the submission ID
+	 * @return list of tag DTOs
+	 */
     public List<TagDTO> findTags(Long id) {
     	Submission submission = submissionRepository.getOne(id);
     	return tagService.findTagsForCollection(submission.getTags())
@@ -336,7 +409,12 @@ public class SubmissionService {
 			.collect(Collectors.toList());
     }
 
-
+	/**
+	 * Update tags for a submission.
+	 *
+	 * @param id the submission ID
+	 * @param newTags the list of new tags
+	 */
     public void updateTags(Long id, List<TagDTO> newTags) {
     	Submission submission = submissionRepository.getOne(id);
     	TagCollection newCollection	=
@@ -348,7 +426,11 @@ public class SubmissionService {
     	}
     }
 
-
+	/**
+	 * Mark a submission for re-judging by setting its verdict to "waiting".
+	 *
+	 * @param id the submission ID
+	 */
 	public void rejudge(Long id) {
 		Submission submission = submissionRepository.getOne(id);
 		submission.setVerdict("waiting");
