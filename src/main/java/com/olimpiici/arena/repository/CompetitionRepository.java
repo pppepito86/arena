@@ -16,13 +16,13 @@ import com.olimpiici.arena.domain.Competition;
 
 /**
  * Spring Data repository for the Competition entity.
- * This interface handles database operations for competitions, including custom 
+ * This interface handles database operations for competitions, including custom
  * complex queries for calculating user standings and rankings.
  */
 @SuppressWarnings("unused")
 @Repository
 public interface CompetitionRepository extends JpaRepository<Competition, Long> {
-	
+
 	/**
 	 * Finds sub-competitions belonging to a specific parent competition, with support for pagination.
 	 */
@@ -40,7 +40,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 
 	/**
 	 * Calculates the overall user standings (rankings) across the entire platform.
-	 * It calculates the total points for each user by taking their current maximum 
+	 * It calculates the total points for each user by taking their current maximum
 	 * score per problem and subtracting the maximum score they had before 'timeSince'.
 	 * This effectively shows who has been most active/successful in the recent period.
 	 *
@@ -82,8 +82,8 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getRootStandings(@Param("timeSince") ZonedDateTime timeSince, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
-	 * Gets the total number of unique users who have made at least one submission 
-	 * since the specified time. This is used for calculating the number of pages 
+	 * Gets the total number of unique users who have made at least one submission
+	 * since the specified time. This is used for calculating the number of pages
 	 * in the global standings.
 	 */
 	@Query(
@@ -151,7 +151,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getAggregatedStandingsForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
-	 * Gets the total number of unique users who submitted solutions to the 
+	 * Gets the total number of unique users who submitted solutions to the
 	 * specified problems since the given time.
 	 */
 	@Query(
@@ -184,18 +184,21 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 		    + "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
 			+ "     sum(user_points_all.max_points) - coalesce(sum(user_points_old.max_points),0) as total_points,"
-			+ "     CONVERT("
+			// Here we use CONCAT('', json) as a hack to convert to a variable length string.
+			// The alternatives are to use
+			//    - CONVERT(json, CHAR) which works in MySQL but H2 (in unit tests) truncates to a single string
+			//    - CONVERT(json, VARCHAR) which works only in H2, and is not valid syntax in MySQL
+			+ "     CONCAT('',"
 			+ "			JSON_OBJECTAGG("
 			+ "				user_points_all.competition_problem_id, "
 		    + "				user_points_all.max_points - coalesce(user_points_old.max_points,0)"
-			+ "			), "
-		    + "         VARCHAR"
+			+ "			) "
 		    + " 	) as problems "
 			+ " from" + tableWithStandingsPerProblem
 			+ " group by user_points_all.user_id";
 
 	/**
-	 * Calculates detailed standings for a set of problems, including a breakdown 
+	 * Calculates detailed standings for a set of problems, including a breakdown
 	 * of points for each individual problem formatted as a JSON string.
 	 *
 	 * @param timeSince Point in time to calculate deltas from.
@@ -213,7 +216,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getStandingsPerProblemForProblems(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("pageOffset") long pageOffset, @Param("pageSize") long pageSize);
 
 	/**
-	 * Gets the detailed point breakdown (including per-problem scores) for a 
+	 * Gets the detailed point breakdown (including per-problem scores) for a
 	 * single specific user across a set of problems.
 	 */
 	@Query(
@@ -224,8 +227,8 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	List<Object[]> getUserPointsPerProblem(@Param("timeSince") ZonedDateTime timeSince, @Param("problemIds") List<Long> problemIds, @Param("userId") Long userId);
 
 	/**
-	 * Retrieves the maximum points achieved by a specific user for each problem 
-	 * in a provided list. This is a simpler version that doesn't calculate 
+	 * Retrieves the maximum points achieved by a specific user for each problem
+	 * in a provided list. This is a simpler version that doesn't calculate
 	 * time-based deltas.
 	 *
 	 * @param compProblemIds List of competition problems to check.
