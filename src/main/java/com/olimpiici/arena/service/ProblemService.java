@@ -46,6 +46,9 @@ import net.lingala.zip4j.exception.ZipException;
 
 /**
  * Service for managing Problem.
+ * <p>
+ * This service handles business logic for problems, including file operations
+ * for problem packages, property management (limits), and tagging.
  */
 @Service
 @Transactional
@@ -97,7 +100,6 @@ public class ProblemService {
      * @param problemDTO the entity to save
      * @return the persisted entity
      */
-
     public ProblemDTO save(ProblemDTO problemDTO) {
         log.debug("Request to save Problem : {}", problemDTO);
 
@@ -112,7 +114,6 @@ public class ProblemService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-
     @Transactional(readOnly = true)
     public Page<ProblemDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Problems");
@@ -129,7 +130,6 @@ public class ProblemService {
      * @param id the id of the entity
      * @return the entity
      */
-
     @Transactional(readOnly = true)
     public Optional<ProblemDTO> findOne(Long id) {
         log.debug("Request to get Problem : {}", id);
@@ -139,9 +139,13 @@ public class ProblemService {
 
     /**
      * Delete the problem by id.
+     * <p>
+     * This method will only delete the problem if it has no submissions
+     * from regular users. Admin and author submissions are deleted first.
      *
      * @param id the id of the entity
-     * @throws IOException
+     * @throws IOException if there's an error deleting problem files
+     * @throws IllegalStateException if there are regular user submissions
      */
     public void delete(Long id) throws IOException {
         log.debug("Request to delete Problem : {}", id);
@@ -176,20 +180,37 @@ public class ProblemService {
         }
 
         workerPool.deleteProblem(id);
-    }    
+    }
 
+    /**
+     * Find tags for a specific problem.
+     *
+     * @param id the problem ID
+     * @return list of tag DTOs
+     */
     public List<TagDTO> findTags(Long id) {
     	Problem problem = problemRepository.getOne(id);
     	return findTags(problem.getTags());
     }
 
+    /**
+     * Find tags for a specific tag collection.
+     *
+     * @param tagCollection the collection to find tags for
+     * @return list of tag DTOs
+     */
     public List<TagDTO> findTags(TagCollection tagCollection) {
     	return tagService.findTagsForCollection(tagCollection)
 	    	.map(tagMapper::toDto)
 			.collect(Collectors.toList());
     }
 
-
+    /**
+     * Update tags for a problem.
+     *
+     * @param id the problem ID
+     * @param newTags the list of new tags
+     */
     public void updateTags(Long id, List<TagDTO> newTags) {
     	Problem problem = problemRepository.getOne(id);
     	TagCollection newCollection	=
@@ -201,6 +222,12 @@ public class ProblemService {
     	}
     }
 
+    /**
+     * Get problem metadata from grade.properties file.
+     *
+     * @param problemId the problem ID
+     * @return properties object containing limits and metadata
+     */
 	public Properties getProperties(Long problemId) {
     	Properties props = new Properties();
 		File gradePropertiesFile = getGradeProperties(problemId);
@@ -223,6 +250,13 @@ public class ProblemService {
 		return props;
 	}
 
+    /**
+     * Update the time limit for a problem.
+     *
+     * @param problemId the problem ID
+     * @param newTimeLimitMs the new time limit in milliseconds
+     * @throws Exception if there's an error updating the problem package
+     */
 	public void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception {
 		String timeValue = newTimeLimitMs/1000 + "." + newTimeLimitMs%1000;
 
@@ -235,7 +269,13 @@ public class ProblemService {
 		writeGradeProperties(problemId, props);
 	}
 
-
+    /**
+     * Update the memory limit for a problem.
+     *
+     * @param problemId the problem ID
+     * @param newMemoryLimitMb the new memory limit in megabytes
+     * @throws Exception if there's an error updating the problem package
+     */
 	public void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception {
 		Properties props = getProperties(problemId);
 		String newMemory = String.valueOf(newMemoryLimitMb);
@@ -248,12 +288,22 @@ public class ProblemService {
 		writeGradeProperties(problemId, props);
 	}
 
+    /**
+     * Get the solution file extension defined for a problem.
+     *
+     * @param problemId the problem ID
+     * @return the extension string (e.g., "cpp")
+     * @throws IOException if properties cannot be read
+     */
 	public String getSolutionFileExtension(long problemId) throws IOException {
 		String defaultExtension = "cpp";
 		Properties props = getProperties(problemId);
 		return props.getProperty("extensions", defaultExtension);
 	}
 
+    /**
+     * Internal helper to write properties back to the problem package.
+     */
 	private void writeGradeProperties(long problemId, Properties props) throws Exception {
 		synchronized (lock) {
 			unzipProblemZipLocked(problemId);
@@ -271,6 +321,9 @@ public class ProblemService {
 		}
 	}
 
+    /**
+     * Helper to resolve paths within a problem's directory.
+     */
 	private File getProblemFile(long problemId, String filename) {
 		return Paths.get(applicationProperties.getWorkDir(), "problems", ""+problemId, filename)
 				.toFile();
@@ -288,7 +341,9 @@ public class ProblemService {
 		return getProblemFile(problemId, Paths.get("problem", "grade.properties").toString());
 	}
 
-
+    /**
+     * Unzips the problem package zip file.
+     */
 	public void unzipProblemZip(long problemId) throws ZipException, IOException {
 		synchronized(lock) {
 			unzipProblemZipLocked(problemId);
@@ -307,6 +362,9 @@ public class ProblemService {
         zipZipFile.extractAll(zipDir.getAbsolutePath());
 	}
 
+    /**
+     * Recreates the problem zip file from the unzipped directory.
+     */
 	private void recreateProblemZipLocked(long problemId) throws Exception {
         File problemsDir = getUnzippedProblemFolder(problemId);
 		ProcessExecutor executor = new ProcessExecutor()
@@ -321,6 +379,9 @@ public class ProblemService {
       	workerPool.deleteProblem(problemId);
 	}
 
+    /**
+     * Populates time and memory limits into a ProblemDTO from grade.properties.
+     */
 	public ProblemDTO setLimitsToDto(ProblemDTO dto) {
 		Properties props = getProperties(dto.getId());
 
@@ -332,6 +393,12 @@ public class ProblemService {
         return dto;
 	}
 
+    /**
+     * Scheduled task to infer and populate competition metadata for problems.
+     * <p>
+     * Runs daily. It traverses the competition tree to determine the year,
+     * competition, and group for each problem and updates the database.
+     */
 	@Scheduled(fixedDelay = 24*60*60*1000) // Every day
     public void populateCompetitionInfo() {
     	log.info("Starting job for populating competition info in problem.");
@@ -376,6 +443,9 @@ public class ProblemService {
 		}
     }
 
+    /**
+     * Returns the breadcrumb path of competitions for a given competition problem.
+     */
 	private List<Competition> getPath(CompetitionProblem cp) {
 		List<Competition> path = new ArrayList<>();
 		Competition competition = cp.getCompetition();
@@ -397,10 +467,16 @@ public class ProblemService {
 		}
 	}
 
+    /**
+     * Gets the directory where problem files are stored.
+     */
 	public File getProblemDir(String workDir, Long taskId) {
 		return new File(workDir + "/problems/" + taskId + "/problem");
 	}
 
+    /**
+     * Identifies the PDF description file for a task.
+     */
 	public Optional<File> getTaskDescription(String workDir, Long taskId) {
 		try {
 			File dir = getProblemDir(workDir, taskId);
@@ -416,6 +492,10 @@ public class ProblemService {
 		}
 	}
 
+    /**
+     * Identifies the author's solution file for a task by looking for specific
+     * filenames (e.g., author.cpp, title.cpp, or containing "100").
+     */
 	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
 		try {
 			File dir = getProblemDir(workDir, taskId);
