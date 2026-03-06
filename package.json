@@ -103,6 +103,10 @@
         "{,src/**/}*.{md,json,ts,css,scss}": [
             "prettier --write",
             "git add"
+        ],
+        "src/**/*.java": [
+            "sed -i 's/[[:space:]]*$//'",
+            "git add"
         ]
     },
     "scripts": {
