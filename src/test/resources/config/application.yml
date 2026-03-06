@@ -1,0 +1,53 @@
+jhipster:
+  security:
+    authentication:
+      jwt:
+        base64-secret: NGQ0NmU0ZTAwNWZiMDY0NzA4ODM5MDBjYTkyNzE2M2ViODRiOGY3NWI1N2UwNDRjOWIzYTY4OTM2NjZiMzgyNzkzYmYzZDU5MTJkZDRlNTk0ODM0YTkxYzBlYWJhN2UzNzI5N2EwYjg3Njg4ZmJkYjE3ZTAxNzM2Zjk2NmQwMTM=
+  clientapp:
+    name: 'arena'
+  async:
+    core-pool-size: 1
+    max-pool-size: 50
+    queue-capacity: 10000
+  metrics:
+    jmx.enabled: false
+    prometheus.enabled: false
+    logs.enabled: false
+  logging:
+    logstash.enabled: false
+
+spring:
+  application:
+    name: arena
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:mem:arena;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    name:
+    username:
+    password:
+    hikari:
+      auto-commit: false
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    database: H2
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    properties:
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: false
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+  liquibase:
+    enabled: false
+  mail:
+    host: localhost
+  messages:
+    basename: i18n/messages
+  main:
+    allow-bean-definition-overriding: true
