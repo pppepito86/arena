@@ -143,3 +143,9 @@ Desktop.ini
 # ESLint
 ######################
 .eslintcache
+
+######################
+# Cypress
+######################
+cypress/screenshots/
+cypress/videos/

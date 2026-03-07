@@ -94,6 +94,20 @@ Refer to [Using JHipster in production][] for more details.
 
 ## Testing
 
+### E2E tests
+
+To execute the E2E tests, run 
+
+    ./mvnw
+    npm start
+    npm run cypress:run
+
+If some tests fail you can debug them with interactive mode: 
+
+    npm run cypress:open
+
+### Server tests
+
 To launch your application's tests, run:
 
     ./mvnw clean test
