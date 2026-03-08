@@ -133,7 +133,10 @@
         "webpack-dev-server": "NODE_OPTIONS=--openssl-legacy-provider node -r ./node-shim.js --max_old_space_size=4096 node_modules/webpack-dev-server/bin/webpack-dev-server.js",
         "webpack": "NODE_OPTIONS=--openssl-legacy-provider node -r ./node-shim.js --max_old_space_size=4096 node_modules/webpack/bin/webpack.js",
         "cypress:run": "cypress run",
-        "cypress:open": "cypress open"
+        "cypress:open": "cypress open",
+        "e2e": "scripts/dev/run_e2e.sh",
+        "e2e:open": "scripts/dev/run_e2e.sh --open",
+        "e2e:dump": "scripts/dev/dump_to_e2e.sh"
     },
     "jestSonar": {
         "reportPath": "target/test-results/jest",

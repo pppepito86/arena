@@ -1,0 +1,19 @@
+# ===================================================================
+# Spring Boot configuration for the "e2e" profile.
+#
+# This profile is used for running end-to-end tests with Cypress.
+# It uses a dedicated database and work directory to avoid 
+# polluting the development environment.
+# ===================================================================
+
+spring:
+    datasource:
+        # Use a dedicated database for E2E tests
+        url: jdbc:mysql://localhost:3306/arena_e2e?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+    liquibase:
+        # Include e2e context for test-specific data
+        contexts: dev, e2e
+
+application:
+    # Use a temporary directory for problem files and submissions
+    work-dir: /tmp/arena_e2e_workdir

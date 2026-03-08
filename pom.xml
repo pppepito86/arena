@@ -1143,6 +1143,26 @@
                 </pluginManagement>
             </build>
         </profile>
+        <profile>
+            <id>e2e</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.liquibase</groupId>
+                        <artifactId>liquibase-maven-plugin</artifactId>
+                        <configuration>
+                            <url>jdbc:mysql://localhost:3306/arena_e2e?createDatabaseIfNotExist=true&amp;useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=UTC</url>
+                            <username>root</username>
+                            <password>password</password>
+                            <defaultSchemaName>arena_e2e</defaultSchemaName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <spring.profiles.active>dev,e2e</spring.profiles.active>
+            </properties>
+        </profile>
         <!-- jhipster-needle-maven-add-profile -->
     </profiles>
 </project>

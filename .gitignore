@@ -149,3 +149,4 @@ Desktop.ini
 ######################
 cypress/screenshots/
 cypress/videos/
+src/test/resources/e2e/dump.sql

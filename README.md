@@ -96,15 +96,21 @@ Refer to [Using JHipster in production][] for more details.
 
 ### E2E tests
 
-To execute the E2E tests, run 
+E2E tests are automated and run against an isolated `arena_e2e` database to avoid polluting your development environment.
 
-    ./mvnw
-    npm start
-    npm run cypress:run
+To execute the E2E tests in headless mode:
 
-If some tests fail you can debug them with interactive mode: 
+    npm run e2e
 
-    npm run cypress:open
+To run them in interactive mode (Cypress UI):
+
+    npm run e2e:open
+
+#### Refreshing E2E Data
+
+The tests rely on a database dump stored in `src/test/resources/e2e/dump.sql` (git-ignored). You can refresh this dump from your current `arena_dev` database by running:
+
+    npm run e2e:dump
 
 ### Server tests
 

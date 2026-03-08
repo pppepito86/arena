@@ -114,7 +114,3 @@ jhipster:
 # More documentation is available at:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
-
-application:
-    work-dir: /home/marin/dev/arena_workdir
-    worker-url: 18.196.185.86:8089
