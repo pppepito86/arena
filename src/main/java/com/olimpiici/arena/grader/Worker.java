@@ -61,7 +61,7 @@ public class Worker {
                 .build();
 
         // if it's author solution run with a big TL
-        String authorParam = isAuthor ? "?tl=20" : "";
+        String authorParam = isAuthor ? "?compileTL=20" : "";
 		HttpPost post = new HttpPost(url + "/api/v1/submissions/" + submissionId + authorParam);
 		post.setEntity(entity);
 
@@ -103,7 +103,7 @@ public class Worker {
 				log.warn("The worker returned null entity for submission {}",
 						statusCode, submissionId);
 				SubmissionScore score = new SubmissionScore();
-				score.addFinalScore("system error", 0);
+				score.addFinalScore(0, true);
 				return score;
 			}
 			String responseString = EntityUtils.toString(entity);

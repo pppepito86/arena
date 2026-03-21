@@ -68,7 +68,7 @@ public class GraderTask {
 			score = workerPool.getOne().grade(problemId, submissionId, this, isAuthor);
 		} catch (Exception e) {
 			log.error("scoring failed for submission: " + submissionId, e);
-			score.addFinalScore("system error", 0);
+			score.addFinalScore(0, true);
 		} finally {
 			updateScore(submissionId, score);
 		}

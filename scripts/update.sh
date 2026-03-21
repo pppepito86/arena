@@ -7,7 +7,7 @@ git fetch
 git pull
 git stash apply
 mvn clean
-npm install
+npm install --production
 npm run webpack:build 
 npm run webpack:prod
 ./mvnw -Pprod -Dmaven.test.skip=true -DskipTests package

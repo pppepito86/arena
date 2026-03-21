@@ -1,5 +1,4 @@
 #!/bin/bash
-
 curr_date=`date '+%Y-%m-%d'`
 
 mkdir ~/arena/workdir/problems_to_backup
@@ -13,7 +12,6 @@ aws s3 sync . s3://backup.arena.olimpiici.com/problems_${curr_date} --exclude "*
 popd
 
 rm -r ~/arena/workdir/problems_to_backup
-
 
 pushd ~/arena
 mysqldump -u root arena_dev > database.sql      # password required

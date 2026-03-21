@@ -1,5 +1,4 @@
 #!/bin/bash
-
 curr_date=`date '+%Y-%m-%d'`
 
 pushd ~/arena/workdir/problems
