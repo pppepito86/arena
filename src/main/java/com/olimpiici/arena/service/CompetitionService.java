@@ -2,6 +2,7 @@ package com.olimpiici.arena.service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -383,16 +384,29 @@ public class CompetitionService {
 	 */
 	private UserPoints parseRawStandingsRow(Object[] row) {
 		Long userId = ((BigInteger)row[0]).longValue();
-		String firstName = (String)row[1];
-		String lastName = (String)row[2];
+		String firstName = convertToString(row[1]);
+		String lastName = convertToString(row[2]);
 		Integer points = ((BigDecimal)row[3]).intValue();
 
 		UserPoints userPoints = new UserPoints(userId, firstName, lastName, points);
 		if (4 < row.length) {
-			userPoints.perProblemJson = ((String)row[4]);
+			userPoints.perProblemJson = convertToString(row[4]);
 		}
 
 		return userPoints;
+	}
+
+	private String convertToString(Object value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof String) {
+			return (String) value;
+		}
+		if (value instanceof byte[]) {
+			return new String((byte[]) value, StandardCharsets.UTF_8);
+		}
+		return value.toString();
 	}
 
 	/**

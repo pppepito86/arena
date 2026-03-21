@@ -172,6 +172,42 @@ public class CompetitionServiceTest {
     }
 
     @Test
+    public void testFindStandings_HandlesByteArrays() {
+        // This test simulates the case where the DB driver returns byte arrays (e.g., MySQL JSON or BLOB)
+        // instead of Strings, which was causing ClassCastException.
+        ZonedDateTime from = ZonedDateTime.now();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        byte[] fnBytes = "FnBytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] lnBytes = "LnBytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] jsonBytes = "{\"1\":10}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        Object[] row = new Object[] {
+            BigInteger.valueOf(1L),
+            fnBytes,
+            lnBytes,
+            BigDecimal.valueOf(100.0),
+            jsonBytes
+        };
+        List<Object[]> rawList = new ArrayList<>();
+        rawList.add(row);
+
+        when(competitionRepository.getRootStandings(from, 0, 10))
+            .thenReturn(rawList);
+        when(competitionRepository.getRootStandingsSize(from)).thenReturn(1);
+
+        Page<UserPoints> standings = competitionService.findStandings(1L, pageable, from, null);
+
+        assertThat(standings.getTotalElements()).isEqualTo(1);
+        UserPoints up = standings.getContent().get(0);
+        assertThat(up.userId).isEqualTo(1L);
+        assertThat(up.firstName).isEqualTo("FnBytes");
+        assertThat(up.lastName).isEqualTo("LnBytes");
+        assertThat(up.points).isEqualTo(100);
+        assertThat(up.perProblemJson).isEqualTo("{\"1\":10}");
+    }
+
+    @Test
     public void testFindAllCompetitionsInSubTree() {
         Competition root = new Competition();
         root.setId(1L);

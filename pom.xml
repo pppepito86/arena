@@ -806,6 +806,9 @@
                                 <goals>
                                     <goal>npm</goal>
                                 </goals>
+                                <configuration>
+                                    <arguments>install --production --ignore-scripts</arguments>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>webpack build dev</id>
@@ -955,7 +958,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install --production</arguments>
+                                    <arguments>install --production --ignore-scripts</arguments>
                                 </configuration>
                             </execution>
                             <execution>
