@@ -19,6 +19,8 @@
         },
         "importHelpers": true
     },
+    "include": ["src/main/webapp/app"],
+    "exclude": ["node_modules", "cypress"],
     "angularCompilerOptions": {
         "genDir": "target/aot",
         "skipMetadataEmit": true,

@@ -34,6 +34,7 @@
         <profile.no-liquibase />
         <profile.swagger />
         <profile.tls />
+        <skipTests>false</skipTests>
 
         <!-- Dependency versions -->
         <jhipster-dependencies.version>2.0.29</jhipster-dependencies.version>
@@ -954,7 +955,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install</arguments>
+                                    <arguments>install --production</arguments>
                                 </configuration>
                             </execution>
                             <execution>
@@ -966,6 +967,7 @@
                                 <configuration>
                                     <arguments>run webpack:test</arguments>
                                     <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
+                                    <skip>${skipTests}</skip>
                                 </configuration>
                             </execution>
                             <execution>
