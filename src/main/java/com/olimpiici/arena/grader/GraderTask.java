@@ -82,18 +82,41 @@ public class GraderTask {
 		try {
 			details = mapper.writeValueAsString(score);
 			points = (int) (score.getScore()+0.5);
-			StepResult[] values = score.getScoreSteps().values().toArray(new StepResult[0]);
-			if (values.length > 1) {
-				for (int i = 1; i < values.length; i++) {
+			List<StepResult> testResults = score.getTestResults();
+			StepResult compileResult = score.getCompileResult();
+			java.util.LinkedHashMap<String, StepResult> scoreSteps = score.getScoreSteps();
+
+			StepResult[] values;
+			boolean skipFirst = false;
+			if (testResults != null && !testResults.isEmpty()) {
+				// New format: test results are in a separate list
+				values = testResults.toArray(new StepResult[0]);
+				skipFirst = false;
+			} else if (scoreSteps != null && !scoreSteps.isEmpty()) {
+				// Legacy format: everything is in scoreSteps map
+				values = scoreSteps.values().toArray(new StepResult[0]);
+				// In legacy format, the first element is usually the compile result
+				skipFirst = values.length > 1;
+			} else if (compileResult != null) {
+				// New format: only compile result is present (e.g. Compile Error)
+				values = new StepResult[] { compileResult };
+				skipFirst = false;
+			} else {
+				values = new StepResult[0];
+			}
+
+			if (values.length > (skipFirst ? 1 : 0)) {
+				int start = skipFirst ? 1 : 0;
+				for (int i = start; i < values.length; i++) {
 					StepResult step = values[i];
-					if (i != 1)
+					if (i != start)
 						verdict += ",";
 					verdict += step.getVerdict();
 					if (step.getTime() != null) {
 						time = Math.max(time, step.getTime());
 					}
 				}
-			} else if (values.length == 1){
+			} else if (values.length == 1 && !skipFirst){
 				verdict = values[0].getVerdict().toString();
                 if (!verdict.equals("OK")) {
 				    System.out.println("Submission <" + submissionId + "> failed with "
