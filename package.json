@@ -48,7 +48,7 @@
         "angular-router-loader": "0.8.5",
         "angular2-template-loader": "0.6.2",
         "autoprefixer": "9.3.1",
-        "browser-sync": "2.26.3",
+        "browser-sync": "2.27.10",
         "browser-sync-webpack-plugin": "2.2.2",
         "cache-loader": "1.2.5",
         "codelyzer": "4.5.0",
