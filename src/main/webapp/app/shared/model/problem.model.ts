@@ -6,6 +6,7 @@ export interface IProblem {
     time?: number;
     memory?: number;
     competitionId?: number;
+    extension?: string;
 }
 
 export class Problem implements IProblem {
@@ -15,6 +16,7 @@ export class Problem implements IProblem {
         public directory?: string,
         public version?: number,
         public time?: number,
-        public memory?: number
+        public memory?: number,
+        public extension?: string
     ) {}
 }

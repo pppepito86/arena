@@ -27,6 +27,8 @@ export class ProblemInCompetitionComponent implements OnInit {
     competitionProblemId: number;
     isSubmitting: boolean;
     solution = '';
+    solutionFile: File;
+    isZip = false;
     tags = [];
     autocompleteTags: ITag[] = [];
     tagStatus = 0;
@@ -64,6 +66,7 @@ export class ProblemInCompetitionComponent implements OnInit {
                 this.problem = res.body;
                 this.titleService.setTitle(this.problem.title);
                 this.loadTags();
+                this.isZip = this.problem.extension === 'zip';
             },
             (res: HttpErrorResponse) => this.onError(res.message)
         );
@@ -93,6 +96,26 @@ export class ProblemInCompetitionComponent implements OnInit {
     submit() {
         this.isSubmitting = true;
         this.competitionService.submitSolution(this.competitionId, this.competitionProblemId, this.solution).subscribe(
+            (res: HttpResponse<ISubmission>) => {
+                this.isSubmitting = false;
+                const submission = res.body;
+                this.router.navigate(['submission', submission.id, 'view'], {
+                    queryParams: { securityKey: submission.securityKey }
+                });
+            },
+            (res: HttpErrorResponse) => {
+                this.isSubmitting = false;
+                this.onError(res.message);
+            }
+        );
+    }
+
+    submitFile() {
+        if (!this.solutionFile) {
+            return;
+        }
+        this.isSubmitting = true;
+        this.competitionService.submitSolutionFile(this.competitionId, this.competitionProblemId, this.solutionFile).subscribe(
             (res: HttpResponse<ISubmission>) => {
                 this.isSubmitting = false;
                 const submission = res.body;

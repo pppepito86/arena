@@ -49,6 +49,15 @@ export class SubmissionService {
             .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
     }
 
+    downloadZip(id: number, securityKey = ''): Observable<HttpResponse<Blob>> {
+        const url = `${this.resourceUrl}/${id}/zip`;
+        return this.http.get(url, {
+            params: securityKey ? { securityKey } : {},
+            responseType: 'blob',
+            observe: 'response'
+        });
+    }
+
     query(req?: any): Observable<EntityArrayResponseType> {
         const options = createRequestOption(req);
         return this.http

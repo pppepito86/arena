@@ -34,16 +34,18 @@ public class SubmissionDTO implements Serializable {
     private Long competitionProblemId;
 
     private String code;
-    
+
     private String userFirstName;
 
     private String userLastName;
-    
+
     private String problemName;
-    
+
     private String competitionName;
-    
+
     private Long competitionId;
+
+    private boolean isZip;
 
 	public String getUserFirstName() {
 		return userFirstName;
@@ -83,6 +85,14 @@ public class SubmissionDTO implements Serializable {
 
 	public void setCompetitionId(Long competitionId) {
 		this.competitionId = competitionId;
+	}
+
+    public boolean getIsZip() {
+		return isZip;
+	}
+
+	public void setIsZip(boolean isZip) {
+		this.isZip = isZip;
 	}
 
 	public String getCode() {
@@ -189,7 +199,7 @@ public class SubmissionDTO implements Serializable {
         this.competitionProblemId = competitionProblemId;
     }
 
-    
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -205,12 +215,12 @@ public class SubmissionDTO implements Serializable {
         return Objects.equals(getId(), submissionDTO.getId());
     }
 
-    
+
     public int hashCode() {
         return Objects.hashCode(getId());
     }
 
-    
+
     public String toString() {
         return "SubmissionDTO{" +
             "id=" + getId() +

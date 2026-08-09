@@ -113,7 +113,7 @@
                 </dd>
             </dl>
 
-            <form *ngIf="problem.version > 0 && currentAccount !== null"
+            <form *ngIf="problem.version > 0 && currentAccount !== null && !isZip"
                   name="submitSolutionForm" role="form" novalidate
                   (ngSubmit)="submit()" #submitSolutionForm="ngForm" >
                 <div>
@@ -124,6 +124,26 @@
                                [(ngModel)]="solution" >
 
                         </textarea>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" id="save-entity"
+                            [disabled]="submitSolutionForm.form.invalid || isSubmitting" class="btn btn-primary">
+                        <span jhiTranslate="arenaApp.competition.submit">Submit</span>
+                    </button>
+                </div>
+            </form>
+
+            <form *ngIf="problem.version > 0 && currentAccount !== null && isZip"
+                  name="submitSolutionForm" role="form" novalidate
+                  (ngSubmit)="submitFile()" #submitSolutionForm="ngForm" >
+                <div>
+                    <div class="form-group">
+                        <b><label class="form-control-label"
+                                  jhiTranslate="arenaApp.competition.solution" for="solution">Solution</label></b>
+                        <input type="file" class="form-control" name="solutionFile" id="solutionFile" required
+                            accept=".zip,application/zip,application/x-zip-compressed"
+                            (change)="solutionFile = $event.target.files[0]" />
                     </div>
                 </div>
                 <div>

@@ -77,6 +77,13 @@ export class CompetitionService {
         return this.http.post<ISubmission>(url, solution, { observe: 'response' });
     }
 
+    submitSolutionFile(competitionId: number, competitionProblemId: number, solution: File): Observable<HttpResponse<ISubmission>> {
+        const formData = new FormData();
+        formData.append('file', solution, solution.name);
+        const url = `${this.resourceUrl}/${competitionId}/problem/${competitionProblemId}/submit-file`;
+        return this.http.post<ISubmission>(url, formData, { observe: 'response' });
+    }
+
     getStandings(competitionId: number, req?: any): Observable<HttpResponse<IUserPoints[]>> {
         const options = createRequestOption(req);
         const url = `${this.resourceUrl}/${competitionId}/standings`;

@@ -19,6 +19,7 @@ export interface ISubmission {
     problemName?: string;
     competitionName?: string;
     competitionId?: number;
+    isZip?: boolean;
 }
 
 export class Submission implements ISubmission {
@@ -40,6 +41,7 @@ export class Submission implements ISubmission {
         public userLastName?: string,
         public problemName?: string,
         public competitionName?: string,
-        public competitionId?: number
+        public competitionId?: number,
+        public isZip?: boolean
     ) {}
 }

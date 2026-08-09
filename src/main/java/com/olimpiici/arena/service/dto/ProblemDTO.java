@@ -35,6 +35,8 @@ public class ProblemDTO implements Serializable {
 
     public List<TagDTO> allTags;
 
+    private String extension;
+
     public Long getId() {
         return id;
     }
@@ -57,6 +59,14 @@ public class ProblemDTO implements Serializable {
 
     public void setDirectory(String directory) {
         this.directory = directory;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String ext) {
+        this.extension = ext;
     }
 
     public Integer getVersion() {

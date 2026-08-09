@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
@@ -263,7 +266,7 @@ public class CompetitionResource {
     		@RequestBody String solution) throws Exception {
         log.debug("REST request to submit solution : {}", solution);
         User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        
+
         submissionService.maybeThrottleSubmission(user.getId());
 
         SubmissionDTO submission = new SubmissionDTO();
@@ -294,6 +297,49 @@ public class CompetitionResource {
 
         return ResponseEntity.ok(submission);
     }
+
+    @PostMapping("/competitions/{id}/problem/{compProb}/submit-file")
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
+    @Timed
+    public ResponseEntity<SubmissionDTO> submitProblemFile(@PathVariable Long id,
+            @PathVariable Long compProb,
+            @RequestParam("file") MultipartFile file) throws Exception {
+        User user = userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        submissionService.maybeThrottleSubmission(user.getId());
+        long problemId = competitionProblemService.findOne(compProb).get().getProblemId();
+        String ext = problemService.getSolutionFileExtension(problemId);
+        if (!"zip".equals(ext)) {
+            throw new BadRequestAlertException("This problem does not accept file uploads",
+                    "submission", "not-a-file-problem");
+        }
+        if (file.isEmpty()) {
+            throw new BadRequestAlertException("The uploaded file is empty",
+                    "submission", "empty-file");
+        }
+        if (!"zip".equalsIgnoreCase(FilenameUtils.getExtension(file.getOriginalFilename()))) {
+            throw new BadRequestAlertException("Only .zip files are accepted",
+                    "submission", "not-a-zip");
+        }
+        SubmissionDTO submission = new SubmissionDTO();
+        submission.setUserId(user.getId());
+        submission.setCompetitionProblemId(compProb);
+        submission.setUploadDate(ZonedDateTime.now());
+        submission.setSecurityKey(RandomUtil.generateSubmissionSecurityKey());
+        submission = submissionService.save(submission);
+        // max allowed zip size is 10MB
+        if (file.getSize() > 10L*1024*1024) {
+            submission.setVerdict("file too large");
+            submission.setDetails("file too large");
+        } else {
+            File submissionFile = Paths.get(applicationProperties.getWorkDir(),
+                    "submissions", "" + submission.getId(), "solution." + ext).toFile();
+            FileUtils.copyInputStreamToFile(file.getInputStream(), submissionFile);
+            submission.setVerdict("waiting");
+        }
+        submissionService.save(submission);
+        return ResponseEntity.ok(submission);
+    }
+
 
     @GetMapping("/competitions/{id}/problem/{compProb}/submissions")
     @Timed
