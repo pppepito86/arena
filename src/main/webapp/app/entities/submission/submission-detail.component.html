@@ -94,7 +94,10 @@
                     <td> {{scoreStep.key}} </td>
 
                     <td *ngIf="scoreStep.value.verdict == 'OK'" style="background-color: #00ff00"> {{scoreStep.value.verdict}} </td>
-                    <td *ngIf="scoreStep.value.verdict != 'OK'"  style="background-color: red; color:white; font-weight: bold;"> {{scoreStep.value.verdict}} </td>
+                    <td *ngIf="scoreStep.value.verdict == 'SKIPPED' || scoreStep.value.verdict == 'HIDDEN'" style="background-color: #d2d6de"> {{scoreStep.value.verdict}} </td>
+                    <td *ngIf="scoreStep.value.verdict == 'WAITING'" style="background-color: yellow"> {{scoreStep.value.verdict}} </td>
+                    <td *ngIf="scoreStep.value.verdict == 'PARTIAL'" [style.background-color]="getColor(scoreStep.value.checkerOutput)" [style.color]="getTextColor(scoreStep.value.checkerOutput)" [style.font-weight]="getFontWeight(scoreStep.value.checkerOutput)" [style.border]="'1px solid black'"> {{scoreStep.value.verdict}} </td>
+                    <td *ngIf="scoreStep.value.verdict == 'ML' || scoreStep.value.verdict == 'TL' || scoreStep.value.verdict == 'RE' || scoreStep.value.verdict == 'WA'" style="background-color: red; color:white; font-weight: bold;"> {{scoreStep.value.verdict}} </td>
                     <td>
                         <span *ngIf="scoreStep.value.time && scoreStep.value.time < 0">
                             ≥

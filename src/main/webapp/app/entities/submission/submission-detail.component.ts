@@ -139,4 +139,40 @@ export class SubmissionDetailComponent implements OnInit {
             err => (this.tagStatus = 3)
         );
     }
+
+    getColor(ratio) {
+        return ratio === 1
+            ? '#4E9A05'
+            : ratio > 0.9
+            ? '#639B04'
+            : ratio > 0.8
+            ? '#789C03'
+            : ratio > 0.7
+            ? '#8E9D02'
+            : ratio > 0.6
+            ? '#A39E01'
+            : ratio > 0.5
+            ? '#B99F00'
+            : ratio > 0.4
+            ? '#C89100'
+            : ratio > 0.3
+            ? '#D17400'
+            : ratio > 0.2
+            ? '#D95700'
+            : ratio > 0.1
+            ? '#E23A00'
+            : ratio > 0
+            ? '#EB1D00'
+            : ratio === 0
+            ? '#F40000'
+            : '#FFFFFF';
+    }
+
+    getTextColor(ratio) {
+        return ratio < 0.4 ? '#FFFFFF' : '#000000';
+    }
+
+    getFontWeight(ratio) {
+        return ratio < 0.3 ? 'bold' : 'normal';
+    }
 }
