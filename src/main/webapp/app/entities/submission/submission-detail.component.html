@@ -111,8 +111,16 @@
             </table>
 
             <dt><span jhiTranslate="arenaApp.submission.solution">Solution</span></dt>
-            <dd>
+            <dd *ngIf="!isZip">
                 <pre>{{submission.code}}</pre>
+            </dd>
+            <dd *ngIf="isZip">
+                <button type="button" class="btn btn-primary" style="margin-right: 0.5em;" (click)="downloadZip()">
+                    <fa-icon icon="download"></fa-icon>
+                    <span jhiTranslate="arenaApp.problem.downloadZip">
+                        Download ZIP
+                    </span>
+                </button>
             </dd>
 
             <button type="submit"

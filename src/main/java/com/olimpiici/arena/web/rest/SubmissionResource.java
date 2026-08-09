@@ -1,11 +1,14 @@
 package com.olimpiici.arena.web.rest;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,11 +59,11 @@ public class SubmissionResource {
 
     @Autowired
     private ApplicationProperties applicationProperties;
-    
+
     private final SubmissionService submissionService;
-    
+
     private final ProblemService problemService;
-    
+
     private final UserRepository userRepository;
 
     public SubmissionResource(SubmissionService submissionService,
@@ -125,9 +129,9 @@ public class SubmissionResource {
     @Timed
     public ResponseEntity<List<SubmissionDTO>> getAllSubmissions(Pageable pageable) {
         log.debug("REST request to get a page of Submissions");
-        
+
         boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
-        
+
         Page<SubmissionDTO> page;
         if (isAdmin) {
         	page = submissionService.findAll(pageable);
@@ -151,29 +155,63 @@ public class SubmissionResource {
     public ResponseEntity<SubmissionDTO> getSubmission(@PathVariable Long id,
     		@RequestParam(value = "securityKey", defaultValue = "") String securityKey) {
         log.debug("REST request to get Submission : {} with security key {} ", id, securityKey);
-        
+
         boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
-        
-        User user = 
+
+        User user =
     			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<SubmissionDTO> submissionDTO = submissionService.findOne(id);
         if (!submissionDTO.isPresent()) {
-        	ResponseUtil.wrapOrNotFound(submissionDTO); 
+        	ResponseUtil.wrapOrNotFound(submissionDTO);
         }
-        
+
         boolean isSubmissionAuthor = submissionDTO.get().getUserId().equals(user.getId());
-        boolean goodSecurityCode; 
-        if (submissionDTO.get().getSecurityKey() == null) { 
+        boolean goodSecurityCode;
+        if (submissionDTO.get().getSecurityKey() == null) {
         	goodSecurityCode = false;
         } else {
         	goodSecurityCode = submissionDTO.get().getSecurityKey().equals(securityKey);
         }
-        
+
         if (isAdmin || isSubmissionAuthor || goodSecurityCode) {
         	return ResponseUtil.wrapOrNotFound(submissionDTO);
         } else {
         	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @GetMapping("/submissions/{id}/zip")
+    @Timed
+    public ResponseEntity<byte[]> getSubmissionFile(@PathVariable Long id,
+    		@RequestParam(value = "securityKey", defaultValue = "") String securityKey) throws IOException {
+        log.debug("REST request to get Submission : {} with security key {} ", id, securityKey);
+
+        Optional<SubmissionDTO> submissionDTO = submissionService.findOne(id);
+        boolean isAdmin = SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN);
+        User user =
+    			userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        if (!submissionDTO.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean isSubmissionAuthor = submissionDTO.get().getUserId().equals(user.getId());
+        boolean goodSecurityCode = submissionDTO.get().getSecurityKey() != null
+                && submissionDTO.get().getSecurityKey().equals(securityKey);
+        if (!(isAdmin || isSubmissionAuthor || goodSecurityCode)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<File> file = SubmissionService.findSubmissionFile(applicationProperties.getWorkDir(), id);
+        if (!file.isPresent()) {
+        	return ResponseEntity.notFound().build();
+        }
+
+        byte[] bytes = FileUtils.readFileToByteArray(file.get());
+        boolean isZip = file.get().getName().endsWith(".zip");
+        return ResponseEntity.ok()
+            .contentType(isZip ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN)
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"" + file.get().getName() + "\"")
+            .body(bytes);
     }
 
     /**
@@ -190,7 +228,7 @@ public class SubmissionResource {
         submissionService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
-    
+
     @PostMapping("/submissions/{id}/rejudge")
     @Timed
     public ResponseEntity rejudge(@PathVariable Long id)
@@ -199,7 +237,7 @@ public class SubmissionResource {
         submissionService.rejudge(id);
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/submissions/{id}/tags")
     @Timed
     public ResponseEntity updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
@@ -208,7 +246,7 @@ public class SubmissionResource {
         submissionService.updateTags(id, tags);
         return ResponseEntity.ok().build();
     }
-    
+
     @GetMapping("/submissions/{id}/tags")
     @Timed
     public List<TagDTO> getTags(@PathVariable Long id)

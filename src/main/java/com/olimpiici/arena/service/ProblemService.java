@@ -390,6 +390,8 @@ public class ProblemService {
 
 		int memory = Integer.valueOf(props.getProperty("memory", ""));
         dto.setMemory(memory);
+
+		dto.setExtension(props.getProperty("extensions", "cpp"));
         return dto;
 	}
 

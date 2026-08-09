@@ -24,6 +24,7 @@ export class SubmissionDetailComponent implements OnInit {
     securityKey: string;
     testDetails: any;
     submissionDetails: any;
+    isZip = false;
     tags = [];
     autocompleteTags: ITag[] = [];
     tagStatus = 0;
@@ -55,6 +56,7 @@ export class SubmissionDetailComponent implements OnInit {
                 }
                 this.parseTestDetails();
                 this.submissionId = this.submission.id;
+                this.isZip = res.body.isZip;
 
                 if (!this.isJudged(this.submission)) {
                     this.refreshInterval = setInterval(() => {
@@ -90,6 +92,20 @@ export class SubmissionDetailComponent implements OnInit {
                 (res: HttpResponse<ITag[]>) => (this.tags = res.body),
                 error => this.jhiAlertService.error(error.message, null, null)
             );
+    }
+
+    downloadZip() {
+        this.submissionService.downloadZip(this.submissionId, this.securityKey).subscribe(
+            res => {
+                const url = window.URL.createObjectURL(res.body);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `submission-${this.submissionId}.zip`;
+                link.click();
+                window.URL.revokeObjectURL(url);
+            },
+            (res: HttpErrorResponse) => this.jhiAlertService.error(res.message, null, null)
+        );
     }
 
     parseTestDetails() {

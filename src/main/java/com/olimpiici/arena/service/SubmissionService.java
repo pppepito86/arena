@@ -239,7 +239,11 @@ public class SubmissionService {
         return submissionRepository.findById(id)
             .map(submissionMapper::toDto)
             .map(dto -> {
-            	dto.setCode(findSubmissionCode(id));
+				boolean isZip = findSubmissionFile(applicationProperties.getWorkDir(), id)
+          			.map(f -> f.getName().endsWith(".zip"))
+          			.orElse(false);
+				if(isZip) dto.setIsZip(true);
+            	else dto.setCode(findSubmissionCode(id));
             	return dto;
             });
     }
