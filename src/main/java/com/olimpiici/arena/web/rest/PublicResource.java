@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -110,6 +111,7 @@ public class PublicResource {
 
     	HttpHeaders respHeaders = new HttpHeaders();
     	respHeaders.setContentDispositionFormData("attachment", "problem.zip");
+        respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
     	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
     }
