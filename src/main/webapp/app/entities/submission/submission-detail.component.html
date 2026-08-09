@@ -87,7 +87,7 @@
                     <th> <span jhiTranslate="arenaApp.submission.verdict">Verdict</span> </th>
                     <th> <span jhiTranslate="arenaApp.submission.timeInMillis">Time</span> </th>
                     <th> <span jhiTranslate="arenaApp.submission.output">Output</span> </th>
-                    <!--<th> <span jhiTranslate="arenaApp.submission.expectedOutput">Expected Output</span> </th>-->
+                    <th *ngIf="hasReason"> <span jhiTranslate="arenaApp.submission.reason">Reason</span> </th>
                 </tr>
 
                 <tr *ngFor="let scoreStep of testDetails">
@@ -106,7 +106,7 @@
                     </td>
 
                     <td style="max-width: 15em; text-align: left"> <pre>{{scoreStep.value.output}}</pre></td>
-                    <!--<td style="max-width: 15em;"> <pre>{{scoreStep.value.expectedOutput}}</pre> </td>-->
+                    <td style="max-width: 7em;" *ngIf="hasReason">{{scoreStep.value.reason}}</td>
                 </tr>
             </table>
 
