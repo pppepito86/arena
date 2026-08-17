@@ -143,7 +143,6 @@ export class SubmissionDetailComponent implements OnInit {
         );
     }
 
-<<<<<<< HEAD
     getColor(ratio) {
         return ratio === 1
             ? '#4E9A05'
