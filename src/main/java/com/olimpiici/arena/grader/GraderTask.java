@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.SubmissionService;
 import com.olimpiici.arena.service.dto.SubmissionDTO;
@@ -36,8 +37,15 @@ public class GraderTask {
     @Autowired
     public WorkerPool workerPool;
 
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
 	@Scheduled(fixedDelay = 3000)
+	public void scheduledGradeTask() throws IOException {
+		if (!applicationProperties.isAutoGradeEnabled()) return;
+		gradeTask();
+	}
+
 	public void gradeTask() throws IOException {
 		List<SubmissionDTO> submissions = new ArrayList<>();
 		submissions.addAll(submissionService.findSubmissionByVerdict("judging"));

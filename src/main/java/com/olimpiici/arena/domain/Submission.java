@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -37,6 +38,7 @@ public class Submission implements Serializable {
     @Column(name = "verdict")
     private String verdict;
 
+    @Lob
     @Column(name = "details")
     private String details;
 
