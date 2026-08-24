@@ -7,11 +7,11 @@ describe('Browse Problems', () => {
       req.continue((res) => {
         if (res.statusCode >= 400) {
           const isExpected401 = res.statusCode === 401 && (
-            req.url.endsWith('/api/account') || 
+            req.url.endsWith('/api/account') ||
             req.url.includes('/api/tags') ||
             req.url.includes('/api/competition-problems/')
           );
-          
+
           if (isExpected401) {
             return;
           }
@@ -23,82 +23,62 @@ describe('Browse Problems', () => {
     cy.visit('/');
   });
 
-  const waitForLoading = () => {
-    // Fixed wait as requested because rows appear sequentially without a spinner
-    cy.wait(2000);
-  };
-
   it('unregistered users should be able to browse problems but not submit', () => {
     // 1. Make sure user is not logged in.
     cy.get('#account-menu').click();
     cy.get('#login').should('be.visible');
 
     // 2. Select a problem from catalog
-    cy.contains('Задачи').click();
-    waitForLoading();
-    
+    cy.get('[data-testid=nav-catalog]').click();
+
     // Breadcrumb: Задачи
-    cy.get('jhi-competition-path').should('contain', 'Задачи');
+    cy.get('[data-testid=breadcrumb]').should('contain', 'Задачи');
 
     // Navigate to Есенен турнир
-    cy.get('jhi-competition-children a').contains('Есенен турнир').click();
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', 'Есенен турнир');
-    
-    // Navigate to 2017
-    cy.get('jhi-competition-children a').contains('2017').click();
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', '2017');
+    cy.get('[data-testid="competition-link-Есенен турнир"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', 'Есенен турнир');
 
-    // Navigate to group B. Exact match check.
-    cy.get('jhi-competition-children table td:first-child a').filter((i, el) => {
-       return el.innerText.trim() === 'B';
-    }).click();
-    
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', 'B');
-    
+    // Navigate to 2017
+    cy.get('[data-testid="competition-link-2017"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', '2017');
+
+    // Navigate to group B
+    cy.get('[data-testid="competition-link-B"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', 'B');
+
     // Select problem 'bridges'
-    cy.contains('a', 'bridges', { matchCase: false }).click();
-    waitForLoading();
-    
+    cy.get('[data-testid="competition-link-bridges"], [data-testid="problem-link-bridges"]').click();
+
     cy.get('h2').should('contain', 'bridges');
-    cy.contains('Условие').should('be.visible');
-    cy.contains('Решение').should('not.exist');
-    cy.contains('Изпрати').should('not.exist');
+    cy.get('[data-testid=statement-link]').should('be.visible');
+    cy.get('[data-testid=solution-form]').should('not.exist');
 
     // Follow breadcrumbs back
-    cy.get('jhi-competition-path').contains('2017').click();
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', '2017');
+    cy.get('[data-testid="breadcrumb-link-2017"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', '2017');
 
-    cy.get('jhi-competition-path').contains('Есенен турнир').click();
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', 'Есенен турнир');
+    cy.get('[data-testid="breadcrumb-link-Есенен турнир"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', 'Есенен турнир');
 
-    cy.get('jhi-competition-path').contains('Задачи').click();
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', 'Задачи');
+    cy.get('[data-testid="breadcrumb-link-Задачи"]').click();
+    cy.get('[data-testid=breadcrumb]').should('contain', 'Задачи');
   });
 
   it('should allow jumping levels in catalog navigation', () => {
-    cy.contains('Задачи').click();
-    waitForLoading();
+    cy.get('[data-testid=nav-catalog]').click();
 
-    // Jump from root to 2017 directly (2017 is rendered in the row of Есенен турнир)
-    cy.get('jhi-competition-children table').contains('tr', 'Есенен турнир').within(() => {
-       cy.contains('a', '2017').click();
+    // Jump from root to 2017 directly (2017 is rendered as a grandchild in Есенен турнир's row)
+    cy.get('[data-testid="competition-link-Есенен турнир"]').closest('tr').within(() => {
+      cy.get('[data-testid="competition-link-2017"]').click();
     });
-    waitForLoading();
-    cy.get('jhi-competition-path').should('contain', '2017');
+    cy.get('[data-testid=breadcrumb]').should('contain', '2017');
 
-    // Jump from 2017 to bridges directly (bridges is rendered in the row of Group B)
-    cy.get('jhi-competition-children table').contains('tr', 'B').within(() => {
-       cy.contains('a', 'bridges', { matchCase: false }).click();
+    // Jump from 2017 to bridges directly (bridges is rendered as a grandchild in group B's row)
+    cy.get('[data-testid="competition-link-B"]').closest('tr').within(() => {
+      cy.get('[data-testid="problem-link-bridges"]').click();
     });
-    waitForLoading();
-    
+
     cy.get('h2').should('contain', 'bridges');
-    cy.get('jhi-competition-path').should('contain', 'B');
+    cy.get('[data-testid=breadcrumb]').should('contain', 'B');
   });
 });

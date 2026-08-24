@@ -17,3 +17,6 @@ spring:
 application:
     # Use a temporary directory for problem files and submissions
     work-dir: /tmp/arena_e2e_workdir
+    # A dedicated worker instance, started by scripts/dev/run_e2e.sh on a
+    # non-default port so it doesn't collide with a real dev worker on 8089
+    worker-url: localhost:8189

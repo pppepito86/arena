@@ -5,7 +5,7 @@
                 {{problem.title}}
 
                 <div *ngIf="currentAccount !== null">
-                    <button class="btn btn-primary float-right jh-create-entity create-competition" [routerLink]="['submissions']">
+                    <button class="btn btn-primary float-right jh-create-entity create-competition" data-testid="view-submissions" [routerLink]="['submissions']">
                         <fa-icon icon="file"></fa-icon>
                         <span jhiTranslate="arenaApp.competition.submissions">
                             Submissions
@@ -86,7 +86,7 @@
                     <!-- <span jhiTranslate="arenaApp.problem.statement">Statement</span> -->
                 </dt>
                 <dd>
-                    <a class="btn btn-primary"
+                    <a class="btn btn-primary" data-testid="statement-link"
                        href="api/public/problems/{{problem.id}}/pdf" target="_blank">
                         <span jhiTranslate="arenaApp.problem.statement">Statement</span>
                     </a>
@@ -114,6 +114,7 @@
             </dl>
 
             <form *ngIf="problem.version > 0 && currentAccount !== null && !isZip"
+                  data-testid="solution-form"
                   name="submitSolutionForm" role="form" novalidate
                   (ngSubmit)="submit()" #submitSolutionForm="ngForm" >
                 <div>

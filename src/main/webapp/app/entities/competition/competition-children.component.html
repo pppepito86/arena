@@ -10,21 +10,23 @@
             <tbody>
             <tr *ngFor="let competition of competitions ;trackBy: trackId">
                 <td>
-                    <a [routerLink]="['/catalog', competition.id]">
+                    <a [routerLink]="['/catalog', competition.id]" [attr.data-testid]="'competition-link-' + competition.label">
                         {{competition.label}}
                     </a>
                 </td>
                 <td>
                  <div *ngIf="grandChildrenCompetitions[competition.id]">
-                     <a *ngFor="let child of grandChildrenCompetitions[competition.id]" 
+                     <a *ngFor="let child of grandChildrenCompetitions[competition.id]"
                          [routerLink]="['/catalog', child.id]"
+                         [attr.data-testid]="'competition-link-' + child.label"
                          style="margin-right:1em">
                          {{child.label}}</a>
                  </div>
                  <div *ngIf="grandChildrenProblems[competition.id]">
-                     <a *ngFor="let problem of grandChildrenProblems[competition.id]" 
+                     <a *ngFor="let problem of grandChildrenProblems[competition.id]"
                          [routerLink]="['/catalog', problem.competitionId, 'problem', problem.id]"
                          class="problem-name"
+                         [attr.data-testid]="'problem-link-' + problem.title"
                          [ngStyle]="{backgroundColor: getPointsColor(problem.points/100.0)}">
                          <span *ngIf="problem.points==100">✓</span> {{problem.title}}</a>
                  </div>

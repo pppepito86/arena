@@ -9,7 +9,7 @@
             </thead>
             <tbody>
             <tr *ngFor="let problem of problems; let i = index">
-                <td><a [routerLink]="['/catalog', parentCompetition.id, 'problem', problem.id]">{{problem.title}}</a></td>
+                <td><a [routerLink]="['/catalog', parentCompetition.id, 'problem', problem.id]" [attr.data-testid]="'problem-link-' + problem.title">{{problem.title}}</a></td>
                 <td [ngStyle]="{backgroundColor: getPointsColor(problem.points/100.0)}">
                     {{problem.points}}
                 </td>

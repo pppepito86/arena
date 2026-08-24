@@ -20,7 +20,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let submission of submissions ;trackBy: trackId">
+            <tr *ngFor="let submission of submissions ;trackBy: trackId" [attr.data-testid]="'submission-row-' + submission.id">
                 <td><a [routerLink]="['/submission', submission.id, 'view' ]"
                        [queryParams]="{securityKey: submission.securityKey}">{{submission.id}}</a></td>
                 <td>{{submission.problemName}}</td>
@@ -32,7 +32,7 @@
                     </span>
                     {{Math.abs(submission.timeInMillis)}} ms
                 </td>
-                <td style="max-width: 15em;">{{submission.verdict}}</td>
+                <td style="max-width: 15em;" data-testid="submission-row-verdict">{{submission.verdict}}</td>
                 <td>{{submission.points}}</td>
                 <td class="text-right" *jhiHasAnyAuthority="'ROLE_ADMIN'">
                     <div class="btn-group flex-btn-group-container">

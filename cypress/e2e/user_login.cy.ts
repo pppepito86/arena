@@ -10,11 +10,10 @@ describe('User Log in', () => {
 
     cy.get('#username').type('testuser');
     cy.get('#password').type('testpass');
-    cy.get('button[type="submit"]').click();
+    cy.get('[data-testid=login-submit]').click();
 
     // Verify login success
     cy.get('#account-menu').click();
     cy.get('#logout').should('be.visible');
   });
 });
-

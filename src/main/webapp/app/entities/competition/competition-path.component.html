@@ -1,6 +1,6 @@
-<div>
+<div data-testid="breadcrumb">
     <span *ngFor="let ancestor of path; let i = index">
         <span *ngIf="i != 0"> > </span>
-        <a [routerLink]="['/catalog', ancestor.id]">{{ancestor.label}}</a>
+        <a [routerLink]="['/catalog', ancestor.id]" [attr.data-testid]="'breadcrumb-link-' + ancestor.label">{{ancestor.label}}</a>
     </span>
 </div>

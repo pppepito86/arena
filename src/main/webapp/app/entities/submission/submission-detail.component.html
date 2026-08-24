@@ -5,7 +5,7 @@
             <hr>
             <jhi-alert-error></jhi-alert-error>
 
-            <div class="alert alert-warning"
+            <div class="alert alert-warning" data-testid="judging-banner"
                    *ngIf="!isJudged(submission)" jhiTranslate="arenaApp.submission.judging_warning">
             </div>
             <div *ngIf="true">
@@ -49,8 +49,8 @@
                     <th><span jhiTranslate="arenaApp.submission.competitionProblem">Competition Problem</span></th>
                 </tr>
                 <tr>
-                    <td style="max-width: 15em;"><span>{{submission.verdict}}</span></td>
-                    <td>
+                    <td style="max-width: 15em;" data-testid="submission-verdict"><span>{{submission.verdict}}</span></td>
+                    <td data-testid="submission-points">
                         <span>{{submission.points}}</span>
                     </td>
                     <td>
