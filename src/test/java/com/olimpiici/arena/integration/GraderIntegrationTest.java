@@ -83,6 +83,8 @@ public class GraderIntegrationTest {
 
     private static final File INTEGRATION_TEST_ROOT = new File("src/test/resources/integration-test");
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    // Must match the "application.workDir" value in the @SpringBootTest properties below.
+    private static final String ARENA_WORK_DIR = "target/integration-test-work";
 
     @ClassRule
     public static final SpringClassRule springClassRule = new SpringClassRule();
@@ -186,6 +188,14 @@ public class GraderIntegrationTest {
         } catch (Exception e) {
             System.out.println("isolate --cg --init failed: " + e.getMessage());
         }
+
+        // Wipe arena's own work dir too: target/ isn't cleaned between plain
+        // "mvn test" runs (only "mvn clean test"), so a leftover
+        // submissions/{id}/solution.* from a previous run can sit next to
+        // this run's file for the same (restarted-from-1) id. SubmissionService
+        // .findSubmissionFile() picks whichever "solution*" file listFiles()
+        // returns first with no ordering guarantee, so the stale file can win.
+        FileUtils.deleteDirectory(new File(ARENA_WORK_DIR));
 
         File workerDir = new File("../worker");
 
