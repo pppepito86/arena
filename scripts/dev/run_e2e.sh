@@ -60,6 +60,33 @@ sed 's/arena_dev/arena_e2e/g' "$DUMP_FILE" | mysql -u root -ppassword arena_e2e
 echo "Marking stale waiting/judging submissions from the dump as skipped..."
 mysql -u root -ppassword arena_e2e -e "UPDATE submission SET verdict = 'SKIPPED' WHERE verdict IN ('waiting', 'judging');"
 
+# The submission list pages are per-user for non-admins (see
+# CompetitionResource.getCompetitionSubmissions / SubmissionResource.getAllSubmissions),
+# and the dump's testuser has almost none, so there would be nothing to page
+# through. Seed enough submissions spread across the root competition's subtree
+# that /submission and /catalog/1/submissions both have several pages. These are
+# metadata-only rows (no source file on disk) — the specs list them, never open
+# them.
+echo "Seeding paginated submissions for testuser..."
+mysql -u root -ppassword arena_e2e -e "
+SET @testuser := (SELECT id FROM jhi_user WHERE login = 'testuser');
+INSERT INTO submission (verdict, points, time_in_millis, upload_date, user_id, competition_problem_id)
+WITH RECURSIVE subtree AS (
+    SELECT id FROM competition WHERE id = 1
+    UNION ALL
+    SELECT c.id FROM competition c JOIN subtree s ON c.parent_id = s.id
+),
+picked AS (
+    SELECT cp.id AS cp_id, ROW_NUMBER() OVER (ORDER BY cp.id) AS rn
+    FROM competition_problem cp JOIN subtree s ON cp.competition_id = s.id
+)
+SELECT CASE WHEN rn % 3 = 0 THEN 'OK' WHEN rn % 3 = 1 THEN 'WA' ELSE 'TL' END,
+       CASE WHEN rn % 3 = 0 THEN 100 ELSE 0 END,
+       rn * 10,
+       DATE_SUB(NOW(), INTERVAL rn DAY),
+       @testuser, cp_id
+FROM picked WHERE rn <= 45;"
+
 # Run Liquibase to ensure any recent changes are applied
 echo "Running Liquibase updates on e2e database..."
 ./mvnw liquibase:update -Pe2e

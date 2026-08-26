@@ -11,7 +11,7 @@
     </h2>
     <jhi-alert></jhi-alert>
     <br/>
-    <span jhiTranslate="arenaApp.tag.search">Search</span>: <input type="text" [(ngModel)]="searchText"/>
+    <span jhiTranslate="arenaApp.tag.search">Search</span>: <input type="text" data-testid="tag-search" [(ngModel)]="searchText"/>
 
     <div class="table-responsive" *ngIf="tags">
         <table class="table table-striped">
@@ -30,13 +30,13 @@
             
             <ng-container *ngIf="tag.title.toLowerCase().includes(searchText.toLowerCase())">
                 <!-- Row if NOT admin -->
-                <tr *jhiHasNotAuthority="'ROLE_ADMIN'">
+                <tr *jhiHasNotAuthority="'ROLE_ADMIN'" data-testid="tag-row">
                     <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.title}}</a></td>
                     <td>{{tag.popularity}}</td>
                 </tr>
 
                 <!-- Row if admin -->
-                <tr *jhiHasAnyAuthority="'ROLE_ADMIN'" >
+                <tr *jhiHasAnyAuthority="'ROLE_ADMIN'" data-testid="tag-row">
                     <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.id}}</a></td>
                     <td><a [routerLink]="['/tag', tag.id, 'view' ]">{{tag.title}}</a></td>
                     <td>{{tag.popularity}}</td>
