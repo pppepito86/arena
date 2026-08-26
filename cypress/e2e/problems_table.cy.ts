@@ -14,6 +14,14 @@ describe('Problems table', () => {
     cy.get(rows, { timeout: 60000 }).should('have.length', PAGE_SIZE);
   });
 
+  it('hides the admin-only controls from a regular user', () => {
+    // Creating, editing and deleting a problem are all ROLE_ADMIN routes, so
+    // testuser should see neither the create button nor the actions column.
+    cy.get('#jh-create-entity').should('not.exist');
+    cy.contains('th', 'Actions').should('not.exist');
+    cy.get(`${rows} button`).should('not.exist');
+  });
+
   it('pages through the problems', () => {
     cy.get('.mat-paginator-range-label').invoke('text').should('match', /1\s*[–-]\s*20 of \d+/);
 

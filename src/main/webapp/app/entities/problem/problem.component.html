@@ -1,7 +1,8 @@
 <div>
     <h2 id="page-heading">
         <span jhiTranslate="arenaApp.problem.home.title">Problems</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-problem" [routerLink]="['/problem/new']">
+        <button *jhiHasAnyAuthority="'ROLE_ADMIN'"
+                id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-problem" [routerLink]="['/problem/new']">
             <fa-icon [icon]="'plus'"></fa-icon>
             <span  jhiTranslate="arenaApp.problem.home.createLabel">
             Create new Problem

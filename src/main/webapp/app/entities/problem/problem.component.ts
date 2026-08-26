@@ -29,7 +29,8 @@ export class ProblemComponent implements OnInit, OnDestroy {
     queryCount: any;
     predicate: any;
     reverse: any;
-    displayedColumns: string[] = ['id', 'title', 'competition', 'year', 'group', 'version', 'tags', 'actions'];
+    // 'actions' is appended for admins only, see ngOnInit.
+    displayedColumns: string[] = ['id', 'title', 'competition', 'year', 'group', 'version', 'tags'];
     dataSource: any;
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -71,6 +72,11 @@ export class ProblemComponent implements OnInit, OnDestroy {
         this.loadAll();
         this.accountService.identity().then(account => {
             this.currentAccount = account;
+            // Every button in the actions column leads to a ROLE_ADMIN-only
+            // route, so the whole column is dead weight for anyone else.
+            if (this.accountService.hasAnyAuthority(['ROLE_ADMIN'])) {
+                this.displayedColumns = [...this.displayedColumns, 'actions'];
+            }
         });
         this.registerChangeInProblems();
     }
