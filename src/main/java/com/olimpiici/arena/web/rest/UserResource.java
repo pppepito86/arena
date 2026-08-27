@@ -29,6 +29,7 @@ import com.olimpiici.arena.config.Constants;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.UserRepository;
 import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.AdminAuditService;
 import com.olimpiici.arena.service.MailService;
 import com.olimpiici.arena.service.UserService;
 import com.olimpiici.arena.service.dto.UserDTO;
@@ -76,11 +77,15 @@ public class UserResource {
 
     private final MailService mailService;
 
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
+    private final AdminAuditService adminAuditService;
+
+    public UserResource(UserService userService, UserRepository userRepository, MailService mailService,
+            AdminAuditService adminAuditService) {
 
         this.userService = userService;
         this.userRepository = userRepository;
         this.mailService = mailService;
+        this.adminAuditService = adminAuditService;
     }
 
     /**
@@ -138,7 +143,21 @@ public class UserResource {
         if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
         }
+        // Read the activation flag before the update: userService.updateUser
+        // mutates the managed entity, so afterwards it already reads as new.
+        boolean wasActivated = userRepository.findById(userDTO.getId())
+            .map(User::getActivated)
+            .orElse(false);
+
         Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
+        // The Activate / Deactivate buttons in user-management PUT the whole
+        // user, so this is the only path an activation change can take.
+        updatedUser.ifPresent(user -> {
+            if (wasActivated != user.isActivated()) {
+                adminAuditService.log(user.isActivated() ? "user.activate" : "user.deactivate",
+                    AdminAuditService.ENTITY_USER, user.getId(), user.getLogin());
+            }
+        });
 
         return ResponseUtil.wrapOrNotFound(updatedUser,
             HeaderUtil.createAlert("userManagement.updated", userDTO.getLogin()));

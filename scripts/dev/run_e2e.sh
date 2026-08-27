@@ -87,6 +87,29 @@ SELECT CASE WHEN rn % 3 = 0 THEN 'OK' WHEN rn % 3 = 1 THEN 'WA' ELSE 'TL' END,
        @testuser, cp_id
 FROM picked WHERE rn <= 45;"
 
+# The admin audit log spec needs to log in as an admin. The dump's real admins
+# carry production password hashes, and testuser has to stay a plain ROLE_USER
+# for the other specs, so add a dedicated admin that reuses testuser's password
+# ('testpass'), plus a throwaway user it can activate/deactivate without
+# disturbing testuser.
+echo "Seeding an admin and an audit target user..."
+mysql -u root -ppassword arena_e2e -e "
+INSERT INTO jhi_user (login, password_hash, first_name, last_name, email, activated, lang_key, created_by)
+SELECT 'testadmin', password_hash, 'Test', 'Admin', 'testadmin@test.com', b'1', 'en', 'system'
+FROM jhi_user WHERE login = 'testuser';
+
+INSERT INTO jhi_user_authority (user_id, authority_name)
+SELECT u.id, a.name
+FROM jhi_user u CROSS JOIN (SELECT 'ROLE_ADMIN' AS name UNION SELECT 'ROLE_USER') a
+WHERE u.login = 'testadmin';
+
+INSERT INTO jhi_user (login, password_hash, first_name, last_name, email, activated, lang_key, created_by)
+SELECT 'audittarget', password_hash, 'Audit', 'Target', 'audittarget@test.com', b'1', 'en', 'system'
+FROM jhi_user WHERE login = 'testuser';
+
+INSERT INTO jhi_user_authority (user_id, authority_name)
+SELECT id, 'ROLE_USER' FROM jhi_user WHERE login = 'audittarget';"
+
 # Run Liquibase to ensure any recent changes are applied
 echo "Running Liquibase updates on e2e database..."
 ./mvnw liquibase:update -Pe2e

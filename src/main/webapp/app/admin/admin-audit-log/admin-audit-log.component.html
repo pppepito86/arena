@@ -1,0 +1,85 @@
+<div>
+    <h2 id="admin-audit-log-page-heading" jhiTranslate="adminAuditLog.title">Admin audit log</h2>
+
+    <p class="text-muted" jhiTranslate="adminAuditLog.description">
+        Actions taken by admins: problems created, edited and uploaded, and users activated or deactivated.
+    </p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" jhiTranslate="adminAuditLog.filter.from">from</span>
+                </div>
+                <input type="date" class="form-control" name="start" data-testid="audit-from-date"
+                       [(ngModel)]="fromDate" (ngModelChange)="filter()" required/>
+
+                <div class="input-group-append">
+                    <span class="input-group-text" jhiTranslate="adminAuditLog.filter.to">to</span>
+                </div>
+                <input type="date" class="form-control" name="end" data-testid="audit-to-date"
+                       [(ngModel)]="toDate" (ngModelChange)="filter()" required/>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-control mb-3" name="adminLogin" data-testid="audit-admin-filter"
+                    [(ngModel)]="adminLogin" (ngModelChange)="filter()">
+                <option [ngValue]="undefined" jhiTranslate="adminAuditLog.filter.allAdmins">All admins</option>
+                <option *ngFor="let admin of admins" [ngValue]="admin">{{admin}}</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-control mb-3" name="action" data-testid="audit-action-filter"
+                    [(ngModel)]="action" (ngModelChange)="filter()">
+                <option [ngValue]="undefined" jhiTranslate="adminAuditLog.filter.allActions">All actions</option>
+                <option *ngFor="let a of actions" [ngValue]="a">{{a}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
+                <th jhiSortBy="performedDate"><span jhiTranslate="adminAuditLog.table.date">Date</span><fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="adminLogin"><span jhiTranslate="adminAuditLog.table.admin">Admin</span><fa-icon [icon]="'sort'"></fa-icon></th>
+                <th jhiSortBy="action"><span jhiTranslate="adminAuditLog.table.action">Action</span><fa-icon [icon]="'sort'"></fa-icon></th>
+                <th><span jhiTranslate="adminAuditLog.table.entity">Entity</span></th>
+                <th><span jhiTranslate="adminAuditLog.table.changes">Changes</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let entry of entries" [attr.data-testid]="'audit-row-' + entry.id">
+                <td><span>{{entry.performedDate | date:'medium'}}</span></td>
+                <td><small>{{entry.adminLogin}}</small></td>
+                <td><span class="badge badge-info">{{entry.action}}</span></td>
+                <td>
+                    <a *ngIf="entityLink(entry)" [routerLink]="entityLink(entry)">
+                        {{entry.entityLabel || entry.entityType + ' #' + entry.entityId}}
+                    </a>
+                    <span *ngIf="!entityLink(entry)">
+                        {{entry.entityLabel || entry.entityType}}
+                    </span>
+                </td>
+                <td class="break">
+                    <div *ngFor="let change of changes(entry)">
+                        <small>{{change.field}}:</small>
+                        <span class="text-muted">{{change.old === null ? '—' : change.old}}</span>
+                        &rarr;
+                        <strong>{{change.new === null ? '—' : change.new}}</strong>
+                    </div>
+                    <small class="text-muted" *ngIf="note(entry)">{{note(entry)}}</small>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+        </div>
+    </div>
+</div>

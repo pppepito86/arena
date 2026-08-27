@@ -44,7 +44,8 @@ import {
     faMedal,
     faDownload,
     faFile,
-    faEdit
+    faEdit,
+    faClipboardList
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adds the SVG icon to the library so you can use it in your page
@@ -87,5 +88,6 @@ library.add(faMedal);
 library.add(faDownload);
 library.add(faFile);
 library.add(faEdit);
+library.add(faClipboardList);
 
 // jhipster-needle-add-element-to-vendor - JHipster will add new menu items here

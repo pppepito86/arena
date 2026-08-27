@@ -43,6 +43,9 @@ public class CompetitionProblemService {
     @Autowired
     private WorkerPool workerPool;
 
+    @Autowired
+    private AdminAuditService adminAuditService;
+
     private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemMapper competitionProblemMapper;
     private final SubmissionService submissionService;
@@ -196,7 +199,28 @@ public class CompetitionProblemService {
             log.info("limit for problem<" + problemId + "> with times " +
                     times + " will be " + timeLimitMs + "ms");
 
+            // An admin triggered this through /competition-problems/{id}/times,
+            // so the derived limit belongs in the audit log like a manual edit.
+            // Reading the old limit is only needed for that entry, so a broken
+            // problem package must not stop the limit from being set.
+            ProblemDTO problemBefore = null;
+            try {
+                problemBefore = problemService.findOne(problemId)
+                        .map(dto -> problemService.setLimitsToDto(dto))
+                        .orElse(null);
+            } catch (Exception e) {
+                log.warn("Cannot read limits of problem " + problemId + " for the audit log", e);
+            }
+
             problemService.updateTimeLimit(problemId, timeLimitMs);
+
+            if (problemBefore != null) {
+                adminAuditService.logIfChanged("problem.limits.auto_set",
+                        AdminAuditService.ENTITY_PROBLEM, problemId, problemBefore.getTitle(),
+                        AdminAuditService.changes(AdminAuditService.change(
+                                "time", problemBefore.getTime(), timeLimitMs)));
+            }
+
             workerPool.deleteProblem(problemId);
         } else {
             log.info("can't find " + numSolutions + " good solutions for problemId = " + problemId);

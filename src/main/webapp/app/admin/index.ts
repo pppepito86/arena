@@ -1,3 +1,7 @@
+export * from './admin-audit-log/admin-audit-log.component';
+export * from './admin-audit-log/admin-audit-log.service';
+export * from './admin-audit-log/admin-audit-log.route';
+export * from './admin-audit-log/admin-audit-log.model';
 export * from './audits/audits.component';
 export * from './audits/audits.service';
 export * from './audits/audits.route';

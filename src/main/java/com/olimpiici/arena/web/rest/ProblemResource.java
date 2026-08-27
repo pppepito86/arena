@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -31,8 +33,10 @@ import com.codahale.metrics.annotation.Timed;
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.grader.WorkerPool;
 import com.olimpiici.arena.security.AuthoritiesConstants;
+import com.olimpiici.arena.service.AdminAuditService;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.FieldChange;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
@@ -57,6 +61,9 @@ public class ProblemResource {
 
     @Autowired
     private WorkerPool workerPool;
+
+    @Autowired
+    private AdminAuditService adminAuditService;
 
     private final ProblemService problemService;
 
@@ -86,6 +93,8 @@ public class ProblemResource {
             throw new BadRequestAlertException("A new problem cannot already have an ID", ENTITY_NAME, "idexists");
         }
         ProblemDTO result = problemService.save(problemDTO);
+        adminAuditService.log("problem.create", AdminAuditService.ENTITY_PROBLEM,
+        		result.getId(), result.getTitle());
         return ResponseEntity.created(new URI("/api/problems/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -110,6 +119,8 @@ public class ProblemResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
 
+        ProblemDTO before = findWithLimits(problemId);
+
         ProblemDTO result = problemService.save(problemDTO);
         if (problemDTO.getMemory() != null) {
         	problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
@@ -117,6 +128,7 @@ public class ProblemResource {
         if (problemDTO.getTime() != null) {
         	problemService.updateTimeLimit(problemId, problemDTO.getTime());
         }
+        auditProblemUpdate(before, problemDTO, result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))
             .body(result);
@@ -164,9 +176,15 @@ public class ProblemResource {
     		throws Exception {
         log.debug("REST updating zip for: {} {}", id, file.getOriginalFilename());
 
+        // A new package brings its own grade.properties, so the limits can
+        // change without anyone editing them: snapshot them either side.
+        ProblemDTO before = findWithLimits(id);
+
         File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
         FileUtils.copyInputStreamToFile(file.getInputStream(), zipFile);
     	problemService.unzipProblemZip(id);
+
+        auditZipUpload(id, file, before, findWithLimits(id));
 
         workerPool.deleteProblem(id);
 
@@ -188,7 +206,11 @@ public class ProblemResource {
     public ResponseEntity<?> updateTags(@PathVariable Long id, @RequestBody List<TagDTO> tags)
     		throws URISyntaxException {
         log.debug("REST updating tags for: {} {}", id, tags);
+        List<TagDTO> oldTags = problemService.findTags(id);
         problemService.updateTags(id, tags);
+        adminAuditService.logIfChanged("problem.update_tags", AdminAuditService.ENTITY_PROBLEM,
+        		id, problemTitle(id), AdminAuditService.changes(
+        				AdminAuditService.change("tags", tagTitles(oldTags), tagTitles(tags))));
         return ResponseEntity.ok().build();
     }
 
@@ -214,5 +236,71 @@ public class ProblemResource {
         log.debug("REST request to delete Problem : {}", id);
         problemService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+
+    /**
+     * The problem as it currently is, with the time and memory limits filled in
+     * from the problem package.
+     */
+    private ProblemDTO findWithLimits(Long id) {
+    	try {
+    		return problemService.findOne(id)
+    				.map(dto -> problemService.setLimitsToDto(dto))
+    				.orElse(null);
+    	} catch (Exception e) {
+    		// Reading the limits out of the problem package is only needed for the
+    		// audit entry, so a broken package must not fail the admin's edit.
+    		log.warn("Cannot read limits of problem {} for the audit log", id, e);
+    		return null;
+    	}
+    }
+
+    /**
+     * Records what the admin actually changed about a problem, limits included.
+     * The Angular form sends null limits when they are not editable (see
+     * problem-update.component.ts), so those are only compared when a value
+     * actually came in.
+     */
+    private void auditProblemUpdate(ProblemDTO before, ProblemDTO submitted, ProblemDTO result) {
+    	if (before == null) {
+    		return;
+    	}
+    	List<FieldChange> changes = AdminAuditService.changes(
+    			AdminAuditService.change("title", before.getTitle(), result.getTitle()),
+    			AdminAuditService.change("directory", before.getDirectory(), result.getDirectory()),
+    			AdminAuditService.change("version", before.getVersion(), result.getVersion()),
+    			AdminAuditService.change("tags", before.getTagsId(), result.getTagsId()),
+    			submitted.getTime() == null ? null
+    					: AdminAuditService.change("time", before.getTime(), submitted.getTime()),
+    			submitted.getMemory() == null ? null
+    					: AdminAuditService.change("memory", before.getMemory(), submitted.getMemory()));
+
+    	adminAuditService.logIfChanged("problem.update", AdminAuditService.ENTITY_PROBLEM,
+    			result.getId(), result.getTitle(), changes);
+    }
+
+    private void auditZipUpload(Long id, MultipartFile file, ProblemDTO before, ProblemDTO after) {
+    	String note = file.getOriginalFilename() + " (" + file.getSize() + " bytes)";
+    	List<FieldChange> changes = (before == null || after == null)
+    			? Collections.emptyList()
+    			: AdminAuditService.changes(
+    					AdminAuditService.change("time", before.getTime(), after.getTime()),
+    					AdminAuditService.change("memory", before.getMemory(), after.getMemory()));
+
+    	adminAuditService.log("problem.upload_zip", AdminAuditService.ENTITY_PROBLEM, id,
+    			after != null ? after.getTitle() : null, note, changes);
+    }
+
+    private String problemTitle(Long id) {
+    	return problemService.findOne(id).map(ProblemDTO::getTitle).orElse(null);
+    }
+
+    private static String tagTitles(List<TagDTO> tags) {
+    	if (tags == null) {
+    		return null;
+    	}
+    	return tags.stream()
+    			.map(TagDTO::getTitle)
+    			.collect(Collectors.joining(", "));
     }
 }

@@ -1,0 +1,19 @@
+{
+    "adminAuditLog": {
+        "title": "Admin audit log",
+        "description": "Actions taken by admins: problems created, edited and uploaded, and users activated or deactivated.",
+        "filter": {
+            "from": "from",
+            "to": "to",
+            "allAdmins": "All admins",
+            "allActions": "All actions"
+        },
+        "table": {
+            "date": "Date",
+            "admin": "Admin",
+            "action": "Action",
+            "entity": "Entity",
+            "changes": "Changes"
+        }
+    }
+}

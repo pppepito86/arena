@@ -7,6 +7,7 @@ import { ArenaSharedModule } from 'app/shared';
 
 import {
     adminState,
+    AdminAuditLogComponent,
     AuditsComponent,
     UserMgmtComponent,
     UserMgmtDetailComponent,
@@ -28,6 +29,7 @@ import {
         /* jhipster-needle-add-admin-module - JHipster will add admin modules here */
     ],
     declarations: [
+        AdminAuditLogComponent,
         AuditsComponent,
         UserMgmtComponent,
         UserMgmtDetailComponent,

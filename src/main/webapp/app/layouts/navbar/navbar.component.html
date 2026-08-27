@@ -185,6 +185,12 @@
                             <span jhiTranslate="global.menu.admin.apidocs">API</span>
                         </a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" routerLink="admin/admin-audit-log" routerLinkActive="active" (click)="collapseNavbar()">
+                            <fa-icon icon="clipboard-list" fixedWidth="true"></fa-icon>
+                            <span jhiTranslate="global.menu.admin.adminAuditLog">Admin audit log</span>
+                        </a>
+                    </li>
                     <!-- jhipster-needle-add-element-to-admin-menu - JHipster will add entities to the admin menu here -->
                 </ul>
             </li>
