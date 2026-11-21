@@ -89,11 +89,11 @@ public class SubmissionService {
 	// @Scheduled(fixedDelay = 24*60*60*1000)
 	@Transactional
     public void banAuthorSubmissions() {
-		log.warn("banAuthorSubmissions - start");
+		log.info("banAuthorSubmissions - start");
 		int numBanned = 0;
 		// for (int days_back_start = 365*5; days_back_start-10 > 1; days_back_start -= 10) {
 		List<Submission> submissions = submissionRepository.findSubmissionsInPeriod(5, 1);
-		log.warn("banAuthorSubmissions - {} submissions to check", submissions.size());
+		log.info("banAuthorSubmissions - {} submissions to check", submissions.size());
 		for (Submission submission : submissions) {
 			try {
 				if (maybeBanSubmission(submission)) numBanned++;
@@ -102,7 +102,7 @@ public class SubmissionService {
 			}
 		}
 		// }
-		log.warn("banAuthorSubmissions - done, banned {} submissions", numBanned);
+		log.info("banAuthorSubmissions - done, banned {} submissions", numBanned);
 	}
 
 	/**
