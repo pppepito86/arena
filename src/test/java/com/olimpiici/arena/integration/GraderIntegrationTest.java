@@ -205,16 +205,14 @@ public class GraderIntegrationTest {
         File workerWorkDir = new File(workerDir, "target/work");
         FileUtils.deleteDirectory(workerWorkDir);
 
-        // NOTE: worker/pom.xml pins spring-boot-maven-plugin to 1.5.7.RELEASE
-        // (via spring-boot-starter-parent), whose `run` goal reads program
-        // arguments from the "run.arguments" system property, COMMA-separated
-        // -- not "spring-boot.run.arguments" space-separated (that property
-        // name is Spring Boot 2.x only). Using the wrong one is silently
-        // ignored, so the worker falls back to application.properties's
-        // work.dir=./work -- a directory shared and never cleaned across
-        // every local run of this test/service.
-        ProcessBuilder pb = new ProcessBuilder("./mvnw", "spring-boot:run",
-            "-Drun.arguments=--server.port=8089,--work.dir=target/work");
+        String workerPom = FileUtils.readFileToString(new File(workerDir, "pom.xml"), java.nio.charset.StandardCharsets.UTF_8);
+        boolean isSpringBoot1 = workerPom.replaceAll("\\s+", " ")
+            .contains("spring-boot-starter-parent</artifactId> <version>1.");
+        String runArgsProp = isSpringBoot1
+            ? "-Drun.arguments=--server.port=8089,--work.dir=target/work"
+            : "-Dspring-boot.run.arguments=--server.port=8089 --work.dir=target/work --piper.dir=piper";
+
+        ProcessBuilder pb = new ProcessBuilder("sh", "./mvnw", "spring-boot:run", runArgsProp);
         pb.directory(workerDir);
         pb.redirectErrorStream(true);
         File logFile = new File("target/worker-integration.log");

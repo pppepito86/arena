@@ -97,11 +97,11 @@ describe('Admin audit log', () => {
         cy.get('[data-testid=audit-action-filter]').select(action);
         cy.wait('@loadLog');
 
-        auditRows().should('have.length.greaterThan', 0);
-        // Synchronous assertions: the table is rebuilt on every load, so a
-        // retrying one would chase rows that are no longer in the DOM.
-        cy.get('tr[data-testid^="audit-row-"] .badge').each($badge => {
-          expect($badge.text().trim()).to.eq(action);
+        cy.get('tr[data-testid^="audit-row-"] .badge').should($badges => {
+          expect($badges.length).to.be.greaterThan(0);
+          $badges.each((_, el) => {
+            expect(el.textContent.trim()).to.eq(action);
+          });
         });
       });
   });
