@@ -127,8 +127,7 @@ public class GraderTask {
 			} else if (values.length == 1 && !skipFirst){
 				verdict = values[0].getVerdict().toString();
                 if (!verdict.equals("OK")) {
-				    System.out.println("Submission <" + submissionId + "> failed with "
-                        + values[0].getReason());
+				    log.debug("Submission <{}> failed with {}", submissionId, values[0].getReason());
                 }
 			}
 		} catch (Exception e) {
