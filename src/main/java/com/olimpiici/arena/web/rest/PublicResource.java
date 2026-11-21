@@ -15,6 +15,7 @@ import org.pesho.grader.step.StepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -104,16 +105,13 @@ public class PublicResource {
         log.debug("REST request to get Problem ZIP: {}", id);
         String workdir = applicationProperties.getWorkDir();
         File zipFile = Paths.get(workdir, "problems", ""+id, "problem.zip").toFile();
-        InputStreamResource isr = null;
-        if (zipFile.exists()) {
-        	isr = new InputStreamResource(new FileInputStream(zipFile));
-        }
+        FileSystemResource resource = zipFile.isFile() ? new FileSystemResource(zipFile) : null;
 
     	HttpHeaders respHeaders = new HttpHeaders();
     	respHeaders.setContentDispositionFormData("attachment", "problem.zip");
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-    	return ResponseUtil.wrapOrNotFound(Optional.of(isr), respHeaders);
+    	return ResponseUtil.wrapOrNotFound(Optional.ofNullable(resource), respHeaders);
     }
 
 //    @GetMapping("/time_limits")
