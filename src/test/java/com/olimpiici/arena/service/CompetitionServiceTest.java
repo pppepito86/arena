@@ -291,6 +291,41 @@ public class CompetitionServiceTest {
     }
 
     @Test
+    public void testFindStandings_HandlesNullPoints() {
+        ZonedDateTime from = ZonedDateTime.now();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Object[] row = new Object[] { BigInteger.valueOf(7L), "Waiting", "User", null, "{}" };
+        List<Object[]> rawList = new ArrayList<>();
+        rawList.add(row);
+
+        when(competitionRepository.getRootStandings(from, 0, 10))
+            .thenReturn(rawList);
+        when(competitionRepository.getRootStandingsSize(from)).thenReturn(1);
+
+        Page<UserPoints> standings = competitionService.findStandings(1L, pageable, from, null);
+
+        assertThat(standings.getContent()).hasSize(1);
+        assertThat(standings.getContent().get(0).userId).isEqualTo(7L);
+        assertThat(standings.getContent().get(0).points).isEqualTo(0);
+    }
+
+    @Test
+    public void testFindSimplePointsForUserPerProblem_HandlesNullPoints() {
+        List<Long> cpIds = Arrays.asList(1L);
+        Object[] row = new Object[] { BigInteger.valueOf(1L), null };
+        List<Object[]> rawList = new ArrayList<>();
+        rawList.add(row);
+
+        when(competitionRepository.getSimpleUserPointsPerProblem(cpIds, 10L))
+            .thenReturn(rawList);
+
+        Map<Long, Integer> result = competitionService.findSimplePointsForUserPerProblem(cpIds, 10L);
+
+        assertThat(result.get(1L)).isEqualTo(0);
+    }
+
+    @Test
     public void testUpdateSubProblems() {
         Competition parent = new Competition();
         parent.setId(1L);

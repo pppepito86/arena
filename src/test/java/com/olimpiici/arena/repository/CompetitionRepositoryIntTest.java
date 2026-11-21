@@ -48,7 +48,7 @@ public class CompetitionRepositoryIntTest {
     private User user1;
     private User user2;
     private User user3;
-    
+
     private CompetitionProblem cp1;
     private CompetitionProblem cp2;
     private ZonedDateTime now;
@@ -57,7 +57,7 @@ public class CompetitionRepositoryIntTest {
     public static String jsonObjectAgg(String key, String value) {
         return String.format("{\"%s\":%s}", key, value);
     }
-    
+
     @Before
     public void init() {
         // Clean up in reverse order of dependencies
@@ -68,7 +68,7 @@ public class CompetitionRepositoryIntTest {
         userRepository.deleteAll();
 
         em.createNativeQuery("CREATE ALIAS IF NOT EXISTS JSON_OBJECTAGG FOR \"com.olimpiici.arena.repository.CompetitionRepositoryIntTest.jsonObjectAgg\"").executeUpdate();
-        
+
         now = ZonedDateTime.now();
         past = now.minusDays(1);
         ZonedDateTime wayPast = past.minusDays(1);
@@ -119,7 +119,7 @@ public class CompetitionRepositoryIntTest {
 
         // User 3: cp1 no improvement (30 -> 30). Delta = 0.
         createSubmission(user3, cp1, 30, wayPast);
-        createSubmission(user3, cp1, 25, afterPast); 
+        createSubmission(user3, cp1, 25, afterPast);
 
         // User 4 (EXCLUDED): cp1 improvement (10 -> 100). Delta ignored.
         User user4 = userRepository.findById(4L).get();
@@ -129,8 +129,8 @@ public class CompetitionRepositoryIntTest {
         // User 2032 (EXCLUDED): cp1 (delta 100) ignored.
         User user2032 = userRepository.findById(2032L).get();
         createSubmission(user2032, cp1, 100, afterPast);
-        
-        // User 6: cp2 submission (10). 
+
+        // User 6: cp2 submission (10).
         User user6 = userRepository.findById(6L).get();
         createSubmission(user6, cp2, 10, afterPast);
     }
@@ -164,15 +164,15 @@ public class CompetitionRepositoryIntTest {
     @Test
     public void testGetRootStandings_FiltersExclusionsAndCalculatesDeltas() {
         List<Object[]> standings = competitionRepository.getRootStandings(past, 0, 10);
-        
+
         assertThat(standings).hasSize(4);
-        
+
         // Row 0: User 2 (40 pts)
         assertRow(standings.get(0), 2L, "Fn2", "Ln2", 40.0);
 
         // Row 1: User 1 (30 pts)
         assertRow(standings.get(1), 1L, "Fn1", "Ln1", 30.0);
-        
+
         // Row 2: User 6 (10 pts)
         assertRow(standings.get(2), 6L, "Fn6", "Ln6", 10.0);
 
@@ -201,7 +201,7 @@ public class CompetitionRepositoryIntTest {
     public void testGetAggregatedStandingsForProblems_FiltersByProblem() {
         List<Long> onlyCp2 = Arrays.asList(cp2.getId());
         List<Object[]> standings = competitionRepository.getAggregatedStandingsForProblems(past, onlyCp2, 0, 10);
-        
+
         assertThat(standings).hasSize(1);
         assertRow(standings.get(0), 6L, "Fn6", "Ln6", 10.0);
     }
@@ -210,7 +210,7 @@ public class CompetitionRepositoryIntTest {
     public void testGetAggregatedUserPointsForProblems() {
         List<Long> allCps = Arrays.asList(cp1.getId(), cp2.getId());
         List<Object[]> points = competitionRepository.getAggregatedUserPointsForProblems(past, allCps, user1.getId());
-        
+
         assertThat(points).hasSize(1);
         assertRow(points.get(0), 1L, "Fn1", "Ln1", 30.0);
     }
@@ -219,7 +219,7 @@ public class CompetitionRepositoryIntTest {
     public void testGetSimpleUserPointsPerProblem_NoDelta() {
         List<Long> allCps = Arrays.asList(cp1.getId(), cp2.getId());
         List<Object[]> points = competitionRepository.getSimpleUserPointsPerProblem(allCps, user1.getId());
-        
+
         assertThat(points).hasSize(1);
         assertThat(points.get(0)[0].toString()).isEqualTo(cp1.getId().toString());
         assertThat(points.get(0)[1].toString()).isEqualTo("50");
@@ -229,7 +229,7 @@ public class CompetitionRepositoryIntTest {
     public void testGetStandingsPerProblemForProblems_DetailedJson() {
         List<Long> allCps = Arrays.asList(cp1.getId(), cp2.getId());
         List<Object[]> standings = competitionRepository.getStandingsPerProblemForProblems(past, allCps, 0, 10);
-        
+
         assertThat(standings).hasSize(4);
         // User 1 is at index 1
         assertRow(standings.get(1), 1L, "Fn1", "Ln1", 30.0);
@@ -241,12 +241,12 @@ public class CompetitionRepositoryIntTest {
     public void testGetUserPointsPerProblem() {
         List<Long> allCps = Arrays.asList(cp1.getId(), cp2.getId());
         List<Object[]> result = competitionRepository.getUserPointsPerProblem(past, allCps, user1.getId());
-        
+
         assertThat(result).hasSize(1);
         assertRow(result.get(0), 1L, "Fn1", "Ln1", 30.0);
         assertThat(result.get(0)[4].toString()).contains("\"" + cp1.getId() + "\":30");
     }
-    
+
     @Test
     public void testExclusions_ExplicitlyCheckIds4And2032() {
         List<Object[]> standings = competitionRepository.getRootStandings(past, 0, 100);
@@ -255,5 +255,37 @@ public class CompetitionRepositoryIntTest {
             assertThat(id).isNotEqualTo(4L);
             assertThat(id).isNotEqualTo(2032L);
         }
+    }
+
+    @Test
+    public void testStandings_NullPointsSubmissionReturnsZeroInsteadOfNull() {
+        insertUser(7L, "waiting_user", "Wait", "Ing");
+        User waitingUser = userRepository.findById(7L).get();
+
+        Submission pending = new Submission();
+        pending.setUser(waitingUser);
+        pending.setCompetitionProblem(cp1);
+        pending.setPoints(null);
+        pending.setVerdict("waiting");
+        pending.setUploadDate(now);
+        submissionRepository.saveAndFlush(pending);
+
+        List<Long> allCps = Arrays.asList(cp1.getId(), cp2.getId());
+
+        List<Object[]> rootStandings = competitionRepository.getRootStandings(past, 0, 100);
+        Object[] waitingRootRow = rootStandings.stream()
+            .filter(r -> "7".equals(r[0].toString()))
+            .findFirst()
+            .orElseThrow(AssertionError::new);
+        assertRow(waitingRootRow, 7L, "Wait", "Ing", 0.0);
+
+        List<Object[]> aggUser = competitionRepository.getAggregatedUserPointsForProblems(past, allCps, 7L);
+        assertThat(aggUser).hasSize(1);
+        assertRow(aggUser.get(0), 7L, "Wait", "Ing", 0.0);
+
+        List<Object[]> perProbUser = competitionRepository.getUserPointsPerProblem(past, allCps, 7L);
+        assertThat(perProbUser).hasSize(1);
+        assertRow(perProbUser.get(0), 7L, "Wait", "Ing", 0.0);
+        assertThat(perProbUser.get(0)[4].toString()).contains("\"" + cp1.getId() + "\":0");
     }
 }

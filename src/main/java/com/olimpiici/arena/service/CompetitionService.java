@@ -1,6 +1,5 @@
 package com.olimpiici.arena.service;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -352,7 +351,7 @@ public class CompetitionService {
 
 		for (Object[] r : raw) {
 			Long problemId = ((BigInteger)r[0]).longValue();
-			Integer points = (Integer)r[1];
+			Integer points = r[1] != null ? ((Number)r[1]).intValue() : 0;
 			pointsPerProblem.put(problemId, points);
 		}
 		return pointsPerProblem;
@@ -386,7 +385,7 @@ public class CompetitionService {
 		Long userId = ((BigInteger)row[0]).longValue();
 		String firstName = convertToString(row[1]);
 		String lastName = convertToString(row[2]);
-		Integer points = ((BigDecimal)row[3]).intValue();
+		Integer points = row[3] != null ? ((Number)row[3]).intValue() : 0;
 
 		UserPoints userPoints = new UserPoints(userId, firstName, lastName, points);
 		if (4 < row.length) {

@@ -54,7 +54,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			" select user_points_all.user_id, "
 			+ "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
-			+ "     sum(user_points_all.max_points) - coalesce(sum(user_points_old.max_points),0) as total_points"
+			+ "     coalesce(sum(user_points_all.max_points),0) - coalesce(sum(user_points_old.max_points),0) as total_points"
 			+ " from"
 			+ "     ("
 			+ "         select user_id, competition_problem_id, max(points) as max_points"
@@ -128,7 +128,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			  " select user_points_all.user_id, "
 			+ "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
-			+ "     sum(user_points_all.max_points) - coalesce(sum(user_points_old.max_points),0) as total_points"
+			+ "     coalesce(sum(user_points_all.max_points),0) - coalesce(sum(user_points_old.max_points),0) as total_points"
 			+ " from" + tableWithStandingsPerProblem
 			+ " group by user_points_all.user_id";
 
@@ -183,7 +183,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			  " select user_points_all.user_id, "
 		    + "     jhi_user.first_name,"
 			+ "     jhi_user.last_name,  "
-			+ "     sum(user_points_all.max_points) - coalesce(sum(user_points_old.max_points),0) as total_points,"
+			+ "     coalesce(sum(user_points_all.max_points),0) - coalesce(sum(user_points_old.max_points),0) as total_points,"
 			// Here we use CONCAT('', json) as a hack to convert to a variable length string.
 			// The alternatives are to use
 			//    - CONVERT(json, CHAR) which works in MySQL but H2 (in unit tests) truncates to a single string
@@ -191,7 +191,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 			+ "     CONCAT('',"
 			+ "			JSON_OBJECTAGG("
 			+ "				user_points_all.competition_problem_id, "
-		    + "				user_points_all.max_points - coalesce(user_points_old.max_points,0)"
+		    + "				coalesce(user_points_all.max_points,0) - coalesce(user_points_old.max_points,0)"
 			+ "			) "
 		    + " 	) as problems "
 			+ " from" + tableWithStandingsPerProblem
@@ -236,7 +236,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 	 * @return List of pairs [competition_problem_id, max_points].
 	 */
 	@Query(
-			value = "select competition_problem_id, max(points)"
+			value = "select competition_problem_id, coalesce(max(points), 0)"
 					+ " from submission"
 					+ " where user_id = :userId "
 					+ " and competition_problem_id in :compProblemIds"
