@@ -29,6 +29,7 @@ import com.olimpiici.arena.service.util.RandomUtil;
 import com.olimpiici.arena.web.rest.errors.EmailAlreadyUsedException;
 import com.olimpiici.arena.web.rest.errors.EmailNotFoundException;
 import com.olimpiici.arena.web.rest.errors.InternalServerErrorException;
+import com.olimpiici.arena.web.rest.errors.InvalidActivationKeyException;
 import com.olimpiici.arena.web.rest.errors.InvalidPasswordException;
 import com.olimpiici.arena.web.rest.errors.LoginAlreadyUsedException;
 import com.olimpiici.arena.web.rest.vm.KeyAndPasswordVM;
@@ -79,14 +80,14 @@ public class AccountResource {
      * GET  /activate : activate the registered user.
      *
      * @param key the activation key
-     * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be activated
+     * @throws InvalidActivationKeyException 400 (Bad Request) if no user was found for the activation key
      */
     @GetMapping("/activate")
     @Timed
     public void activateAccount(@RequestParam(value = "key") String key) {
         Optional<User> user = userService.activateRegistration(key);
         if (!user.isPresent()) {
-            throw new InternalServerErrorException("No user was found for this activation key");
+            throw new InvalidActivationKeyException();
         }
     }
 
@@ -138,7 +139,7 @@ public class AccountResource {
         }
         userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(),
             userDTO.getLangKey(), userDTO.getImageUrl());
-        
+
         User user = maybeUser.get();
         String newEmail = userDTO.getEmail();
         String oldEmail = user.getEmail();
@@ -150,7 +151,7 @@ public class AccountResource {
             user.setActivationKey(RandomUtil.generateActivationKey());
             user.setActivated(false);
             user = userRepository.save(user);
-            
+
             mailService.sendActivationEmail(user);
         }
     }
