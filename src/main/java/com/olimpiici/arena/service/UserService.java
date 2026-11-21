@@ -60,7 +60,7 @@ public class UserService {
     }
 
     public boolean isUserAdmin(User user) {
-        // Query the repo again, because this might be called from external service 
+        // Query the repo again, because this might be called from external service
         // and then we don't have Session to expand getAuthorities().
         user = userRepository.getOne(user.getId());
     	return user.getAuthorities()
@@ -153,8 +153,14 @@ public class UserService {
     }
 
     private boolean removeNonActivatedUser(User existingUser){
-        if (existingUser.getActivated()) {
+        // Once a user activates their account, activationKey is cleared to null.
+        // If an admin later deactivates them, activated becomes false while activationKey
+        // stays null — do not treat such deactivated accounts as abandoned signups.
+        if (existingUser.getActivated() || existingUser.getActivationKey() == null) {
              return false;
+        }
+        if (!userRepository.isRemovableNotActivatedUser(existingUser.getId())) {
+            return false;
         }
         userRepository.delete(existingUser);
         userRepository.flush();
@@ -301,7 +307,7 @@ public class UserService {
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
         userRepository
-            .findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
+            .findAllRemovableNotActivatedUsers(Instant.now().minus(3, ChronoUnit.DAYS))
             .forEach(user -> {
                 log.debug("Deleting not activated user {}", user.getLogin());
                 userRepository.delete(user);
