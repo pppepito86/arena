@@ -186,5 +186,7 @@ public class GraderTaskTest {
         // Should be called twice: once for the actual update, once for the "error" verdict
         verify(submissionService, times(2)).save(any(SubmissionDTO.class));
         assertThat(submissionDTO.getVerdict()).isEqualTo("error");
+        assertThat(submissionDTO.getPoints()).isEqualTo(0);
+        assertThat(submissionDTO.getDetails()).isEqualTo("");
     }
 }

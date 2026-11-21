@@ -149,7 +149,9 @@ public class GraderTask {
 				submissionService.save(submission);
 			} catch (Exception e) {
 				submission.setVerdict("error");
-				log.error("cannot judge submission: " + submission.getId() );
+				submission.setPoints(0);
+				submission.setDetails("");
+				log.error("cannot judge submission: " + submission.getId(), e);
 				submissionService.save(submission);
 			}
 		}
