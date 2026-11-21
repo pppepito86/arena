@@ -4,9 +4,15 @@ set -e
 # Setup environment variables
 export SPRING_PROFILES_ACTIVE=dev,e2e
 # arena and worker both enforce JDK 1.8 (see maven-enforcer-plugin in pom.xml),
-# so pin it explicitly rather than depending on the shell's default `java`.
-export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-8-openjdk-amd64}"
-export PATH="$JAVA_HOME/bin:$PATH"
+# so ensure JAVA_HOME points to JDK 8 even if the caller shell defaults to a newer JDK.
+if [[ -z "${JAVA_HOME:-}" ]] || ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q '"1\.8\.'; then
+  if [[ -d /usr/lib/jvm/java-8-openjdk-amd64 ]]; then
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  fi
+fi
+if [[ -n "${JAVA_HOME:-}" ]]; then
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
 # The webpack 4 / webpack-dev-server 3 toolchain here predates modern Node and
 # silently dies partway through a build on Node 24 (the machine default), while
 # Cypress 15's own engines field requires >=20.1. Node 22 satisfies both. Uses
@@ -25,6 +31,11 @@ PROBLEM_FIXTURES_DIR="src/test/resources/e2e/fixtures/problems"
 CY_CMD="npm run cypress:run"
 if [[ "$1" == "--open" ]]; then
   CY_CMD="npm run cypress:open"
+fi
+
+if [[ ! -f "$DUMP_FILE" ]]; then
+  echo "Missing $DUMP_FILE. Provide a database dump or run 'npm run e2e:dump' from a seeded arena_dev database." >&2
+  exit 1
 fi
 
 echo "==========================================="
@@ -120,11 +131,15 @@ echo "==========================================="
 
 # Run the sibling worker/ service out-of-process, configured entirely via
 # spring-boot:run program arguments so nothing is written into worker/'s checkout.
-# Note: worker is on the Spring Boot 1.x plugin, which reads program arguments
-# from the comma-separated `-Drun.arguments` system property (the 2.x-style
-# `-Dspring-boot.run.arguments` is silently ignored by this plugin version).
+# Spring Boot 1.x (worker master) reads comma-separated `-Drun.arguments`,
+# whereas Spring Boot 2.x (worker noi) reads space-separated `-Dspring-boot.run.arguments`.
 (
-  cd ../worker && mvn -q spring-boot:run "-Drun.arguments=--server.port=$WORKER_PORT,--work.dir=$WORKER_WORK_DIR,--piper.dir=piper,--spring.http.multipart.max-file-size=512MB,--spring.http.multipart.max-request-size=512MB"
+  cd ../worker
+  if tr -d '\n' < pom.xml | grep -q 'spring-boot-starter-parent</artifactId>[^<]*<version>1\.'; then
+    mvn -q spring-boot:run "-Drun.arguments=--server.port=$WORKER_PORT,--work.dir=$WORKER_WORK_DIR,--spring.http.multipart.max-file-size=512MB,--spring.http.multipart.max-request-size=512MB"
+  else
+    mvn -q spring-boot:run "-Dspring-boot.run.arguments=--server.port=$WORKER_PORT --work.dir=$WORKER_WORK_DIR --piper.dir=piper --spring.servlet.multipart.max-file-size=512MB --spring.servlet.multipart.max-request-size=512MB"
+  fi
 ) &
 WORKER_JOB=$!
 

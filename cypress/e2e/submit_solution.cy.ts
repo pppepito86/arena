@@ -19,11 +19,20 @@ function browseToProblem(path: string[], problem: string) {
 // (unlike 'bridges', which has no archive on disk).
 const SIGN = { path: ['Есенен турнир', '2012', 'E'], problem: 'sign' };
 
+// Backend enforces a 20s cooldown between submissions per user (SubmissionService.DURATION_BETWEEN_SUBMITS).
+let lastSubmitAt = 0;
+
 /** Pastes a fixture into the solution box and submits it. */
 function submitFixture(fixture: string) {
   cy.fixture(fixture).then(solutionCode => {
+    const remaining = lastSubmitAt ? 21000 - (Date.now() - lastSubmitAt) : 0;
+    if (remaining > 0) {
+      cy.wait(remaining);
+    }
     cy.get('#solution').invoke('val', solutionCode).trigger('input');
-    cy.get('[data-testid=solution-form] #save-entity').click();
+    cy.get('[data-testid=solution-form] #save-entity').click().then(() => {
+      lastSubmitAt = Date.now();
+    });
   });
 }
 
@@ -59,8 +68,9 @@ describe('Submit Solution', () => {
     // against a multi-line <pre> block, so check its raw text instead.
     cy.get('pre').invoke('text').should('contain', 'Author: Galina Momcheva');
 
-    // Wait for the async grading (arena -> worker -> isolate sandbox) to
-    // actually finish, rather than asserting on an intermediate state.
+    // Wait for the submission details to render first, then wait for async
+    // grading (arena -> worker -> isolate sandbox) to finish.
+    cy.get('[data-testid=submission-verdict]').should('be.visible');
     cy.get('[data-testid=judging-banner]', { timeout: 60000 }).should('not.exist');
     cy.get('[data-testid=submission-verdict]').should('contain', 'OK');
     cy.get('[data-testid=submission-points]').should('contain', '100');
@@ -69,7 +79,7 @@ describe('Submit Solution', () => {
     cy.url().then(url => {
       const submissionId = url.match(/\/submission\/(\d+)\/view/)[1];
 
-      cy.contains('a', 'sign', { matchCase: false }).click();
+      cy.get('table').first().contains('a', 'sign', { matchCase: false }).click();
       cy.get('[data-testid=view-submissions]').click();
 
       cy.get(`[data-testid="submission-row-${submissionId}"]`).within(() => {
@@ -89,6 +99,7 @@ describe('Submit Solution', () => {
     submitFixture('sign-wrong-solution.cpp');
 
     cy.hash().should('match', /^#\/submission\/\d+\/view/);
+    cy.get('[data-testid=submission-verdict]').should('be.visible');
     cy.get('[data-testid=judging-banner]', { timeout: 60000 }).should('not.exist');
 
     // The overall verdict is the per-test verdicts joined with commas, so a
@@ -106,7 +117,7 @@ describe('Submit Solution', () => {
     cy.url().then(url => {
       const submissionId = url.match(/\/submission\/(\d+)\/view/)[1];
 
-      cy.contains('a', 'sign', { matchCase: false }).click();
+      cy.get('table').first().contains('a', 'sign', { matchCase: false }).click();
       cy.get('[data-testid=view-submissions]').click();
 
       cy.get(`[data-testid="submission-row-${submissionId}"]`).within(() => {
