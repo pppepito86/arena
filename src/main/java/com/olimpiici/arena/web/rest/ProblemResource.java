@@ -193,7 +193,7 @@ public class ProblemResource {
             try {
                 competitionProblemService.submitAuthorsIfNeeded(cp.getId());
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Failed to submit author solutions for competition problem {}", cp.getId(), e);
             }
             });
 

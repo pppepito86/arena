@@ -1,6 +1,9 @@
 package com.olimpiici.arena.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -18,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.olimpiici.arena.config.ApplicationProperties;
+import com.olimpiici.arena.service.ProblemService;
 
 public class PublicResourceTest {
 
@@ -26,6 +30,9 @@ public class PublicResourceTest {
 
     @Mock
     private ApplicationProperties applicationProperties;
+
+    @Mock
+    private ProblemService problemService;
 
     private PublicResource publicResource;
     private File workDir;
@@ -38,6 +45,17 @@ public class PublicResourceTest {
 
         publicResource = new PublicResource();
         ReflectionTestUtils.setField(publicResource, "applicationProperties", applicationProperties);
+        ReflectionTestUtils.setField(publicResource, "problemService", problemService);
+    }
+
+    @Test
+    public void testGetProblemPdf_UnknownProblemReturns404WithoutWalkingDisk() throws Exception {
+        when(problemService.exists(9999L)).thenReturn(false);
+
+        ResponseEntity<?> response = publicResource.getProblemPdf(9999L, false);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(problemService, never()).getTaskDescription(any(), any());
     }
 
     @Test

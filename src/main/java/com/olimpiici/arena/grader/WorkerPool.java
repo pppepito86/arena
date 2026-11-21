@@ -31,7 +31,7 @@ public class WorkerPool {
 			try {
 				worker.deleteProblem(problemId);
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("Failed to delete problem {} from worker", problemId, e);
 			}
 		});
 	}

@@ -220,4 +220,16 @@ public class ProblemServiceTest {
         assertThat(result.getTime()).isEqualTo(1500);
         assertThat(result.getMemory()).isEqualTo(128);
     }
+
+    @Test
+    public void testGetTaskDescription_MissingDirectoryReturnsEmpty() {
+        Optional<File> result = problemService.getTaskDescription(workDir.getAbsolutePath(), 9999L);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void testGetAuthorSolution_MissingDirectoryReturnsEmpty() {
+        Optional<File> result = problemService.getAuthorSolution(workDir.getAbsolutePath(), 9999L);
+        assertThat(result).isEmpty();
+    }
 }

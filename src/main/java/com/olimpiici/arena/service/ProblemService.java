@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -135,6 +136,11 @@ public class ProblemService {
         log.debug("Request to get Problem : {}", id);
         return problemRepository.findById(id)
             .map(problemMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean exists(Long id) {
+        return problemRepository.existsById(id);
     }
 
     /**
@@ -480,16 +486,20 @@ public class ProblemService {
      * Identifies the PDF description file for a task.
      */
 	public Optional<File> getTaskDescription(String workDir, Long taskId) {
-		try {
-			File dir = getProblemDir(workDir, taskId);
-			return Files.walk(dir.toPath())
+		File dir = getProblemDir(workDir, taskId);
+		if (!dir.isDirectory()) {
+			log.error("Problem directory does not exist for task {}: {}", taskId, dir);
+			return Optional.empty();
+		}
+		try (Stream<Path> paths = Files.walk(dir.toPath())) {
+			return paths
 					.filter(Files::isRegularFile)
 					.map(Path::toFile)
 					.filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
 					.sorted((f1, f2) -> Integer.compare(f1.getAbsolutePath().length(), f2.getAbsolutePath().length()))
 					.findFirst();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.warn("Failed to find task description for problem {} in {}", taskId, dir, e);
 			return Optional.empty();
 		}
 	}
@@ -499,14 +509,21 @@ public class ProblemService {
      * filenames (e.g., author.cpp, title.cpp, or containing "100").
      */
 	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
+		File dir = getProblemDir(workDir, taskId);
+		if (!dir.isDirectory()) {
+			log.error("Problem directory does not exist for task {}: {}", taskId, dir);
+			return Optional.empty();
+		}
 		try {
-			File dir = getProblemDir(workDir, taskId);
 			String ext = getSolutionFileExtension(taskId);
-			List<File> potentialSols = Files.walk(dir.toPath())
-					.filter(Files::isRegularFile)
-					.map(Path::toFile)
-					.filter(f -> f.getName().toLowerCase().endsWith("." + ext))
-					.collect(Collectors.toList());
+			List<File> potentialSols;
+			try (Stream<Path> paths = Files.walk(dir.toPath())) {
+				potentialSols = paths
+						.filter(Files::isRegularFile)
+						.map(Path::toFile)
+						.filter(f -> f.getName().toLowerCase().endsWith("." + ext))
+						.collect(Collectors.toList());
+			}
 
 			if (potentialSols.isEmpty()) {
 				return Optional.empty();
@@ -542,7 +559,7 @@ public class ProblemService {
 					.findFirst();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.warn("Failed to find author solution for problem {} in {}", taskId, dir, e);
 			return Optional.empty();
 		}
 	}

@@ -74,6 +74,10 @@ public class PublicResource {
     		@RequestParam(value = "download", defaultValue = "false") Boolean download) throws Exception {
         log.debug("REST request to get Problem PDF: {}", id);
 
+        if (!problemService.exists(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
         Optional<File> pdf = problemService.getTaskDescription(applicationProperties.getWorkDir(), id);
     	Optional<InputStreamResource> isr = pdf.map(f -> {
 			try {
