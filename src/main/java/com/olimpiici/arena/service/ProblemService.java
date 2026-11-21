@@ -8,7 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -409,11 +412,14 @@ public class ProblemService {
      */
 	@Scheduled(fixedDelay = 24*60*60*1000) // Every day
     public void populateCompetitionInfo() {
-    	log.info("Starting job for populating competition info in problem.");
-    	for (CompetitionProblem cp : competitionProblemRepository.findAll()) {
+    	log.debug("Starting job for populating competition info in problem.");
+    	Map<Long, CompetitionInfo> targetInfoByProblemId = new LinkedHashMap<>();
+    	List<CompetitionProblem> allCompetitionProblems = new ArrayList<>(competitionProblemRepository.findAll());
+    	allCompetitionProblems.sort(Comparator.comparing(CompetitionProblem::getId, Comparator.nullsFirst(Comparator.naturalOrder())));
+    	for (CompetitionProblem cp : allCompetitionProblems) {
     		List<Competition> path = getPath(cp);
     		// If CP is not connected to root, skip it
-    		if (path.isEmpty() || path.get(path.size() - 1).getId() != 1) {
+    		if (path.isEmpty() || !Long.valueOf(1L).equals(path.get(path.size() - 1).getId())) {
     			continue;
     		}
 
@@ -422,6 +428,9 @@ public class ProblemService {
 			String groupName = null;
 			for (Competition c : path) {
 				String name = c.getLabel();
+				if (name == null) {
+					continue;
+				}
 				name = name.trim();
 				if (year == null && isYear(name)) {
 					year = Integer.parseInt(name);
@@ -433,22 +442,54 @@ public class ProblemService {
 			}
 
 			Problem problem = cp.getProblem();
-			if (Objects.equals(problem.getYear(), year)
-                    && problem.getCompetition() != null
-                    && problem.getCompetition().getId() == competition.getId()
-                    && Objects.equals(problem.getGroup(), groupName)
-                    && problem.getCanonicalCompetitionProblem() != null
-                    && problem.getCanonicalCompetitionProblem().getId() == cp.getId()) {
+			if (problem != null && problem.getId() != null) {
+				targetInfoByProblemId.put(problem.getId(), new CompetitionInfo(problem, year, competition, groupName, cp));
+			}
+		}
+
+    	int updatedCount = 0;
+    	for (CompetitionInfo info : targetInfoByProblemId.values()) {
+    		Problem problem = info.problem;
+    		Long currentCompetitionId = problem.getCompetition() != null ? problem.getCompetition().getId() : null;
+    		Long targetCompetitionId = info.competition != null ? info.competition.getId() : null;
+    		Long currentCanonicalCpId = problem.getCanonicalCompetitionProblem() != null
+    				? problem.getCanonicalCompetitionProblem().getId() : null;
+    		Long targetCanonicalCpId = info.canonicalCp != null ? info.canonicalCp.getId() : null;
+
+			if (Objects.equals(problem.getYear(), info.year)
+                    && Objects.equals(currentCompetitionId, targetCompetitionId)
+                    && Objects.equals(problem.getGroup(), info.groupName)
+                    && Objects.equals(currentCanonicalCpId, targetCanonicalCpId)) {
 				continue;
 			}
 
-			problem.setYear(year);
-			problem.setCompetition(competition);
-			problem.setGroup(groupName);
-			problem.setCanonicalCompetitionProblem(cp);
-			log.info("Populating competition info for problem " + problem.toString());
+			problem.setYear(info.year);
+			problem.setCompetition(info.competition);
+			problem.setGroup(info.groupName);
+			problem.setCanonicalCompetitionProblem(info.canonicalCp);
+			log.debug("Populating competition info for problem {}", problem);
 			problemRepository.save(problem);
-		}
+			updatedCount++;
+    	}
+    	if (updatedCount > 0) {
+    		log.info("Populated competition info for {} problems.", updatedCount);
+    	}
+    }
+
+    private static final class CompetitionInfo {
+    	final Problem problem;
+    	final Integer year;
+    	final Competition competition;
+    	final String groupName;
+    	final CompetitionProblem canonicalCp;
+
+    	CompetitionInfo(Problem problem, Integer year, Competition competition, String groupName, CompetitionProblem canonicalCp) {
+    		this.problem = problem;
+    		this.year = year;
+    		this.competition = competition;
+    		this.groupName = groupName;
+    		this.canonicalCp = canonicalCp;
+    	}
     }
 
     /**

@@ -222,6 +222,75 @@ public class ProblemServiceTest {
     }
 
     @Test
+    public void testPopulateCompetitionInfo_MultipleCpsAndIdempotentWithLargeIds() {
+        Competition root = new Competition();
+        root.setId(1L);
+        root.setLabel("Root");
+
+        Competition yearComp = new Competition();
+        yearComp.setId(500L);
+        yearComp.setLabel("2025");
+        yearComp.setParent(root);
+
+        Competition comp1 = new Competition();
+        comp1.setId(513L);
+        comp1.setLabel("Comp One");
+        comp1.setParent(yearComp);
+
+        Competition comp2 = new Competition();
+        comp2.setId(439L);
+        comp2.setLabel("Comp Two");
+        comp2.setParent(yearComp);
+
+        Competition groupA = new Competition();
+        groupA.setId(600L);
+        groupA.setLabel("A");
+        groupA.setParent(comp1);
+
+        Competition groupT = new Competition();
+        groupT.setId(601L);
+        groupT.setLabel("T");
+        groupT.setParent(comp2);
+
+        Problem problem = new Problem();
+        problem.setId(2256L);
+
+        CompetitionProblem cp1 = new CompetitionProblem();
+        cp1.setId(1000L);
+        cp1.setCompetition(groupA);
+        cp1.setProblem(problem);
+
+        CompetitionProblem cp2 = new CompetitionProblem();
+        cp2.setId(1001L);
+        cp2.setCompetition(groupT);
+        cp2.setProblem(problem);
+
+        // Return CPs out of ID order to verify deterministic selection by highest CP ID
+        when(competitionProblemRepository.findAll()).thenReturn(Arrays.asList(cp2, cp1));
+
+        // First run: should save ONCE (not twice!) with deterministic final competition info (cp2 has higher ID)
+        problemService.populateCompetitionInfo();
+
+        assertThat(problem.getYear()).isEqualTo(2025);
+        assertThat(problem.getGroup()).isEqualTo("T");
+        assertThat(problem.getCompetition().getId()).isEqualTo(439L);
+        assertThat(problem.getCanonicalCompetitionProblem().getId()).isEqualTo(1001L);
+        verify(problemRepository).save(problem);
+
+        // Simulate a fresh Hibernate session with distinct Long objects (>127, not ==)
+        Competition freshComp2 = new Competition();
+        freshComp2.setId(new Long(439L));
+        CompetitionProblem freshCp2 = new CompetitionProblem();
+        freshCp2.setId(new Long(1001L));
+        problem.setCompetition(freshComp2);
+        problem.setCanonicalCompetitionProblem(freshCp2);
+
+        // Second run: nothing changed, so save must NOT be called again
+        problemService.populateCompetitionInfo();
+        verify(problemRepository).save(problem); // still only 1 total invocation
+    }
+
+    @Test
     public void testGetTaskDescription_MissingDirectoryReturnsEmpty() {
         Optional<File> result = problemService.getTaskDescription(workDir.getAbsolutePath(), 9999L);
         assertThat(result).isEmpty();
