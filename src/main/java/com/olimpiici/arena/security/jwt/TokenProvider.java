@@ -105,7 +105,7 @@ public class TokenProvider {
             log.info("Invalid JWT signature.");
             log.trace("Invalid JWT signature trace: {}", e);
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token.");
+            log.debug("Expired JWT token.");
             log.trace("Expired JWT token trace: {}", e);
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT token.");
