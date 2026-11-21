@@ -807,7 +807,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install --production --ignore-scripts</arguments>
+                                    <arguments>ci --ignore-scripts</arguments>
                                 </configuration>
                             </execution>
                             <execution>
@@ -958,7 +958,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install --production --ignore-scripts</arguments>
+                                    <arguments>ci --ignore-scripts</arguments>
                                 </configuration>
                             </execution>
                             <execution>
