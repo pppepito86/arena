@@ -450,6 +450,89 @@ public class ProblemServiceTest {
         verify(workerPool, org.mockito.Mockito.times(2)).deleteProblem(11L);
     }
 
+    @Test
+    public void testWrappedFolderGradeProperties_ReadAndInPlaceUpdateWithoutDuplicate() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("A1_belote/grade.properties", "time=1.5\nmemory=1024\ngroups=1-1,2-8\nweights=0,100\nextensions=zip\n");
+        entries.put("A1_belote/tests/belote.01.in", "1\n");
+        problemService.replaceProblemZip(12L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        ProblemDTO dto = new ProblemDTO();
+        dto.setId(12L);
+        problemService.setLimitsToDto(dto);
+        assertThat(dto.getTime()).isEqualTo(1500);
+        assertThat(dto.getMemory()).isEqualTo(1024);
+        assertThat(dto.getExtension()).isEqualTo("zip");
+
+        problemService.updateTimeLimit(12L, 2000);
+
+        File zipFile = new File(workDir, "problems/12/problem.zip");
+        // Must update A1_belote/grade.properties in place and NOT create a second root grade.properties
+        assertThat(ProblemZipUtils.listFileEntries(zipFile))
+            .containsExactlyInAnyOrder("A1_belote/grade.properties", "A1_belote/tests/belote.01.in");
+        assertThat(new File(workDir, "problems/12/problem/grade.properties")).doesNotExist();
+
+        Properties updated = problemService.getProperties(12L);
+        assertThat(updated.getProperty("time")).isEqualTo("2");
+        assertThat(updated.getProperty("memory")).isEqualTo("1024");
+        assertThat(updated.getProperty("groups")).isEqualTo("1-1,2-8");
+        assertThat(updated.getProperty("weights")).isEqualTo("0,100");
+    }
+
+    @Test
+    public void testTestsSubdirGradeProperties_SurvivesCleanupShDeletion() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("tests/grade.properties", "time=0.1\nmemory=512\ngroups=1-5\n");
+        entries.put("tests/cowboys.01.in", "1\n");
+        entries.put("statement/cowboys.pdf", "%PDF-1.4");
+        problemService.replaceProblemZip(13L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        // Simulate Friday cleanup.sh deleting problem/tests/ (including tests/grade.properties!)
+        File testsDir = new File(workDir, "problems/13/problem/tests");
+        FileUtils.deleteDirectory(testsDir);
+        assertThat(testsDir).doesNotExist();
+
+        // Reading limits must still fall back to problem.zip
+        ProblemDTO dto = new ProblemDTO();
+        dto.setId(13L);
+        problemService.setLimitsToDto(dto);
+        assertThat(dto.getTime()).isEqualTo(100);
+        assertThat(dto.getMemory()).isEqualTo(512);
+
+        // Editing time limit must update tests/grade.properties inside problem.zip preserving groups,
+        // without creating a duplicate root grade.properties or recreating problem/tests/
+        problemService.updateTimeLimit(13L, 250);
+        assertThat(testsDir).doesNotExist();
+        assertThat(new File(workDir, "problems/13/problem/grade.properties")).doesNotExist();
+
+        File zipFile = new File(workDir, "problems/13/problem.zip");
+        assertThat(ProblemZipUtils.listFileEntries(zipFile))
+            .containsExactlyInAnyOrder("tests/grade.properties", "tests/cowboys.01.in", "statement/cowboys.pdf");
+
+        Properties updated = problemService.getProperties(13L);
+        assertThat(updated.getProperty("time")).isEqualTo("0.25");
+        assertThat(updated.getProperty("memory")).isEqualTo("512");
+        assertThat(updated.getProperty("groups")).isEqualTo("1-5");
+    }
+
+    @Test
+    public void testGetProperties_PrefersAuthoritativeZipOverStaleUnzippedCopy() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("grade.properties", "time=2.5\nmemory=512\n");
+        problemService.replaceProblemZip(14L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        // Mutate only the unzipped copy to simulate drift
+        FileUtils.writeStringToFile(
+            new File(workDir, "problems/14/problem/grade.properties"),
+            "time=9\nmemory=64\n",
+            "UTF-8"
+        );
+
+        Properties props = problemService.getProperties(14L);
+        assertThat(props.getProperty("time")).isEqualTo("2.5");
+        assertThat(props.getProperty("memory")).isEqualTo("512");
+    }
+
     private byte[] buildZipBytes(Map<String, String> entries) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {

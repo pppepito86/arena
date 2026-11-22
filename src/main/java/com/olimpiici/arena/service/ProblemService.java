@@ -51,6 +51,7 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
 import com.olimpiici.arena.service.util.HomographTranslator;
+import com.olimpiici.arena.service.util.ProblemPackageResolver;
 import com.olimpiici.arena.service.util.ProblemZipUtils;
 
 /**
@@ -241,7 +242,9 @@ public class ProblemService {
     static final String DEFAULT_EXTENSION = "cpp";
 
     /**
-     * Get problem metadata from grade.properties file.
+     * Get problem metadata from grade.properties file, preferring the authoritative
+     * {@code problem.zip} (which is what the worker grades) and falling back to the
+     * unzipped problem folder if {@code problem.zip} does not exist or has no properties file.
      *
      * @param problemId the problem ID
      * @return properties object containing limits and metadata
@@ -252,12 +255,35 @@ public class ProblemService {
 		props.setProperty("memory", "256");
 
 		synchronized (lock) {
-			File gradePropertiesFile = getGradeProperties(problemId);
-			if (!gradePropertiesFile.exists()) {
-				return props;
-			}
-			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
-				props.load(fis);
+			try {
+				File zipFile = getProblemZip(problemId);
+				if (zipFile.isFile()) {
+					try (ProblemZipUtils.OpenedZip opened = ProblemZipUtils.openZipFile(zipFile)) {
+						Optional<String> zipEntry = ProblemPackageResolver.findPropertiesEntry(
+							ProblemZipUtils.listFileEntries(opened));
+						if (zipEntry.isPresent()) {
+							Optional<byte[]> bytes = ProblemZipUtils.readEntry(opened, zipEntry.get());
+							if (bytes.isPresent()) {
+								try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes.get())) {
+									props.load(bais);
+									return props;
+								}
+							}
+						}
+					} catch (IOException e) {
+						log.warn("Cannot read metadata from problem.zip for problem {}, falling back to unzipped dir", problemId, e);
+					}
+				}
+
+				File unzippedFolder = getUnzippedProblemFolder(problemId);
+				Optional<String> onDiskEntry = ProblemPackageResolver.findPropertiesEntry(
+					ProblemPackageResolver.listRelativeFiles(unzippedFolder));
+				if (onDiskEntry.isPresent()) {
+					File propsFile = new File(unzippedFolder, onDiskEntry.get());
+					try (FileInputStream fis = new FileInputStream(propsFile)) {
+						props.load(fis);
+					}
+				}
 			} catch (IOException e) {
 				log.error("Cannot read metadata for problem: " + problemId, e);
 			}
@@ -385,31 +411,43 @@ public class ProblemService {
 	}
 
     /**
-     * Atomically reads, mutates, and persists grade.properties inside problem.zip (without
-     * extracting tests or invoking external `zip`) and syncs the unzipped on-disk copy.
+     * Atomically reads, mutates, and persists grade.properties in place inside problem.zip
+     * (preserving its existing path such as {@code A1_belote/grade.properties} or
+     * {@code tests/grade.properties} so we never create a duplicate root grade.properties)
+     * and syncs the unzipped on-disk copy if its parent directory exists.
      */
 	private void modifyGradeProperties(long problemId, Function<Properties, Boolean> mutator) throws Exception {
 		synchronized (lock) {
-			String entryPath = "grade.properties";
+			File zipFile = getProblemZip(problemId);
+			File unzippedFolder = getUnzippedProblemFolder(problemId);
+
+			Optional<String> existingZipEntry = Optional.empty();
+			Optional<byte[]> existingZipBytes = Optional.empty();
+			if (zipFile.isFile()) {
+				try (ProblemZipUtils.OpenedZip opened = ProblemZipUtils.openZipFile(zipFile)) {
+					existingZipEntry = ProblemPackageResolver.findPropertiesEntry(
+						ProblemZipUtils.listFileEntries(opened));
+					if (existingZipEntry.isPresent()) {
+						existingZipBytes = ProblemZipUtils.readEntry(opened, existingZipEntry.get());
+					}
+				}
+			}
+			Optional<String> existingDiskEntry = unzippedFolder.isDirectory()
+				? ProblemPackageResolver.findPropertiesEntry(ProblemPackageResolver.listRelativeFiles(unzippedFolder))
+				: Optional.empty();
+
+			String entryPath = existingZipEntry.orElseGet(() -> existingDiskEntry.orElse("grade.properties"));
+
 			Properties props = new Properties();
 			props.setProperty("time", "1");
 			props.setProperty("memory", "256");
 
-			File zipFile = getProblemZip(problemId);
-			File unzippedFolder = getUnzippedProblemFolder(problemId);
-			File unzippedPropsFile = new File(unzippedFolder, entryPath.replace('\\', '/'));
-
-			boolean loaded = false;
-			if (zipFile.isFile()) {
-				Optional<byte[]> zipEntryBytes = ProblemZipUtils.readEntry(zipFile, entryPath);
-				if (zipEntryBytes.isPresent()) {
-					try (ByteArrayInputStream bais = new ByteArrayInputStream(zipEntryBytes.get())) {
-						props.load(bais);
-						loaded = true;
-					}
+			File unzippedPropsFile = new File(unzippedFolder, ProblemPackageResolver.normalizeRelativePath(entryPath));
+			if (existingZipBytes.isPresent()) {
+				try (ByteArrayInputStream bais = new ByteArrayInputStream(existingZipBytes.get())) {
+					props.load(bais);
 				}
-			}
-			if (!loaded && unzippedPropsFile.isFile()) {
+			} else if (unzippedPropsFile.isFile()) {
 				try (FileInputStream fis = new FileInputStream(unzippedPropsFile)) {
 					props.load(fis);
 				}
@@ -453,10 +491,6 @@ public class ProblemService {
 
 	private File getUnzippedProblemFolder(long problemId) {
 		return getProblemFile(problemId, "problem");
-	}
-
-	private File getGradeProperties(long problemId) {
-		return getProblemFile(problemId, Paths.get("problem", "grade.properties").toString());
 	}
 
     /**
