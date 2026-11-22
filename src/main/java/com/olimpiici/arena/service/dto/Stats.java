@@ -17,7 +17,7 @@ public class Stats {
         public List<List<PeriodDelta>> periods = new ArrayList<>();
     }
 
-    // The change of a value during a period of time 
+    // The change of a value during a period of time
     public static class PeriodDelta {
         public PeriodDelta(String name, ZonedDateTime timestamp) {
             this.name = name;
@@ -25,7 +25,7 @@ public class Stats {
         }
 
         public String name;
-        public ZonedDateTime timestamp; 
+        public ZonedDateTime timestamp;
         public long delta;
     }
 
@@ -34,9 +34,17 @@ public class Stats {
         public long submitable;
     }
 
+    public static class QueuedSubmission {
+        public Long id;
+        public String author;
+        public String problemName;
+        public String verdict;
+    }
+
     public static class Queue {
         public List<Long> submissionIds;
-        
+        public List<QueuedSubmission> submissions;
+
         // The age of the oldest submissions in queue
         public int ageMins;
     }

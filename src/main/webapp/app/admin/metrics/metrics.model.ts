@@ -14,8 +14,16 @@ export interface IStatsProblems {
     submitable: number;
 }
 
+export interface IQueuedSubmission {
+    id: number;
+    author?: string;
+    problemName?: string;
+    verdict?: string;
+}
+
 export interface IStatsQueue {
     submissionIds: number[];
+    submissions?: IQueuedSubmission[];
     ageMins: number;
 }
 

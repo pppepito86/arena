@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.olimpiici.arena.domain.CompetitionProblem;
+import com.olimpiici.arena.domain.Problem;
 import com.olimpiici.arena.domain.Submission;
 import com.olimpiici.arena.domain.User;
 import com.olimpiici.arena.repository.ProblemRepository;
@@ -26,6 +28,7 @@ import com.olimpiici.arena.service.dto.Stats;
 import com.olimpiici.arena.service.dto.Stats.Metric;
 import com.olimpiici.arena.service.dto.Stats.PeriodDelta;
 import com.olimpiici.arena.service.dto.Stats.Queue;
+import com.olimpiici.arena.service.dto.Stats.QueuedSubmission;
 
 /**
  * REST controller for getting the audit events.
@@ -75,6 +78,11 @@ public class StatsResource {
         		+ (memEnd - memStart) / (1024 * 1024) + " MB mem");
 
         return stats;
+    }
+
+    @GetMapping("/queue")
+    public Queue getQueue() {
+        return collectQueueStats();
     }
 
     private Metric collectUserStats() {
@@ -127,20 +135,60 @@ public class StatsResource {
             .map(s -> s.getId())
             .collect(Collectors.toList());
 
+        // Show currently judging submissions first, then waiting submissions oldest-first (FIFO)
+        List<QueuedSubmission> queuedSubmissions = new ArrayList<>(submissionsInQueue.size());
+        for (int i = submissionsInQueue.size() - 1; i >= 0; i--) {
+            Submission s = submissionsInQueue.get(i);
+            if ("judging".equals(s.getVerdict())) {
+                queuedSubmissions.add(toQueuedSubmission(s));
+            }
+        }
+        for (int i = submissionsInQueue.size() - 1; i >= 0; i--) {
+            Submission s = submissionsInQueue.get(i);
+            if (!"judging".equals(s.getVerdict())) {
+                queuedSubmissions.add(toQueuedSubmission(s));
+            }
+        }
+        queue.submissions = queuedSubmissions;
+
         queue.ageMins = 0;
 
         if (!submissionsInQueue.isEmpty()) {
-            ZonedDateTime oldestSubmitTime =
-                submissionsInQueue.get(submissionsInQueue.size()-1).getUploadDate();
-            if (oldestSubmitTime == null) {
-                queue.ageMins = -1;
-            } else {
-                queue.ageMins =
-                    (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+            queue.ageMins = -1;
+            for (int i = submissionsInQueue.size() - 1; i >= 0; i--) {
+                ZonedDateTime oldestSubmitTime = submissionsInQueue.get(i).getUploadDate();
+                if (oldestSubmitTime != null) {
+                    queue.ageMins = (int) ChronoUnit.MINUTES.between(oldestSubmitTime, ZonedDateTime.now());
+                    break;
+                }
             }
         }
 
         return queue;
+    }
+
+    private QueuedSubmission toQueuedSubmission(Submission s) {
+        QueuedSubmission item = new QueuedSubmission();
+        item.id = s.getId();
+        item.verdict = s.getVerdict();
+        item.author = formatAuthor(s.getUser());
+        CompetitionProblem cp = s.getCompetitionProblem();
+        Problem problem = cp != null ? cp.getProblem() : null;
+        item.problemName = problem != null ? problem.getTitle() : null;
+        return item;
+    }
+
+    private String formatAuthor(User user) {
+        if (user == null) {
+            return null;
+        }
+        String first = user.getFirstName() != null ? user.getFirstName().trim() : "";
+        String last = user.getLastName() != null ? user.getLastName().trim() : "";
+        String fullName = (first + " " + last).trim();
+        if (!fullName.isEmpty()) {
+            return fullName;
+        }
+        return user.getLogin();
     }
 
     /**

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { SERVER_API_URL } from 'app/app.constants';
-import { IStats } from './metrics.model';
+import { IStats, IStatsQueue } from './metrics.model';
 
 @Injectable({ providedIn: 'root' })
 export class JhiMetricsService {
@@ -15,6 +15,10 @@ export class JhiMetricsService {
 
     getStats(): Observable<IStats> {
         return this.http.get<IStats>(SERVER_API_URL + 'management/stats');
+    }
+
+    getQueue(): Observable<IStatsQueue> {
+        return this.http.get<IStatsQueue>(SERVER_API_URL + 'management/stats/queue');
     }
 
     sendMail(): Observable<any> {

@@ -3,7 +3,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { JhiMetricsMonitoringModalComponent } from './metrics-modal.component';
 import { JhiMetricsService } from './metrics.service';
-import { IPeriodDelta, IStats, IStatsMetric, StatsGranularity } from './metrics.model';
+import { IPeriodDelta, IQueuedSubmission, IStats, IStatsMetric, IStatsQueue, StatsGranularity } from './metrics.model';
 
 export interface IStatsChartConfig {
     title: string;
@@ -21,10 +21,13 @@ export interface IStatsChartConfig {
 export class JhiMetricsMonitoringComponent implements OnInit {
     metrics: any = {};
     stats: IStats = null;
+    queue: IStatsQueue = null;
+    queuedSubmissions: IQueuedSubmission[] = [];
     cachesStats: any = {};
     servicesStats: any = {};
     updatingMetrics = true;
     updatingStats = true;
+    updatingQueue = true;
     JCACHE_KEY: string;
 
     statsCharts: IStatsChartConfig[] = [];
@@ -42,6 +45,7 @@ export class JhiMetricsMonitoringComponent implements OnInit {
     refresh() {
         this.updatingMetrics = true;
         this.updatingStats = true;
+        this.refreshQueue();
         this.metricsService.getMetrics().subscribe(metrics => {
             this.metrics = metrics;
             this.updatingMetrics = false;
@@ -71,11 +75,27 @@ export class JhiMetricsMonitoringComponent implements OnInit {
         this.metricsService.getStats().subscribe(
             stats => {
                 this.stats = stats;
+                if (!this.queue && stats && stats.queue) {
+                    this.setQueue(stats.queue);
+                }
                 this.buildStatsCharts(stats);
                 this.updatingStats = false;
             },
             () => {
                 this.updatingStats = false;
+            }
+        );
+    }
+
+    refreshQueue() {
+        this.updatingQueue = true;
+        this.metricsService.getQueue().subscribe(
+            queue => {
+                this.setQueue(queue);
+                this.updatingQueue = false;
+            },
+            () => {
+                this.updatingQueue = false;
             }
         );
     }
@@ -110,6 +130,10 @@ export class JhiMetricsMonitoringComponent implements OnInit {
         return chart.title;
     }
 
+    trackBySubmissionId(index: number, item: IQueuedSubmission): number {
+        return item.id;
+    }
+
     get badProblemsCount(): number {
         if (!this.stats || !this.stats.problems) {
             return 0;
@@ -117,15 +141,36 @@ export class JhiMetricsMonitoringComponent implements OnInit {
         return this.stats.problems.total - this.stats.problems.submitable;
     }
 
+    get queueLength(): number {
+        return this.queuedSubmissions.length;
+    }
+
+    get queueBadgeClass(): string {
+        return 'badge-' + this.queueSeverity;
+    }
+
     get queueCardAccentClass(): string {
-        if (!this.stats || !this.stats.queue) {
-            return 'kpi-success';
+        return 'kpi-' + this.queueSeverity;
+    }
+
+    private get queueSeverity(): 'success' | 'warning' | 'danger' {
+        if (this.queueLength === 0) {
+            return 'success';
         }
-        const count = this.stats.queue.submissionIds ? this.stats.queue.submissionIds.length : 0;
-        if (count === 0) {
-            return 'kpi-success';
+        return this.queue && this.queue.ageMins >= 5 ? 'danger' : 'warning';
+    }
+
+    private setQueue(queue: IStatsQueue) {
+        this.queue = queue;
+        if (!queue) {
+            this.queuedSubmissions = [];
+        } else if (queue.submissions) {
+            this.queuedSubmissions = queue.submissions;
+        } else if (queue.submissionIds) {
+            this.queuedSubmissions = queue.submissionIds.map(id => ({ id }));
+        } else {
+            this.queuedSubmissions = [];
         }
-        return this.stats.queue.ageMins >= 5 ? 'kpi-danger' : 'kpi-warning';
     }
 
     private buildStatsCharts(stats: IStats) {

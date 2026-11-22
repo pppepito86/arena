@@ -28,6 +28,9 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByUserIsCurrentUser();
 
     @Query("select submission from Submission submission"
+        + " left join fetch submission.user"
+        + " left join fetch submission.competitionProblem cp"
+        + " left join fetch cp.problem"
         + " where submission.verdict='waiting' or submission.verdict='judging'"
         + " order by submission.id desc")
     List<Submission> findQueue();
@@ -42,7 +45,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     @Query(
         value =
             " select * from submission" +
-            " where upload_date " + 
+            " where upload_date " +
             "   between DATE_SUB(NOW(), INTERVAL ?1 DAY) and DATE_SUB(NOW(), INTERVAL ?2 DAY)",
         nativeQuery = true
     )

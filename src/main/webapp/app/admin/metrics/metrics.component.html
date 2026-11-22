@@ -5,6 +5,57 @@
             <fa-icon [icon]="'sync'"></fa-icon> <span jhiTranslate="metrics.refresh.button">Refresh</span>
         </button>
     </h2>
+
+    <div class="judge-queue-section mt-3 mb-4">
+        <div class="card judge-queue-card">
+            <div class="card-header judge-queue-header d-flex flex-wrap justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h4 class="mb-0 mr-2">Judge Queue</h4>
+                    <span *ngIf="queue" class="badge badge-pill queue-count-badge" [ngClass]="queueBadgeClass">
+                        {{queueLength | number}}
+                    </span>
+                    <span *ngIf="queue && queueLength > 0 && queue.ageMins >= 0" class="text-muted small ml-2">
+                        Oldest: {{queue.ageMins}} min
+                    </span>
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="refreshQueue()"
+                    [disabled]="updatingQueue">
+                    <fa-icon [icon]="'sync'"></fa-icon> Refresh queue
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div *ngIf="updatingQueue && !queue" class="text-muted small px-3 py-2">Loading judge queue...</div>
+                <div *ngIf="queue && queueLength === 0" class="text-muted small px-3 py-2">
+                    Queue is empty — no submissions waiting to be judged.
+                </div>
+                <div *ngIf="queue && queueLength > 0" class="table-responsive judge-queue-table-wrapper">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                        <tr>
+                            <th>Submission ID</th>
+                            <th>Author</th>
+                            <th>Problem</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let item of queuedSubmissions; trackBy: trackBySubmissionId">
+                            <td class="text-nowrap">
+                                <a [routerLink]="['/submission', item.id, 'view']">{{item.id}}</a>
+                                <span *ngIf="item.verdict === 'judging'" class="badge badge-info ml-2">judging</span>
+                            </td>
+                            <td>{{item.author || '—'}}</td>
+                            <td>{{item.problemName || '—'}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <h3>Debug</h3>
     <button class="btn btn-sm btn-outline-secondary mb-3" (click)="sendMail()">Send Mail</button>
 
@@ -57,12 +108,12 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="stats.queue">
+                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="queue">
                     <div class="stats-kpi-card" [ngClass]="queueCardAccentClass">
                         <div class="kpi-card-label">Grading Queue</div>
-                        <div class="kpi-card-value">{{stats.queue.submissionIds.length | number}}</div>
+                        <div class="kpi-card-value">{{queueLength | number}}</div>
                         <div class="kpi-card-sub">
-                            Age: <strong>{{stats.queue.ageMins >= 0 ? stats.queue.ageMins + ' min' : '—'}}</strong>
+                            Age: <strong>{{queue.ageMins >= 0 ? queue.ageMins + ' min' : '—'}}</strong>
                             <span *ngIf="stats.badSubmissionIds && stats.badSubmissionIds.length === 0">
                                 &middot; <span class="text-success">0 bad</span>
                             </span>

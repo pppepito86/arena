@@ -1,3 +1,40 @@
+.judge-queue-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background-color: #ffffff;
+}
+
+.judge-queue-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.6rem 1rem;
+
+    h4 {
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: #212529;
+    }
+}
+
+.queue-count-badge {
+    font-size: 0.85rem;
+    padding: 0.28em 0.65em;
+}
+
+.judge-queue-table-wrapper {
+    max-height: 280px;
+    overflow-y: auto;
+    font-size: 0.88rem;
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        border-top: none;
+        z-index: 1;
+    }
+}
+
 .stats-section {
     margin-top: 1rem;
     margin-bottom: 1.75rem;
