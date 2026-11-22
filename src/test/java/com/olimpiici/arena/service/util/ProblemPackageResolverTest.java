@@ -178,6 +178,9 @@ public class ProblemPackageResolverTest {
             "statement/ru.pdf"
         ))).contains("statement/bg.pdf");
 
+        // Lowercase wrapper prefix stripping
+        assertThat(ProblemPackageResolver.stripLeadingProblemCode("a1_belote")).isEqualTo("belote");
+
         // Legacy Arena packages that store their only statement PDF under author/
         assertThat(ProblemPackageResolver.findStatementPdf(Arrays.asList(
             "author/shoes.pdf",
@@ -202,4 +205,126 @@ public class ProblemPackageResolverTest {
         ))).contains("pdf.pdf");
     }
 
+    @Test
+    public void testFindAuthorSolution_ExcludesContestantStubsCheckersAndOutputOnlyJunk() {
+        // Interactive problem (cleanup.zip): contestant/cleanup.cpp stub must NOT beat real 100p solution
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "cleanup/contestant/grader.cpp",
+            "cleanup/contestant/cleanup.cpp",
+            "cleanup/system/grader.cpp",
+            "cleanup/checker/checker.cpp",
+            "cleanup/author/cleanup_first_5p.cpp",
+            "cleanup/author/cleanup_Iliyan_100p.cpp"
+        ), Collections.singletonList("cpp"), "cleanup")).contains("cleanup/author/cleanup_Iliyan_100p.cpp");
+
+        // special.zip: checker/checker.cpp is the ONLY .cpp -> must return empty
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "special/checker/checker.cpp",
+            "special/grade.properties"
+        ), Collections.singletonList("cpp"), "special")).isEmpty();
+
+        // azul.zip: extensions=zip, contestant/imgs.zip must NOT be treated as author solution
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "AK1_azul/contestant/imgs.zip",
+            "AK1_azul/checker/checker.cpp"
+        ), Collections.singletonList("zip"), "azul")).isEmpty();
+    }
+
+    @Test
+    public void testFindAuthorSolution_HandlesModernInfosNamingAndNullOrCyrillicTitles() {
+        // infection.zip: author_opt.cpp beats author_n2.cpp and author_n3.cpp
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "contestant/infection.cpp",
+            "author/validation_1.cpp",
+            "author/author_n2.cpp",
+            "author/author_n3.cpp",
+            "author/author_opt.cpp"
+        ), Collections.singletonList("cpp"), null)).contains("author/author_opt.cpp");
+
+        // managers.zip: author/solution.cpp
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "author/NQ.cpp",
+            "author/solution.cpp",
+            "testgen/solution.cpp"
+        ), Collections.singletonList("cpp"), "Мениджъри")).contains("author/solution.cpp");
+
+        // walk.zip: solutions/sol_full.cpp (and "walk" must NOT be excluded by "wa"!)
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "solutions/cheat_init_zero.cpp",
+            "solutions/sol_full.cpp"
+        ), Collections.singletonList("cpp"), "walk")).contains("solutions/sol_full.cpp");
+
+        // C1_three.zip: three-author.cpp with null title
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "C1_three/tests/testgen.cpp",
+            "C1_three/author/three-bruteforce.cpp",
+            "C1_three/author/three-dp-naive.cpp",
+            "C1_three/author/three-author.cpp"
+        ), Collections.singletonList("cpp"), null)).contains("C1_three/author/three-author.cpp");
+
+        // abstract.zip: abstract100_MergeNow_0p.cpp must be excluded despite containing "100"
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "contestant/abstract.cpp",
+            "author/abstract100_MergeNow_0p.cpp",
+            "author/abstract_emil_nostop_65p.cpp"
+        ), Collections.singletonList("cpp"), "abstract")).isEmpty();
+    }
+
+    @Test
+    public void testFindAuthorSolution_NoSubstringFalseExclusionsAndMultiExtensions() {
+        // Legitimate problem names containing "wa", "tl", "bad" substrings must NOT be excluded
+        assertThat(ProblemPackageResolver.findAuthorSolution(
+            Collections.singletonList("author/water.cpp"),
+            Collections.singletonList("cpp"),
+            "Вода"
+        )).contains("author/water.cpp");
+
+        assertThat(ProblemPackageResolver.findAuthorSolution(
+            Collections.singletonList("author/battle.cpp"),
+            Collections.singletonList("cpp"),
+            "Битка"
+        )).contains("author/battle.cpp");
+
+        // Multi-extension: cpp,py finds author/author.py when no .cpp exists
+        assertThat(ProblemPackageResolver.findAuthorSolution(
+            Collections.singletonList("author/author.py"),
+            Arrays.asList("cpp", "py"),
+            "task"
+        )).contains("author/author.py");
+
+        // Legacy fixture: author/author.cpp beats author/sign.cpp, sign2.cpp
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "author/sign.cpp",
+            "author/sign2.cpp",
+            "author/author.cpp"
+        ), Collections.singletonList("cpp"), "sign")).contains("author/author.cpp");
+
+        // Archive containing only contestant/ must NOT strip contestant/ as a wrapper dir
+        assertThat(ProblemPackageResolver.findAuthorSolution(
+            Collections.singletonList("contestant/stub.cpp"),
+            Collections.singletonList("cpp"),
+            "task"
+        )).isEmpty();
+
+        // Output-only archive containing only author/ must keep author/ as a solution dir
+        assertThat(ProblemPackageResolver.findAuthorSolution(
+            Collections.singletonList("author/answers.zip"),
+            Collections.singletonList("zip"),
+            "task"
+        )).contains("author/answers.zip");
+
+        // When author/ has multiple unnamed files, fall back to a strong-signal file outside author/
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "author/first.cpp",
+            "author/second.cpp",
+            "author.cpp"
+        ), Collections.singletonList("cpp"), "task")).contains("author.cpp");
+
+        // Legacy output-only package with root author.txt must still be detected (while ignoring readme.txt)
+        assertThat(ProblemPackageResolver.findAuthorSolution(Arrays.asList(
+            "author.txt",
+            "readme.txt",
+            "tests/subtasks.txt"
+        ), Collections.singletonList("txt"), "task")).contains("author.txt");
+    }
 }

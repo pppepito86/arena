@@ -546,6 +546,22 @@ public class ProblemServiceTest {
         assertThat(pdf.get().getAbsolutePath()).endsWith("statement/translations/bg/infection.pdf");
     }
 
+    @Test
+    public void testGetAuthorSolution_IgnoresContestantStubAndHandlesNullTitle() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("A1_belote/grade.properties", "time=1.5\nmemory=1024\n");
+        entries.put("A1_belote/contestant/belote.cpp", "// empty stub");
+        entries.put("A1_belote/solutions/belote_20p.cpp", "// 20p");
+        entries.put("A1_belote/solutions/belote_100p.cpp", "// 100p");
+        problemService.replaceProblemZip(16L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        when(problemRepository.findById(16L)).thenReturn(Optional.empty());
+
+        Optional<File> author = problemService.getAuthorSolution(workDir.getAbsolutePath(), 16L);
+        assertThat(author).isPresent();
+        assertThat(author.get().getAbsolutePath()).endsWith("A1_belote/solutions/belote_100p.cpp");
+    }
+
     private byte[] buildZipBytes(Map<String, String> entries) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {

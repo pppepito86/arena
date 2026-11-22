@@ -24,7 +24,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -732,62 +731,29 @@ public class ProblemService {
 	}
 
     /**
-     * Identifies the author's solution file for a task by looking for specific
-     * filenames (e.g., author.cpp, title.cpp, or containing "100").
+     * Identifies the author's full solution file for a task, excluding contestant
+     * stubs, checkers, graders, partial/wrong/cheat solutions, and macOS metadata.
      */
 	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
-		File dir = getProblemDir(workDir, taskId);
-		if (!dir.isDirectory()) {
-			log.error("Problem directory does not exist for task {}: {}", taskId, dir);
-			return Optional.empty();
-		}
-		try {
-			String ext = getSolutionFileExtension(taskId);
-			List<File> potentialSols;
-			try (Stream<Path> paths = Files.walk(dir.toPath())) {
-				potentialSols = paths
-						.filter(Files::isRegularFile)
-						.map(Path::toFile)
-						.filter(f -> f.getName().toLowerCase().endsWith("." + ext))
-						.collect(Collectors.toList());
-			}
-
-			if (potentialSols.isEmpty()) {
+		synchronized (lock) {
+			File dir = getProblemDir(workDir, taskId);
+			if (!dir.isDirectory()) {
+				log.error("Problem directory does not exist for task {}: {}", taskId, dir);
 				return Optional.empty();
 			}
-
-			if (potentialSols.size() == 1) {
-				return Optional.of(potentialSols.get(0));
+			try {
+				Properties props = getProperties(taskId);
+				List<String> allowedExtensions = parseAllowedExtensions(props.getProperty("extensions"));
+				String title = problemRepository.findById(taskId)
+						.map(Problem::getTitle)
+						.orElse(null);
+				List<String> relativeFiles = ProblemPackageResolver.listRelativeFiles(dir);
+				return ProblemPackageResolver.findAuthorSolution(relativeFiles, allowedExtensions, title)
+						.map(rel -> new File(dir, rel));
+			} catch (Exception e) {
+				log.warn("Failed to find author solution for problem {} in {}", taskId, dir, e);
+				return Optional.empty();
 			}
-
-			Optional<File> file = potentialSols.stream()
-					.filter(f -> f.getName().toLowerCase().equals("author." + ext))
-					.findFirst();
-			if (file.isPresent()) {
-				return file;
-			}
-
-			Optional<String> title = problemRepository.findById(taskId)
-					.map(problem -> problem.getTitle())
-					.map(t -> t.toLowerCase() + "." + ext);
-			if (!title.isPresent()) {
-				return  Optional.empty();
-			}
-
-			file = potentialSols.stream()
-					.filter(f -> f.getName().toLowerCase().equals(title.get()))
-					.findFirst();
-			if (file.isPresent()) {
-				return file;
-			}
-
-			return potentialSols.stream()
-					.filter(f -> f.getName().toLowerCase().contains("100"))
-					.findFirst();
-
-		} catch (Exception e) {
-			log.warn("Failed to find author solution for problem {} in {}", taskId, dir, e);
-			return Optional.empty();
 		}
 	}
 

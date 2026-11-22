@@ -43,6 +43,102 @@ public final class ProblemPackageResolver {
     private static final Pattern BULGARIAN_PDF = Pattern.compile("(^|/)bg/(?![^/]*[_.-]en\\.pdf$)|(^|[_./-])bg\\.pdf$");
     private static final Pattern CAMEL_CASE_BG_PDF = Pattern.compile("[a-z]BG\\.pdf$");
 
+    private static final Set<String> SOLUTION_DIRS = setOf(
+        "author",
+        "authors",
+        "solution",
+        "solutions",
+        "sol"
+    );
+
+    private static final Set<String> SEMANTIC_PACKAGE_DIRS = setOf(
+        "contestant", "analysis", "analiz", "analisys", "editorial",
+        "author", "authors", "solution", "solutions", "sol", "reshenie",
+        "checker", "system", "manager", "tests", "test",
+        "statement", "statements", "translations", "grader", "graders",
+        "images", "img", "imgs", "figs", "figures", "pictures", "diagrams", "svg-inkscape",
+        "testgen", "gen", "gens", "generator", "generators",
+        "validator", "validators", "cheats", "cheat", "wrong", "partial", "subtasks"
+    );
+
+    private static final Set<String> PROBLEM_ROOT_MARKER_DIRS = setOf(
+        "statement", "statements", "tests", "test"
+    );
+
+    private static final Set<String> EXCLUDED_AUTHOR_DIRS = setOf(
+        "contestant",
+        "checker",
+        "system",
+        "manager",
+        "testgen",
+        "gen",
+        "gens",
+        "generator",
+        "generators",
+        "validator",
+        "validators",
+        "tests",
+        "test",
+        "statement",
+        "statements",
+        "analysis",
+        "editorial",
+        "cheats",
+        "cheat",
+        "wrong",
+        "partial",
+        "subtasks"
+    );
+
+    private static final Set<String> EXCLUDED_AUTHOR_TOKENS = setOf(
+        "grader",
+        "lgrader",
+        "checker",
+        "manager",
+        "validator",
+        "validation",
+        "generator",
+        "testgen",
+        "helper",
+        "stresstest",
+        "stress",
+        "cheat",
+        "wrong",
+        "wa",
+        "tl",
+        "tle",
+        "ml",
+        "mle",
+        "slow",
+        "naive",
+        "brute",
+        "bruteforce",
+        "subtask",
+        "bad",
+        "dummy",
+        "fake",
+        "bf",
+        "exp",
+        "nq",
+        "n2",
+        "n3",
+        "n4",
+        "quadratic",
+        "cubic"
+    );
+
+    private static final Set<String> FULL_SOLUTION_TOKENS = setOf(
+        "full",
+        "opt",
+        "model",
+        "official",
+        "ac"
+    );
+
+    private static final Pattern SCORE_100_PATTERN = Pattern.compile("(^|[^0-9])100(p|pts)?([^0-9]|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PARTIAL_POINTS_TOKEN = Pattern.compile("^(\\d{1,2}p|[1-9]\\d|sub\\d+|st\\d+|subtask\\d+|val\\d+|validation\\d+)$");
+    private static final Pattern AUTHOR_INDEXED_TOKEN = Pattern.compile("^author\\d+$");
+
     private ProblemPackageResolver() {
     }
 
@@ -149,6 +245,267 @@ public final class ProblemPackageResolver {
         return BULGARIAN_PDF.matcher(p.toLowerCase(Locale.ROOT)).find() || CAMEL_CASE_BG_PDF.matcher(p).find();
     }
 
+    /**
+     * Finds the author's full solution file across {@code allowedExtensions}, excluding
+     * contestant stubs, checkers, graders, generators/validators, partial/cheat/wrong
+     * solutions, {@code __MACOSX}, and dotfiles.
+     */
+    public static Optional<String> findAuthorSolution(
+            Collection<String> relativePaths,
+            List<String> allowedExtensions,
+            String problemTitle) {
+        if (relativePaths == null || relativePaths.isEmpty() || allowedExtensions == null || allowedExtensions.isEmpty()) {
+            return Optional.empty();
+        }
+        List<String> validPaths = relativePaths.stream()
+            .filter(p -> !isIgnoredPath(p))
+            .collect(Collectors.toList());
+        if (validPaths.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<String> wrapperDir = detectSingleWrapperDir(validPaths);
+        String wrapperHint = wrapperDir.map(ProblemPackageResolver::stripLeadingProblemCode).orElse(null);
+        String titleHint = normalizeTitleHint(problemTitle);
+
+        List<String> normalizedExts = allowedExtensions.stream()
+            .filter(e -> e != null && !e.trim().isEmpty())
+            .map(e -> e.trim().toLowerCase(Locale.ROOT))
+            .distinct()
+            .collect(Collectors.toList());
+        if (normalizedExts.isEmpty()) {
+            normalizedExts = Collections.singletonList("cpp");
+        }
+        final List<String> exts = normalizedExts;
+
+        List<AuthorCandidate> candidates = new ArrayList<>();
+        for (String p : validPaths) {
+            int extRank = extensionRank(fileName(p), exts);
+            if (extRank < 0) {
+                continue;
+            }
+            String stripped = stripWrapper(p, wrapperDir);
+            if (!isExcludedAuthorCandidate(stripped, titleHint, wrapperHint)) {
+                candidates.add(new AuthorCandidate(p, stripped, extRank, titleHint, wrapperHint));
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            return Optional.empty();
+        }
+
+        candidates.sort(Comparator
+            .comparingInt((AuthorCandidate c) -> c.inSolutionDir ? 0 : 1)
+            .thenComparingInt(c -> c.nameRank)
+            .thenComparingInt(c -> c.extRank)
+            .thenComparingInt(c -> c.depth)
+            .thenComparingInt(c -> c.raw.length())
+            .thenComparing(c -> c.raw));
+
+        AuthorCandidate best = candidates.get(0);
+        if (best.nameRank <= 5) {
+            return Optional.of(best.raw);
+        }
+
+        // No strong naming signal on the top candidate: prefer an unambiguous sole solution-dir candidate
+        List<AuthorCandidate> inSolutionDir = candidates.stream()
+            .filter(c -> c.inSolutionDir)
+            .collect(Collectors.toList());
+        if (inSolutionDir.size() == 1) {
+            return Optional.of(inSolutionDir.get(0).raw);
+        }
+
+        // Otherwise check if a candidate outside solution dirs carries a strong naming signal (e.g. root author.cpp)
+        Optional<AuthorCandidate> strongOutside = candidates.stream()
+            .filter(c -> c.nameRank <= 5)
+            .findFirst();
+        if (strongOutside.isPresent()) {
+            return Optional.of(strongOutside.get().raw);
+        }
+
+        return candidates.size() == 1 ? Optional.of(best.raw) : Optional.empty();
+    }
+
+    private static boolean isExcludedAuthorCandidate(String strippedPath, String titleHint, String wrapperHint) {
+        String[] segments = normalizeRelativePath(strippedPath).split("/");
+        String name = segments[segments.length - 1];
+        String ext = fileExtension(name);
+        boolean inSolutionDir = false;
+
+        for (int i = 0; i < segments.length - 1; i++) {
+            String dir = segments[i].toLowerCase(Locale.ROOT);
+            if (EXCLUDED_AUTHOR_DIRS.contains(dir)) {
+                return true;
+            }
+            if (SOLUTION_DIRS.contains(dir)) {
+                inSolutionDir = true;
+            }
+        }
+
+        String stem = stripExtension(name);
+        String lowerStem = stem.toLowerCase(Locale.ROOT);
+
+        // For output-only packages (zip/txt), never pick random non-solution archives (e.g. contestant/imgs.zip, readme.txt),
+        // but still allow explicit root-level author.<ext> or solution.<ext> for legacy packages.
+        if (("zip".equals(ext) || "txt".equals(ext)) && !inSolutionDir
+                && !"author".equals(lowerStem) && !"solution".equals(lowerStem)) {
+            return true;
+        }
+
+        if ((titleHint != null && lowerStem.equals(titleHint))
+                || (wrapperHint != null && lowerStem.equals(wrapperHint))) {
+            return false;
+        }
+
+        return splitIdentifierTokens(stem).stream()
+            .anyMatch(token -> EXCLUDED_AUTHOR_TOKENS.contains(token) || PARTIAL_POINTS_TOKEN.matcher(token).matches());
+    }
+
+    private static boolean isInSolutionDir(String strippedPath) {
+        String[] segments = normalizeRelativePath(strippedPath).split("/");
+        for (int i = 0; i < segments.length - 1; i++) {
+            if (SOLUTION_DIRS.contains(segments[i].toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Author candidate name priority:
+     * 0 = exact author.<ext>
+     * 1 = exact <title>.<ext>, <wrapperHint>.<ext>, or solution.<ext>
+     * 2 = numeric-bounded 100 (e.g. belote_100p, alex_100)
+     * 3 = explicit full-solution token (full, opt, model, official, ac)
+     * 4 = generic author token (e.g. three-author, author1)
+     * 5 = generic solution/sol token (e.g. encho_solution)
+     * 6 = no specific naming signal
+     */
+    private static int authorNameRank(String fileName, String titleHint, String wrapperHint) {
+        String stem = stripExtension(fileName);
+        String lowerStem = stem.toLowerCase(Locale.ROOT);
+        if ("author".equals(lowerStem)) {
+            return 0;
+        }
+        if ("solution".equals(lowerStem)
+                || (titleHint != null && lowerStem.equals(titleHint))
+                || (wrapperHint != null && lowerStem.equals(wrapperHint))) {
+            return 1;
+        }
+        if (SCORE_100_PATTERN.matcher(stem).find()) {
+            return 2;
+        }
+        List<String> tokens = splitIdentifierTokens(stem);
+        if (tokens.stream().anyMatch(FULL_SOLUTION_TOKENS::contains)) {
+            return 3;
+        }
+        if (tokens.stream().anyMatch(t -> "author".equals(t) || AUTHOR_INDEXED_TOKEN.matcher(t).matches())) {
+            return 4;
+        }
+        if (tokens.stream().anyMatch(t -> "solution".equals(t) || "sol".equals(t))) {
+            return 5;
+        }
+        return 6;
+    }
+
+    private static int extensionRank(String fileName, List<String> allowedExts) {
+        String ext = fileExtension(fileName);
+        if (ext.isEmpty()) {
+            return -1;
+        }
+        return allowedExts.indexOf(ext);
+    }
+
+    private static String fileExtension(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        if (dot <= 0 || dot == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dot + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private static String normalizeTitleHint(String title) {
+        if (title == null) {
+            return null;
+        }
+        String trimmed = title.trim().toLowerCase(Locale.ROOT);
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+            /**
+     * If every valid relative path starts with the same top-level directory segment
+     * (e.g. {@code A1_belote/...}), returns that segment so resolvers can normalize layouts.
+     * Does not strip known semantic package directories (e.g. {@code contestant/}, {@code analysis/})
+     * unless they themselves wrap a standard problem root ({@code statement/} or {@code tests/}).
+     */
+    static Optional<String> detectSingleWrapperDir(Collection<String> validPaths) {
+        String common = null;
+        for (String raw : validPaths) {
+            String p = normalizeRelativePath(raw);
+            int slash = p.indexOf('/');
+            if (slash <= 0) {
+                return Optional.empty();
+            }
+            String top = p.substring(0, slash);
+            if (common == null) {
+                common = top;
+            } else if (!common.equals(top)) {
+                return Optional.empty();
+            }
+        }
+        if (common == null) {
+            return Optional.empty();
+        }
+        String commonLower = common.toLowerCase(Locale.ROOT);
+        if (SEMANTIC_PACKAGE_DIRS.contains(commonLower)) {
+            boolean wrapsProblemRoot = false;
+            String prefix = common + "/";
+            for (String raw : validPaths) {
+                String p = normalizeRelativePath(raw);
+                if (p.startsWith(prefix)) {
+                    String rest = p.substring(prefix.length());
+                    int nextSlash = rest.indexOf('/');
+                    if (nextSlash > 0) {
+                        String childDir = rest.substring(0, nextSlash).toLowerCase(Locale.ROOT);
+                        if (PROBLEM_ROOT_MARKER_DIRS.contains(childDir) && !childDir.equals(commonLower)) {
+                            wrapsProblemRoot = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!wrapsProblemRoot) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(common);
+    }
+
+    static String stripWrapper(String rawPath, Optional<String> wrapperDir) {
+        String p = normalizeRelativePath(rawPath);
+        if (wrapperDir.isPresent()) {
+            String prefix = wrapperDir.get() + "/";
+            if (p.startsWith(prefix)) {
+                return p.substring(prefix.length());
+            }
+        }
+        return p;
+    }
+
+    /**
+     * Strips common contest prefixes like {@code A1_}, {@code a1_}, {@code B2_}, {@code AB21_}, {@code E12_}
+     * from a top-level wrapper folder name to derive a clean problem name hint.
+     */
+    static String stripLeadingProblemCode(String name) {
+        if (name == null) {
+            return null;
+        }
+        String trimmed = name.trim();
+        String stripped = trimmed.replaceFirst("^([A-Za-z]{1,2}\\d{1,2}|[A-Za-z])[_\\-]+", "");
+        String result = stripped.isEmpty() ? trimmed : stripped;
+        return result.toLowerCase(Locale.ROOT);
+    }
+
     static String stripExtension(String fileName) {
         int dot = fileName.lastIndexOf('.');
         return dot > 0 ? fileName.substring(0, dot) : fileName;
@@ -158,6 +515,35 @@ public final class ProblemPackageResolver {
      * Splits a filename stem into lowercase tokens on non-alphanumeric delimiters and
      * camelCase boundaries (e.g., {@code authorTest} -> {@code [author, test]}).
      */
+    static List<String> splitIdentifierTokens(String stem) {
+        if (stem == null || stem.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> tokens = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < stem.length(); i++) {
+            char c = stem.charAt(i);
+            if (!Character.isLetterOrDigit(c)) {
+                if (current.length() > 0) {
+                    tokens.add(current.toString().toLowerCase(Locale.ROOT));
+                    current.setLength(0);
+                }
+                continue;
+            }
+            if (current.length() > 0
+                    && Character.isUpperCase(c)
+                    && Character.isLowerCase(stem.charAt(i - 1))) {
+                tokens.add(current.toString().toLowerCase(Locale.ROOT));
+                current.setLength(0);
+            }
+            current.append(c);
+        }
+        if (current.length() > 0) {
+            tokens.add(current.toString().toLowerCase(Locale.ROOT));
+        }
+        return tokens;
+    }
+
     static boolean isIgnoredPath(String rawPath) {
         if (rawPath == null || rawPath.isEmpty()) {
             return true;
@@ -212,4 +598,19 @@ public final class ProblemPackageResolver {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(values)));
     }
 
+        private static final class AuthorCandidate {
+        final String raw;
+        final boolean inSolutionDir;
+        final int nameRank;
+        final int extRank;
+        final int depth;
+
+        AuthorCandidate(String raw, String stripped, int extRank, String titleHint, String wrapperHint) {
+            this.raw = raw;
+            this.inSolutionDir = isInSolutionDir(stripped);
+            this.nameRank = authorNameRank(fileName(stripped), titleHint, wrapperHint);
+            this.extRank = extRank;
+            this.depth = pathDepth(stripped);
+        }
     }
+}
