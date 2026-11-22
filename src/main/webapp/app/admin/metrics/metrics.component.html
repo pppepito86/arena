@@ -6,77 +6,92 @@
         </button>
     </h2>
     <h3>Debug</h3>
-    <button (click)="sendMail()">Send Mail</button>
+    <button class="btn btn-sm btn-outline-secondary mb-3" (click)="sendMail()">Send Mail</button>
 
-    <h3 *ngIf="stats">Stats</h3>
+    <div class="stats-section">
+        <div class="d-flex flex-wrap justify-content-between align-items-baseline mb-2">
+            <h3 class="mb-0">Stats</h3>
+            <span class="stats-legend-note" *ngIf="stats && statsCharts.length > 0">
+                <span class="legend-dash"></span>Dashed segment indicates the current in-progress period
+            </span>
+        </div>
 
-    <div *ngIf="stats.queue">
-        <h4>Queue</h4>
-        <div> Age: {{stats.queue.ageMins}} mins </div>
-        <div> Count: {{stats.queue.submissionIds.length}} </div>
-    </div>
+        <div class="well well-lg text-muted py-2" *ngIf="updatingStats && !stats">Loading stats...</div>
 
-    <div *ngIf="stats.badSubmissionIds">
-        <h4>Bad submissions ({{stats.badSubmissionIds.length}}) </h4>
-        <span *ngFor="let sub of stats.badSubmissionIds">
-            <a [routerLink]="['/submission', sub, 'view']">{{sub}}</a>,
-        </span>
-    </div>
-    <div *ngIf="stats.submissions">
-        <h4>Submissions</h4>
-        <div> Total: {{stats.submissions.total}} </div>
-        <table class="table table-striped" *ngFor="let periods of stats.submissions.periods">
-            <thead>
-            <tr>
-                <th *ngFor="let period of periods">{{period.name}}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td *ngFor="let period of periods">{{period.delta}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+        <ng-container *ngIf="stats">
+            <!-- KPI overview row -->
+            <div class="row">
+                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="stats.submissions">
+                    <div class="stats-kpi-card kpi-primary">
+                        <div class="kpi-card-label">Total Submissions</div>
+                        <div class="kpi-card-value">{{stats.submissions.total | number}}</div>
+                        <div class="kpi-card-sub" *ngIf="todaySubmissions !== null">
+                            Today: <strong>{{todaySubmissions | number}}</strong>
+                        </div>
+                    </div>
+                </div>
 
-    <div *ngIf="stats.users">
-        <h4>New Users</h4>
-        <div> Total: {{stats.users.total}} </div>
-        <table class="table table-striped" *ngFor="let periods of stats.users.periods">
-            <thead>
-            <tr>
-                <th *ngFor="let period of periods">{{period.name}}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td *ngFor="let period of periods">{{period.delta}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="stats.users">
+                    <div class="stats-kpi-card kpi-success">
+                        <div class="kpi-card-label">Total Users</div>
+                        <div class="kpi-card-value">{{stats.users.total | number}}</div>
+                        <div class="kpi-card-sub" *ngIf="todayActiveUsers !== null">
+                            Active today: <strong>{{todayActiveUsers | number}}</strong>
+                        </div>
+                    </div>
+                </div>
 
-    <div *ngIf="stats.activeUsers">
-        <h4>Active Users</h4>
-        <table class="table table-striped" *ngFor="let periods of stats.activeUsers.periods">
-            <thead>
-            <tr>
-                <th *ngFor="let period of periods">{{period.name}}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td *ngFor="let period of periods">{{period.delta}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="stats.problems">
+                    <div class="stats-kpi-card kpi-info">
+                        <div class="kpi-card-label">Problems</div>
+                        <div class="kpi-card-value">
+                            {{stats.problems.submitable | number}}
+                            <small class="text-muted">/ {{stats.problems.total | number}}</small>
+                        </div>
+                        <div class="kpi-card-sub">
+                            <span *ngIf="badProblemsCount > 0" class="kpi-warn-text font-weight-bold">
+                                {{badProblemsCount | number}} non-submitable
+                            </span>
+                            <span *ngIf="badProblemsCount === 0" class="text-success">All submitable</span>
+                        </div>
+                    </div>
+                </div>
 
-    <div *ngIf="stats.problems">
-        <h4>Problems</h4>
-        <div> Total: {{stats.problems.total}} </div>
-        <div> Submitable: {{stats.problems.submitable}} </div>
-        <div> Bad: {{stats.problems.total - stats.problems.submitable}} </div>
+                <div class="col-sm-6 col-xl-3 mb-3" *ngIf="stats.queue">
+                    <div class="stats-kpi-card" [ngClass]="queueCardAccentClass">
+                        <div class="kpi-card-label">Grading Queue</div>
+                        <div class="kpi-card-value">{{stats.queue.submissionIds.length | number}}</div>
+                        <div class="kpi-card-sub">
+                            Age: <strong>{{stats.queue.ageMins >= 0 ? stats.queue.ageMins + ' min' : '—'}}</strong>
+                            <span *ngIf="stats.badSubmissionIds && stats.badSubmissionIds.length === 0">
+                                &middot; <span class="text-success">0 bad</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bad submissions warning list when non-empty -->
+            <div *ngIf="stats.badSubmissionIds && stats.badSubmissionIds.length > 0" class="alert alert-warning bad-submissions-alert mb-3">
+                <strong>Bad submissions ({{stats.badSubmissionIds.length}}):</strong>
+                <span *ngFor="let sub of stats.badSubmissionIds; let last = last">
+                    <a [routerLink]="['/submission', sub, 'view']">{{sub}}</a><span *ngIf="!last">, </span>
+                </span>
+            </div>
+
+            <!-- Time-series line charts -->
+            <div class="row" *ngIf="statsCharts.length > 0">
+                <div class="col-lg-6 mb-4" *ngFor="let chart of statsCharts; trackBy: trackByChartTitle">
+                    <jhi-stats-line-chart
+                        [title]="chart.title"
+                        [periods]="chart.periods"
+                        [color]="chart.color"
+                        [unitLabel]="chart.unitLabel"
+                        [granularity]="chart.granularity">
+                    </jhi-stats-line-chart>
+                </div>
+            </div>
+        </ng-container>
     </div>
 
     <h3 jhiTranslate="metrics.jvm.title">JVM Metrics</h3>

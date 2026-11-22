@@ -1,0 +1,181 @@
+.stats-chart-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background-color: #ffffff;
+}
+
+.stats-chart-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.65rem 1rem;
+}
+
+.series-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.stats-chart-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #212529;
+}
+
+.stats-chart-kpis {
+    font-size: 0.82rem;
+    color: #495057;
+    white-space: nowrap;
+
+    .kpi-label {
+        color: #6c757d;
+        margin-right: 0.2rem;
+    }
+
+    .kpi-meta {
+        color: #6c757d;
+        font-size: 0.78rem;
+        margin-left: 0.15rem;
+    }
+
+    .kpi-sep {
+        margin: 0 0.4rem;
+        color: #adb5bd;
+    }
+}
+
+.stats-chart-body {
+    padding: 0.75rem 1rem 0.6rem;
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.chart-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.grid-line {
+    stroke: #edf0f3;
+    stroke-width: 1;
+
+    &.baseline {
+        stroke: #ced4da;
+    }
+}
+
+.axis-label {
+    fill: #6c757d;
+    font-size: 11px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.line-path {
+    fill: none;
+    stroke-width: 2.25;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+
+    &.line-in-progress {
+        stroke-dasharray: 5 4;
+    }
+}
+
+.hover-crosshair {
+    stroke: #adb5bd;
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    pointer-events: none;
+}
+
+.data-dot {
+    stroke-width: 1.5;
+    pointer-events: none;
+    transition: r 0.1s ease;
+
+    &.in-progress-dot {
+        stroke-width: 2;
+    }
+
+    &.active-dot {
+        stroke-width: 2.5;
+    }
+}
+
+.hover-band {
+    fill: transparent;
+    cursor: crosshair;
+}
+
+.chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+    background: rgba(33, 37, 41, 0.94);
+    color: #ffffff;
+    padding: 0.4rem 0.65rem;
+    border-radius: 0.25rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    transform: translate(-50%, calc(-100% - 12px));
+
+    &.align-left {
+        transform: translate(-10%, calc(-100% - 12px));
+    }
+
+    &.align-right {
+        transform: translate(-90%, calc(-100% - 12px));
+    }
+
+    &.position-below {
+        transform: translate(-50%, 14px);
+
+        &.align-left {
+            transform: translate(-10%, 14px);
+        }
+
+        &.align-right {
+            transform: translate(-90%, 14px);
+        }
+    }
+
+    .tooltip-date {
+        color: #ced4da;
+        font-size: 0.72rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .tooltip-value {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .tooltip-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.4rem;
+    }
+
+    .tooltip-unit {
+        margin-left: 0.3rem;
+        color: #e9ecef;
+        font-weight: 400;
+    }
+}
+
+.stats-table-wrapper {
+    font-size: 0.85rem;
+}

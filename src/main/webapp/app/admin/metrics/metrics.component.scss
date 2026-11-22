@@ -1,0 +1,76 @@
+.stats-section {
+    margin-top: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.stats-kpi-card {
+    border: 1px solid #dee2e6;
+    border-left-width: 4px;
+    border-radius: 0.25rem;
+    background-color: #ffffff;
+    padding: 0.85rem 1rem;
+    height: 100%;
+
+    &.kpi-primary {
+        border-left-color: #3e8acc;
+    }
+
+    &.kpi-success {
+        border-left-color: #28a745;
+    }
+
+    &.kpi-info {
+        border-left-color: #17a2b8;
+    }
+
+    &.kpi-warning {
+        border-left-color: #ffc107;
+    }
+
+    &.kpi-danger {
+        border-left-color: #dc3545;
+    }
+
+    .kpi-card-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+
+    .kpi-card-value {
+        font-size: 1.6rem;
+        font-weight: 500;
+        line-height: 1.2;
+        color: #212529;
+    }
+
+    .kpi-card-sub {
+        font-size: 0.82rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .kpi-warn-text {
+        color: #b58105;
+    }
+}
+
+.stats-legend-note {
+    font-size: 0.8rem;
+    color: #6c757d;
+
+    .legend-dash {
+        display: inline-block;
+        width: 18px;
+        border-top: 2px dashed #6c757d;
+        vertical-align: middle;
+        margin-right: 0.35rem;
+    }
+}
+
+.bad-submissions-alert {
+    font-size: 0.9rem;
+}

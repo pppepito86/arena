@@ -1,0 +1,191 @@
+<div class="card stats-chart-card h-100">
+    <div class="card-header stats-chart-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <span class="series-dot mr-2" [style.backgroundColor]="color"></span>
+                <h5 class="mb-0 stats-chart-title">{{title}}</h5>
+            </div>
+            <div class="btn-group btn-group-sm" role="group" aria-label="View mode">
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="viewMode === 'chart' ? 'btn-secondary' : 'btn-outline-secondary'"
+                    (click)="setViewMode('chart')">
+                    Chart
+                </button>
+                <button
+                    type="button"
+                    class="btn"
+                    [ngClass]="viewMode === 'table' ? 'btn-secondary' : 'btn-outline-secondary'"
+                    (click)="setViewMode('table')">
+                    Table
+                </button>
+            </div>
+        </div>
+        <div class="stats-chart-kpis mt-1" *ngIf="points.length > 0">
+            <span class="kpi-item" title="Current in-progress period">
+                <span class="kpi-label">{{latestCaption}}:</span>
+                <strong>{{latestValue | number}}</strong>
+            </span>
+            <span class="kpi-sep">&middot;</span>
+            <span class="kpi-item" title="Average across completed periods">
+                <span class="kpi-label">Avg:</span>
+                <strong>{{averageValue | number}}</strong>
+            </span>
+            <span class="kpi-sep">&middot;</span>
+            <span class="kpi-item" [title]="'Peak on ' + peakLabel">
+                <span class="kpi-label">Peak:</span>
+                <strong>{{peakValue | number}}</strong>
+                <span class="kpi-meta">({{peakLabel}})</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body stats-chart-body">
+        <div *ngIf="points.length === 0" class="stats-chart-empty text-muted text-center py-4">
+            No data available
+        </div>
+
+        <div *ngIf="points.length > 0 && viewMode === 'chart'" class="chart-canvas-wrapper" (mouseleave)="clearHover()">
+            <svg
+                class="chart-svg"
+                [attr.viewBox]="'0 0 ' + viewWidth + ' ' + viewHeight"
+                role="img"
+                [attr.aria-label]="title + ' line chart'">
+                <defs>
+                    <linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" [attr.stop-color]="color" stop-opacity="0.22"></stop>
+                        <stop offset="100%" [attr.stop-color]="color" stop-opacity="0.01"></stop>
+                    </linearGradient>
+                </defs>
+
+                <!-- Horizontal grid lines & Y-axis labels -->
+                <g class="grid-lines">
+                    <ng-container *ngFor="let tick of yTicks">
+                        <line
+                            class="grid-line"
+                            [class.baseline]="tick.value === 0"
+                            [attr.x1]="padLeft"
+                            [attr.x2]="viewWidth - padRight"
+                            [attr.y1]="tick.y"
+                            [attr.y2]="tick.y">
+                        </line>
+                        <text
+                            class="axis-label y-label"
+                            [attr.x]="padLeft - 8"
+                            [attr.y]="tick.y + 4"
+                            text-anchor="end">
+                            {{tick.label}}
+                        </text>
+                    </ng-container>
+                </g>
+
+                <!-- Area fill -->
+                <path
+                    *ngIf="areaPath"
+                    class="area-fill"
+                    [attr.d]="areaPath"
+                    [attr.fill]="'url(#' + gradientId + ')'">
+                </path>
+
+                <!-- Completed periods line (solid) -->
+                <path
+                    *ngIf="completedLinePath"
+                    class="line-path"
+                    [attr.d]="completedLinePath"
+                    [attr.stroke]="color">
+                </path>
+
+                <!-- Current in-progress period segment (dashed) -->
+                <path
+                    *ngIf="inProgressLinePath"
+                    class="line-path line-in-progress"
+                    [attr.d]="inProgressLinePath"
+                    [attr.stroke]="color">
+                </path>
+
+                <!-- Vertical crosshair on hover -->
+                <line
+                    *ngIf="hoveredPoint"
+                    class="hover-crosshair"
+                    [attr.x1]="hoveredPoint.x"
+                    [attr.x2]="hoveredPoint.x"
+                    [attr.y1]="padTop"
+                    [attr.y2]="baselineY">
+                </line>
+
+                <!-- Data points -->
+                <g class="data-points">
+                    <circle
+                        *ngFor="let pt of points"
+                        class="data-dot"
+                        [class.in-progress-dot]="pt.isInProgress"
+                        [class.active-dot]="hoveredIndex === pt.index"
+                        [attr.cx]="pt.x"
+                        [attr.cy]="pt.y"
+                        [attr.r]="hoveredIndex === pt.index ? 5.5 : (pt.isInProgress ? 3.5 : 2.5)"
+                        [attr.fill]="pt.isInProgress || hoveredIndex === pt.index ? '#ffffff' : color"
+                        [attr.stroke]="color">
+                    </circle>
+                </g>
+
+                <!-- X-axis labels -->
+                <g class="x-axis-labels">
+                    <text
+                        *ngFor="let tick of xTicks"
+                        class="axis-label x-label"
+                        [attr.x]="tick.x"
+                        [attr.y]="viewHeight - 10"
+                        [attr.text-anchor]="tick.anchor">
+                        {{tick.label}}
+                    </text>
+                </g>
+
+                <!-- Full-height interactive hover hit bands -->
+                <g class="hover-bands">
+                    <rect
+                        *ngFor="let pt of points"
+                        class="hover-band"
+                        [attr.x]="pt.hitX"
+                        [attr.y]="padTop"
+                        [attr.width]="pt.hitWidth"
+                        [attr.height]="baselineY - padTop"
+                        (mouseenter)="setHover(pt.index)">
+                    </rect>
+                </g>
+            </svg>
+
+            <!-- Floating HTML tooltip -->
+            <div
+                *ngIf="hoveredPoint"
+                class="chart-tooltip"
+                [ngClass]="tooltipAlignClass"
+                [class.position-below]="tooltipTopPercent < 28"
+                [style.left.%]="tooltipLeftPercent"
+                [style.top.%]="tooltipTopPercent">
+                <div class="tooltip-date">{{hoveredPoint.fullLabel}}</div>
+                <div class="tooltip-value">
+                    <span class="tooltip-dot" [style.backgroundColor]="color"></span>
+                    <strong>{{hoveredPoint.value | number}}</strong>
+                    <span *ngIf="unitLabel" class="tooltip-unit">{{unitLabel}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compact table fallback view -->
+        <div *ngIf="points.length > 0 && viewMode === 'table'" class="table-responsive stats-table-wrapper">
+            <table class="table table-sm table-striped mb-0">
+                <thead>
+                <tr>
+                    <th *ngFor="let pt of points" class="text-center text-nowrap" [title]="pt.fullLabel">{{pt.shortLabel}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td *ngFor="let pt of points" class="text-center text-nowrap">{{pt.value | number}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
