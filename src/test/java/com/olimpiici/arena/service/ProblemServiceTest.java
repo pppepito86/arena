@@ -301,4 +301,80 @@ public class ProblemServiceTest {
         Optional<File> result = problemService.getAuthorSolution(workDir.getAbsolutePath(), 9999L);
         assertThat(result).isEmpty();
     }
+
+    @Test
+    public void testFormatTimeLimitSeconds() {
+        assertThat(ProblemService.formatTimeLimitSeconds(1000)).isEqualTo("1");
+        assertThat(ProblemService.formatTimeLimitSeconds(2000)).isEqualTo("2");
+        assertThat(ProblemService.formatTimeLimitSeconds(1500)).isEqualTo("1.5");
+        assertThat(ProblemService.formatTimeLimitSeconds(1050)).isEqualTo("1.05");
+        assertThat(ProblemService.formatTimeLimitSeconds(1005)).isEqualTo("1.005");
+        assertThat(ProblemService.formatTimeLimitSeconds(250)).isEqualTo("0.25");
+        assertThat(ProblemService.formatTimeLimitSeconds(10)).isEqualTo("0.01");
+    }
+
+    @Test
+    public void testUpdateLimits_SkipsRewriteWhenNumericallyEqual() throws Exception {
+        File problemDir = new File(workDir, "problems/2/problem");
+        problemDir.mkdirs();
+        FileUtils.writeStringToFile(new File(problemDir, "grade.properties"), "time = 1.000 \nmemory = 512 \n", "UTF-8");
+
+        // No problem.zip exists; if a rewrite were attempted, it would fail and/or call workerPool.deleteProblem
+        problemService.updateTimeLimit(2L, 1000);
+        problemService.updateMemoryLimit(2L, 512);
+
+        verify(workerPool, never()).deleteProblem(anyLong());
+    }
+
+    @Test
+    public void testUpdateLimits_RejectsNonPositiveValues() {
+        assertThatThrownBy(() -> problemService.updateTimeLimit(2L, 0))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> problemService.updateTimeLimit(2L, -100))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> problemService.updateMemoryLimit(2L, 0))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> problemService.updateMemoryLimit(2L, -64))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void testSetLimitsToDto_TrimsAndNormalizesValues() throws IOException {
+        File problemDir = new File(workDir, "problems/3/problem");
+        problemDir.mkdirs();
+        FileUtils.writeStringToFile(
+            new File(problemDir, "grade.properties"),
+            "time = 1.05 \nmemory = 512 \nextensions = ZIP , cpp \n",
+            "UTF-8"
+        );
+
+        ProblemDTO dto = new ProblemDTO();
+        dto.setId(3L);
+        problemService.setLimitsToDto(dto);
+
+        assertThat(dto.getTime()).isEqualTo(1050);
+        assertThat(dto.getMemory()).isEqualTo(512);
+        assertThat(dto.getExtension()).isEqualTo("zip");
+        assertThat(problemService.getSolutionFileExtension(3L)).isEqualTo("zip");
+    }
+
+    @Test
+    public void testSetLimitsToDto_FallsBackOnMalformedOrEmptyValues() throws IOException {
+        File problemDir = new File(workDir, "problems/4/problem");
+        problemDir.mkdirs();
+        FileUtils.writeStringToFile(
+            new File(problemDir, "grade.properties"),
+            "time = \nmemory = 256MB\nextensions =   \n",
+            "UTF-8"
+        );
+
+        ProblemDTO dto = new ProblemDTO();
+        dto.setId(4L);
+        problemService.setLimitsToDto(dto);
+
+        assertThat(dto.getTime()).isEqualTo(1000);
+        assertThat(dto.getMemory()).isEqualTo(256);
+        assertThat(dto.getExtension()).isEqualTo("cpp");
+        assertThat(problemService.getSolutionFileExtension(4L)).isEqualTo("cpp");
+    }
 }

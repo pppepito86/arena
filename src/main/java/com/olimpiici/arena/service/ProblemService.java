@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -231,6 +235,10 @@ public class ProblemService {
     	}
     }
 
+    static final int DEFAULT_TIME_MS = 1000;
+    static final int DEFAULT_MEMORY_MB = 256;
+    static final String DEFAULT_EXTENSION = "cpp";
+
     /**
      * Get problem metadata from grade.properties file.
      *
@@ -239,16 +247,14 @@ public class ProblemService {
      */
 	public Properties getProperties(Long problemId) {
     	Properties props = new Properties();
-		File gradePropertiesFile = getGradeProperties(problemId);
-
 		props.setProperty("time", "1");
 		props.setProperty("memory", "256");
 
-		if (!gradePropertiesFile.exists()) {
-			return props;
-		}
-
 		synchronized (lock) {
+			File gradePropertiesFile = getGradeProperties(problemId);
+			if (!gradePropertiesFile.exists()) {
+				return props;
+			}
 			try (FileInputStream fis = new FileInputStream(gradePropertiesFile)) {
 				props.load(fis);
 			} catch (IOException e) {
@@ -260,6 +266,69 @@ public class ProblemService {
 	}
 
     /**
+     * Format a time limit in milliseconds as a decimal seconds string using
+     * {@link Locale#ROOT} (e.g., 1000 -> "1", 1050 -> "1.05", 250 -> "0.25").
+     */
+    static String formatTimeLimitSeconds(int timeLimitMs) {
+        return BigDecimal.valueOf(timeLimitMs, 3).stripTrailingZeros().toPlainString();
+    }
+
+    static Optional<Integer> parseTimeMillis(String raw) {
+        if (raw == null) {
+            return Optional.empty();
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return Optional.empty();
+        }
+        try {
+            double seconds = Double.parseDouble(trimmed);
+            if (!Double.isFinite(seconds) || seconds <= 0) {
+                return Optional.empty();
+            }
+            return Optional.of((int) Math.round(seconds * 1000.0));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    static Optional<Integer> parseMemoryMb(String raw) {
+        if (raw == null) {
+            return Optional.empty();
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return Optional.empty();
+        }
+        try {
+            int memory = Integer.parseInt(trimmed);
+            if (memory <= 0) {
+                return Optional.empty();
+            }
+            return Optional.of(memory);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    static List<String> parseAllowedExtensions(String raw) {
+        if (raw == null) {
+            return Collections.singletonList(DEFAULT_EXTENSION);
+        }
+        List<String> extensions = Arrays.stream(raw.split(","))
+            .map(String::trim)
+            .map(s -> s.toLowerCase(Locale.ROOT))
+            .filter(s -> !s.isEmpty())
+            .distinct()
+            .collect(Collectors.toList());
+        return extensions.isEmpty() ? Collections.singletonList(DEFAULT_EXTENSION) : extensions;
+    }
+
+    static String normalizePrimaryExtension(String raw) {
+        return parseAllowedExtensions(raw).get(0);
+    }
+
+    /**
      * Update the time limit for a problem.
      *
      * @param problemId the problem ID
@@ -267,11 +336,14 @@ public class ProblemService {
      * @throws Exception if there's an error updating the problem package
      */
 	public void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception {
-		String timeValue = newTimeLimitMs/1000 + "." + newTimeLimitMs%1000;
+		if (newTimeLimitMs <= 0) {
+			throw new IllegalArgumentException("Time limit must be positive, got: " + newTimeLimitMs);
+		}
+		String timeValue = formatTimeLimitSeconds(newTimeLimitMs);
 
 		Properties props = getProperties(problemId);
-		String oldTime = props.getProperty("time");
-		if (oldTime != null && oldTime.equals(timeValue)) {
+		Optional<Integer> oldTimeMs = parseTimeMillis(props.getProperty("time"));
+		if (oldTimeMs.isPresent() && oldTimeMs.get() == newTimeLimitMs) {
 			return;
 		}
 		props.setProperty("time", timeValue);
@@ -286,14 +358,16 @@ public class ProblemService {
      * @throws Exception if there's an error updating the problem package
      */
 	public void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception {
+		if (newMemoryLimitMb <= 0) {
+			throw new IllegalArgumentException("Memory limit must be positive, got: " + newMemoryLimitMb);
+		}
 		Properties props = getProperties(problemId);
-		String newMemory = String.valueOf(newMemoryLimitMb);
-		String oldMemory = props.getProperty("memory");
-		if (oldMemory != null && oldMemory.equals(newMemory)) {
+		Optional<Integer> oldMemoryMb = parseMemoryMb(props.getProperty("memory"));
+		if (oldMemoryMb.isPresent() && oldMemoryMb.get() == newMemoryLimitMb) {
 			return;
 		}
 
-		props.setProperty("memory", newMemory);
+		props.setProperty("memory", String.valueOf(newMemoryLimitMb));
 		writeGradeProperties(problemId, props);
 	}
 
@@ -305,9 +379,8 @@ public class ProblemService {
      * @throws IOException if properties cannot be read
      */
 	public String getSolutionFileExtension(long problemId) throws IOException {
-		String defaultExtension = "cpp";
 		Properties props = getProperties(problemId);
-		return props.getProperty("extensions", defaultExtension);
+		return normalizePrimaryExtension(props.getProperty("extensions"));
 	}
 
     /**
@@ -394,13 +467,21 @@ public class ProblemService {
 	public ProblemDTO setLimitsToDto(ProblemDTO dto) {
 		Properties props = getProperties(dto.getId());
 
-		int time = (int) (1000*Double.valueOf(props.getProperty("time", "")) + 0.1);
-		dto.setTime(time);
+		String rawTime = props.getProperty("time");
+		Optional<Integer> parsedTime = parseTimeMillis(rawTime);
+		if (!parsedTime.isPresent()) {
+			log.warn("Invalid time limit '{}' for problem {}, falling back to {}ms", rawTime, dto.getId(), DEFAULT_TIME_MS);
+		}
+		dto.setTime(parsedTime.orElse(DEFAULT_TIME_MS));
 
-		int memory = Integer.valueOf(props.getProperty("memory", ""));
-        dto.setMemory(memory);
+		String rawMemory = props.getProperty("memory");
+		Optional<Integer> parsedMemory = parseMemoryMb(rawMemory);
+		if (!parsedMemory.isPresent()) {
+			log.warn("Invalid memory limit '{}' for problem {}, falling back to {}MB", rawMemory, dto.getId(), DEFAULT_MEMORY_MB);
+		}
+        dto.setMemory(parsedMemory.orElse(DEFAULT_MEMORY_MB));
 
-		dto.setExtension(props.getProperty("extensions", "cpp"));
+		dto.setExtension(normalizePrimaryExtension(props.getProperty("extensions")));
         return dto;
 	}
 
