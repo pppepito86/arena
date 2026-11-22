@@ -533,6 +533,19 @@ public class ProblemServiceTest {
         assertThat(props.getProperty("memory")).isEqualTo("512");
     }
 
+    @Test
+    public void testGetTaskDescription_PrefersBulgarianStatementOverAnalysisAndForeignPdfs() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("author/analysis.pdf", "%PDF-analysis");
+        entries.put("statement/infection_sr.pdf", "%PDF-sr");
+        entries.put("statement/translations/bg/infection.pdf", "%PDF-bg");
+        problemService.replaceProblemZip(15L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        Optional<File> pdf = problemService.getTaskDescription(workDir.getAbsolutePath(), 15L);
+        assertThat(pdf).isPresent();
+        assertThat(pdf.get().getAbsolutePath()).endsWith("statement/translations/bg/infection.pdf");
+    }
+
     private byte[] buildZipBytes(Map<String, String> entries) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {

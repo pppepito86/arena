@@ -710,24 +710,24 @@ public class ProblemService {
 	}
 
     /**
-     * Identifies the PDF description file for a task.
+     * Identifies the PDF statement file for a task, prioritizing Bulgarian statements
+     * and excluding analyses, editorials, figures, and macOS metadata files.
      */
 	public Optional<File> getTaskDescription(String workDir, Long taskId) {
-		File dir = getProblemDir(workDir, taskId);
-		if (!dir.isDirectory()) {
-			log.error("Problem directory does not exist for task {}: {}", taskId, dir);
-			return Optional.empty();
-		}
-		try (Stream<Path> paths = Files.walk(dir.toPath())) {
-			return paths
-					.filter(Files::isRegularFile)
-					.map(Path::toFile)
-					.filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
-					.sorted((f1, f2) -> Integer.compare(f1.getAbsolutePath().length(), f2.getAbsolutePath().length()))
-					.findFirst();
-		} catch (Exception e) {
-			log.warn("Failed to find task description for problem {} in {}", taskId, dir, e);
-			return Optional.empty();
+		synchronized (lock) {
+			File dir = getProblemDir(workDir, taskId);
+			if (!dir.isDirectory()) {
+				log.error("Problem directory does not exist for task {}: {}", taskId, dir);
+				return Optional.empty();
+			}
+			try {
+				List<String> relativeFiles = ProblemPackageResolver.listRelativeFiles(dir);
+				return ProblemPackageResolver.findStatementPdf(relativeFiles)
+						.map(rel -> new File(dir, rel));
+			} catch (Exception e) {
+				log.warn("Failed to find task description for problem {} in {}", taskId, dir, e);
+				return Optional.empty();
+			}
 		}
 	}
 
