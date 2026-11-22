@@ -35,6 +35,7 @@ import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.ProblemService;
 import com.olimpiici.arena.service.dto.FieldChange;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemPackageInfoDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 import com.olimpiici.arena.web.rest.util.HeaderUtil;
@@ -169,7 +170,7 @@ public class ProblemResource {
     @PostMapping("/problems/{id}/zip")
     @Timed
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<?> updateZip(@PathVariable Long id, @RequestBody MultipartFile file)
+    public ResponseEntity<ProblemPackageInfoDTO> updateZip(@PathVariable Long id, @RequestBody MultipartFile file)
     		throws Exception {
         log.debug("REST updating zip for: {} {}", id, file.getOriginalFilename());
 
@@ -196,7 +197,18 @@ public class ProblemResource {
             }
             });
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(problemService.inspectPackage(id));
+    }
+
+    @GetMapping("/problems/{id}/package-info")
+    @Timed
+    @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<ProblemPackageInfoDTO> getPackageInfo(@PathVariable Long id) throws IOException {
+        log.debug("REST getting package info for problem: {}", id);
+        if (!problemService.exists(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(problemService.inspectPackage(id));
     }
 
     @PostMapping("/problems/{id}/tags")

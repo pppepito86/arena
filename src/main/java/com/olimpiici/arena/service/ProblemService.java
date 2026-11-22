@@ -46,10 +46,12 @@ import com.olimpiici.arena.repository.CompetitionProblemRepository;
 import com.olimpiici.arena.repository.ProblemRepository;
 import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.service.dto.ProblemDTO;
+import com.olimpiici.arena.service.dto.ProblemPackageInfoDTO;
 import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
 import com.olimpiici.arena.service.util.HomographTranslator;
+import com.olimpiici.arena.service.util.ProblemPackageInspector;
 import com.olimpiici.arena.service.util.ProblemPackageResolver;
 import com.olimpiici.arena.service.util.ProblemZipUtils;
 
@@ -299,7 +301,7 @@ public class ProblemService {
         return BigDecimal.valueOf(timeLimitMs, 3).stripTrailingZeros().toPlainString();
     }
 
-    static Optional<Integer> parseTimeMillis(String raw) {
+    public static Optional<Integer> parseTimeMillis(String raw) {
         if (raw == null) {
             return Optional.empty();
         }
@@ -318,7 +320,7 @@ public class ProblemService {
         }
     }
 
-    static Optional<Integer> parseMemoryMb(String raw) {
+    public static Optional<Integer> parseMemoryMb(String raw) {
         if (raw == null) {
             return Optional.empty();
         }
@@ -337,7 +339,7 @@ public class ProblemService {
         }
     }
 
-    static List<String> parseAllowedExtensions(String raw) {
+    public static List<String> parseAllowedExtensions(String raw) {
         if (raw == null) {
             return Collections.singletonList(DEFAULT_EXTENSION);
         }
@@ -754,6 +756,22 @@ public class ProblemService {
 				log.warn("Failed to find author solution for problem {} in {}", taskId, dir, e);
 				return Optional.empty();
 			}
+		}
+	}
+
+    /**
+     * Inspects a problem's uploaded package (problem.zip and unzipped problem/ folder)
+     * and returns a diagnostic summary for admins.
+     */
+	public ProblemPackageInfoDTO inspectPackage(Long problemId) throws IOException {
+		synchronized (lock) {
+			String title = problemRepository.findById(problemId)
+					.map(Problem::getTitle)
+					.orElse(null);
+			return ProblemPackageInspector.inspect(
+					getProblemZip(problemId),
+					getUnzippedProblemFolder(problemId),
+					title);
 		}
 	}
 
