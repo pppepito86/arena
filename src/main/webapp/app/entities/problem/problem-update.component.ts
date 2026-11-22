@@ -16,6 +16,7 @@ import { TagCollectionService } from 'app/entities/tag-collection';
 export class ProblemUpdateComponent implements OnInit {
     problem: IProblem;
     isSaving: boolean;
+    isUploading = false;
     fileUploadStatus: string;
     editableLimits = true;
 
@@ -32,9 +33,8 @@ export class ProblemUpdateComponent implements OnInit {
             this.problem = problem;
         });
         this.activatedRoute.queryParams.subscribe(params => {
-            if (params.editableLimits !== undefined) {
-                this.editableLimits = params.editableLimits;
-            }
+            this.editableLimits =
+                params.editableLimits === undefined || !['0', 'false'].includes(String(params.editableLimits).toLowerCase());
         });
     }
 
@@ -79,12 +79,26 @@ export class ProblemUpdateComponent implements OnInit {
         return item.id;
     }
 
-    uploadFile(files: FileList) {
-        if (files.length > 0) {
+    uploadFile(input: HTMLInputElement) {
+        if (this.isUploading) {
+            return;
+        }
+        const files = input.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            input.value = '';
+            this.isUploading = true;
             this.fileUploadStatus = '(uploading...)';
-            this.problemService
-                .uploadFile(this.problem.id, files[0])
-                .subscribe(value => (this.fileUploadStatus = '(done)'), error => (this.fileUploadStatus = '(error)'));
+            this.problemService.uploadFile(this.problem.id, file).subscribe(
+                () => {
+                    this.isUploading = false;
+                    this.fileUploadStatus = '(done)';
+                },
+                () => {
+                    this.isUploading = false;
+                    this.fileUploadStatus = '(error)';
+                }
+            );
         }
     }
 }
