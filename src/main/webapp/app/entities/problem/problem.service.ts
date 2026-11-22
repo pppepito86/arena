@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { SERVER_API_URL } from 'app/app.constants';
 import { createRequestOption } from 'app/shared';
 import { IProblem } from 'app/shared/model/problem.model';
+import { IProblemPackageInfo } from 'app/shared/model/problem-package-info.model';
 import { ITag } from 'app/shared/model/tag.model';
 
 type EntityResponseType = HttpResponse<IProblem>;
@@ -59,10 +60,15 @@ export class ProblemService {
         return this.http.post(url, tagsCopy, { observe: 'response' });
     }
 
-    uploadFile(problemId: number, file: File): Observable<any> {
+    uploadFile(problemId: number, file: File): Observable<IProblemPackageInfo> {
         const formData: FormData = new FormData();
         formData.append('file', file, file.name);
         const url = `${this.resourceUrl}/${problemId}/zip`;
-        return this.http.post(url, formData);
+        return this.http.post<IProblemPackageInfo>(url, formData);
+    }
+
+    getPackageInfo(problemId: number): Observable<HttpResponse<IProblemPackageInfo>> {
+        const url = `${this.resourceUrl}/${problemId}/package-info`;
+        return this.http.get<IProblemPackageInfo>(url, { observe: 'response' });
     }
 }

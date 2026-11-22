@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { JhiAlertService } from 'ng-jhipster';
 
 import { IProblem } from 'app/shared/model/problem.model';
+import { IProblemPackageInfo } from 'app/shared/model/problem-package-info.model';
 import { ProblemService } from './problem.service';
 import { ITagCollection } from 'app/shared/model/tag-collection.model';
 import { TagCollectionService } from 'app/entities/tag-collection';
@@ -19,6 +20,9 @@ export class ProblemUpdateComponent implements OnInit {
     isUploading = false;
     fileUploadStatus: string;
     editableLimits = true;
+    packageInfo: IProblemPackageInfo = null;
+    statementCacheBuster = Date.now();
+    private packageInfoRequestSeq = 0;
 
     constructor(
         protected jhiAlertService: JhiAlertService,
@@ -31,11 +35,30 @@ export class ProblemUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ problem }) => {
             this.problem = problem;
+            if (this.problem && this.problem.id !== undefined) {
+                this.loadPackageInfo(this.problem.id);
+            }
         });
         this.activatedRoute.queryParams.subscribe(params => {
             this.editableLimits =
                 params.editableLimits === undefined || !['0', 'false'].includes(String(params.editableLimits).toLowerCase());
         });
+    }
+
+    protected loadPackageInfo(problemId: number) {
+        const reqSeq = ++this.packageInfoRequestSeq;
+        this.problemService.getPackageInfo(problemId).subscribe(
+            (res: HttpResponse<IProblemPackageInfo>) => {
+                if (reqSeq === this.packageInfoRequestSeq) {
+                    this.packageInfo = res.body;
+                }
+            },
+            () => {
+                if (reqSeq === this.packageInfoRequestSeq) {
+                    this.packageInfo = null;
+                }
+            }
+        );
     }
 
     previousState() {
@@ -87,12 +110,26 @@ export class ProblemUpdateComponent implements OnInit {
         if (files && files.length > 0) {
             const file = files[0];
             input.value = '';
+            const reqSeq = ++this.packageInfoRequestSeq;
             this.isUploading = true;
             this.fileUploadStatus = '(uploading...)';
             this.problemService.uploadFile(this.problem.id, file).subscribe(
-                () => {
+                (info: IProblemPackageInfo) => {
                     this.isUploading = false;
                     this.fileUploadStatus = '(done)';
+                    if (reqSeq !== this.packageInfoRequestSeq) {
+                        return;
+                    }
+                    this.packageInfo = info;
+                    this.statementCacheBuster = Date.now();
+                    if (info) {
+                        if (info.timeMs != null) {
+                            this.problem.time = info.timeMs;
+                        }
+                        if (info.memoryMb != null) {
+                            this.problem.memory = info.memoryMb;
+                        }
+                    }
                 },
                 () => {
                     this.isUploading = false;

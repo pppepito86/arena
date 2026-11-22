@@ -53,6 +53,76 @@
             		id="file" accept=".zip,application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
             		[disabled]="isUploading"
             		(change)="uploadFile($event.target)" />
+
+            <div class="card mt-3" *ngIf="packageInfo && packageInfo.hasPackage">
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                    <strong>Package summary</strong>
+                    <div>
+                        <span class="badge badge-secondary mr-1">{{packageInfo.timeMs / 1000}} s</span>
+                        <span class="badge badge-secondary mr-1">{{packageInfo.memoryMb}} MB</span>
+                        <span class="badge badge-secondary mr-1">{{packageInfo.allowedExtensions && packageInfo.allowedExtensions.length ? packageInfo.allowedExtensions.join(', ') : packageInfo.extension}}</span>
+                        <span class="badge badge-primary mr-1">{{packageInfo.testCount}} tests</span>
+                        <span class="badge badge-primary mr-1" *ngIf="packageInfo.groupCount > 0">{{packageInfo.groupCount}} groups</span>
+                        <span class="badge badge-info mr-1" *ngIf="packageInfo.checkerPath">checker</span>
+                        <span class="badge badge-info mr-1" *ngIf="packageInfo.graderPath">interactive</span>
+                        <span class="badge badge-info" *ngIf="packageInfo.managerPath">communication</span>
+                    </div>
+                </div>
+                <div class="card-body py-2 small">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Statement PDF</dt>
+                        <dd class="col-sm-9">
+                            <ng-container *ngIf="packageInfo.statementPath; else missingStatement">
+                                <code>{{packageInfo.statementPath}}</code>
+                                <a class="ml-2" [href]="'api/public/problems/' + problem.id + '/pdf?t=' + statementCacheBuster" target="_blank">Preview</a>
+                            </ng-container>
+                            <ng-template #missingStatement><span class="text-danger">Not found</span></ng-template>
+                        </dd>
+
+                        <dt class="col-sm-3">Properties</dt>
+                        <dd class="col-sm-9">
+                            <code *ngIf="packageInfo.propertiesPath">{{packageInfo.propertiesPath}}</code>
+                            <span class="text-muted" *ngIf="!packageInfo.propertiesPath">Default (no grade.properties)</span>
+                        </dd>
+
+                        <dt class="col-sm-3">Author solution</dt>
+                        <dd class="col-sm-9">
+                            <code *ngIf="packageInfo.authorSolutionPath">{{packageInfo.authorSolutionPath}}</code>
+                            <span class="text-muted" *ngIf="!packageInfo.authorSolutionPath">Not detected</span>
+                        </dd>
+
+                        <ng-container *ngIf="packageInfo.checkerPath">
+                            <dt class="col-sm-3">Checker</dt>
+                            <dd class="col-sm-9"><code>{{packageInfo.checkerPath}}</code></dd>
+                        </ng-container>
+
+                        <ng-container *ngIf="packageInfo.graderPath">
+                            <dt class="col-sm-3">Grader</dt>
+                            <dd class="col-sm-9"><code>{{packageInfo.graderPath}}</code></dd>
+                        </ng-container>
+
+                        <ng-container *ngIf="packageInfo.managerPath">
+                            <dt class="col-sm-3">Manager</dt>
+                            <dd class="col-sm-9"><code>{{packageInfo.managerPath}}</code></dd>
+                        </ng-container>
+                    </dl>
+
+                    <p class="text-muted mb-0 mt-1" *ngIf="packageInfo.testsCleanedUp">
+                        Tests inspected from <code>problem.zip</code> (unzipped <code>tests/</code> cleaned up).
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mt-2 mb-0 py-2 small" *ngIf="packageInfo && packageInfo.warnings && packageInfo.warnings.length > 0">
+                <strong>Warnings:</strong>
+                <ul class="mb-0 pl-3">
+                    <li *ngFor="let warning of packageInfo.warnings">{{warning}}</li>
+                </ul>
+            </div>
+
+            <small class="form-text text-muted" *ngIf="packageInfo && !packageInfo.hasPackage && (!packageInfo.warnings || packageInfo.warnings.length === 0)">
+                No problem ZIP uploaded yet.
+            </small>
         </div>
                 
     </div>
