@@ -1,16 +1,13 @@
 package com.olimpiici.arena.web.rest;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,13 +173,15 @@ public class ProblemResource {
     		throws Exception {
         log.debug("REST updating zip for: {} {}", id, file.getOriginalFilename());
 
+        if (!problemService.exists(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
         // A new package brings its own grade.properties, so the limits can
         // change without anyone editing them: snapshot them either side.
         ProblemDTO before = findWithLimits(id);
 
-        File zipFile = Paths.get(applicationProperties.getWorkDir(), "problems", ""+id, "problem.zip").toFile();
-        FileUtils.copyInputStreamToFile(file.getInputStream(), zipFile);
-    	problemService.unzipProblemZip(id);
+        problemService.replaceProblemZip(id, file.getInputStream());
 
         auditZipUpload(id, file, before, findWithLimits(id));
 

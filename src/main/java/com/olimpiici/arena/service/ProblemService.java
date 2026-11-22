@@ -1,9 +1,11 @@
 package com.olimpiici.arena.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +35,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.olimpiici.arena.config.ApplicationProperties;
 import com.olimpiici.arena.domain.Competition;
@@ -48,9 +51,7 @@ import com.olimpiici.arena.service.dto.TagDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
 import com.olimpiici.arena.service.util.HomographTranslator;
-
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import com.olimpiici.arena.service.util.ProblemZipUtils;
 
 /**
  * Service for managing Problem.
@@ -340,14 +341,14 @@ public class ProblemService {
 			throw new IllegalArgumentException("Time limit must be positive, got: " + newTimeLimitMs);
 		}
 		String timeValue = formatTimeLimitSeconds(newTimeLimitMs);
-
-		Properties props = getProperties(problemId);
-		Optional<Integer> oldTimeMs = parseTimeMillis(props.getProperty("time"));
-		if (oldTimeMs.isPresent() && oldTimeMs.get() == newTimeLimitMs) {
-			return;
-		}
-		props.setProperty("time", timeValue);
-		writeGradeProperties(problemId, props);
+		modifyGradeProperties(problemId, props -> {
+			Optional<Integer> oldTimeMs = parseTimeMillis(props.getProperty("time"));
+			if (oldTimeMs.isPresent() && oldTimeMs.get() == newTimeLimitMs) {
+				return false;
+			}
+			props.setProperty("time", timeValue);
+			return true;
+		});
 	}
 
     /**
@@ -361,14 +362,14 @@ public class ProblemService {
 		if (newMemoryLimitMb <= 0) {
 			throw new IllegalArgumentException("Memory limit must be positive, got: " + newMemoryLimitMb);
 		}
-		Properties props = getProperties(problemId);
-		Optional<Integer> oldMemoryMb = parseMemoryMb(props.getProperty("memory"));
-		if (oldMemoryMb.isPresent() && oldMemoryMb.get() == newMemoryLimitMb) {
-			return;
-		}
-
-		props.setProperty("memory", String.valueOf(newMemoryLimitMb));
-		writeGradeProperties(problemId, props);
+		modifyGradeProperties(problemId, props -> {
+			Optional<Integer> oldMemoryMb = parseMemoryMb(props.getProperty("memory"));
+			if (oldMemoryMb.isPresent() && oldMemoryMb.get() == newMemoryLimitMb) {
+				return false;
+			}
+			props.setProperty("memory", String.valueOf(newMemoryLimitMb));
+			return true;
+		});
 	}
 
     /**
@@ -384,22 +385,57 @@ public class ProblemService {
 	}
 
     /**
-     * Internal helper to write properties back to the problem package.
+     * Atomically reads, mutates, and persists grade.properties inside problem.zip (without
+     * extracting tests or invoking external `zip`) and syncs the unzipped on-disk copy.
      */
-	private void writeGradeProperties(long problemId, Properties props) throws Exception {
+	private void modifyGradeProperties(long problemId, Function<Properties, Boolean> mutator) throws Exception {
 		synchronized (lock) {
-			unzipProblemZipLocked(problemId);
-			File gradePropertiesFile = getGradeProperties(problemId);
-			if (!gradePropertiesFile.exists()) {
-				if (!gradePropertiesFile.getParentFile().exists()) {
-					gradePropertiesFile.getParentFile().mkdirs();
+			String entryPath = "grade.properties";
+			Properties props = new Properties();
+			props.setProperty("time", "1");
+			props.setProperty("memory", "256");
+
+			File zipFile = getProblemZip(problemId);
+			File unzippedFolder = getUnzippedProblemFolder(problemId);
+			File unzippedPropsFile = new File(unzippedFolder, entryPath.replace('\\', '/'));
+
+			boolean loaded = false;
+			if (zipFile.isFile()) {
+				Optional<byte[]> zipEntryBytes = ProblemZipUtils.readEntry(zipFile, entryPath);
+				if (zipEntryBytes.isPresent()) {
+					try (ByteArrayInputStream bais = new ByteArrayInputStream(zipEntryBytes.get())) {
+						props.load(bais);
+						loaded = true;
+					}
 				}
-				gradePropertiesFile.createNewFile();
 			}
-			try (PrintWriter pw = new PrintWriter(gradePropertiesFile)) {
-				props.store(pw, null);
+			if (!loaded && unzippedPropsFile.isFile()) {
+				try (FileInputStream fis = new FileInputStream(unzippedPropsFile)) {
+					props.load(fis);
+				}
 			}
-			recreateProblemZipLocked(problemId);
+
+			if (!Boolean.TRUE.equals(mutator.apply(props))) {
+				return;
+			}
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			props.store(baos, null);
+			byte[] updatedBytes = baos.toByteArray();
+
+			if (zipFile.isFile()) {
+				ProblemZipUtils.updateOrAddEntry(zipFile, entryPath, updatedBytes);
+			}
+			Path propsPath = unzippedPropsFile.toPath();
+			Path parent = propsPath.getParent();
+			if (!zipFile.isFile() && parent != null) {
+				Files.createDirectories(parent);
+			}
+			if (!zipFile.isFile() || (parent != null && Files.isDirectory(parent))) {
+				Files.write(propsPath, updatedBytes);
+			}
+
+			workerPool.deleteProblem(problemId);
 		}
 	}
 
@@ -424,41 +460,76 @@ public class ProblemService {
 	}
 
     /**
-     * Unzips the problem package zip file.
+     * Stages an uploaded problem ZIP, validates & extracts it safely into a sibling temporary
+     * directory, and atomically swaps both problem.zip and problem/ under lock.
      */
-	public void unzipProblemZip(long problemId) throws ZipException, IOException {
+	public void replaceProblemZip(long problemId, InputStream zipStream) throws IOException {
+		File problemRoot = getProblemFile(problemId, "");
+		Files.createDirectories(problemRoot.toPath());
+
+		String suffix = UUID.randomUUID().toString();
+		File tempZip = new File(problemRoot, "problem.zip.tmp." + suffix);
+		File tempDir = new File(problemRoot, "problem.tmp." + suffix);
+		try {
+			FileUtils.copyInputStreamToFile(zipStream, tempZip);
+			ProblemZipUtils.extractSafely(tempZip, tempDir);
+
+			synchronized (lock) {
+				ProblemZipUtils.moveAtomically(tempZip.toPath(), getProblemZip(problemId).toPath());
+				swapDirectoryLocked(tempDir, getUnzippedProblemFolder(problemId), suffix);
+			}
+		} catch (IOException | RuntimeException e) {
+			FileUtils.deleteQuietly(tempZip);
+			FileUtils.deleteQuietly(tempDir);
+			throw e;
+		}
+	}
+
+    /**
+     * Unzips the problem package zip file safely into the unzipped problem folder.
+     */
+	public void unzipProblemZip(long problemId) throws IOException {
 		synchronized(lock) {
 			unzipProblemZipLocked(problemId);
 		}
 	}
 
-	private void unzipProblemZipLocked(long problemId) throws ZipException, IOException {
+	private void unzipProblemZipLocked(long problemId) throws IOException {
 		File zipFile = getProblemZip(problemId);
-        ZipFile zipZipFile = new ZipFile(zipFile);
-
-        File zipDir = getUnzippedProblemFolder(problemId);
-        if (zipDir.exists()) {
-            FileUtils.deleteDirectory(zipDir);
-        }
-        zipDir.mkdirs();
-        zipZipFile.extractAll(zipDir.getAbsolutePath());
+		File problemRoot = zipFile.getParentFile();
+		String suffix = UUID.randomUUID().toString();
+		File tempDir = new File(problemRoot, "problem.tmp." + suffix);
+		try {
+			ProblemZipUtils.extractSafely(zipFile, tempDir);
+			swapDirectoryLocked(tempDir, getUnzippedProblemFolder(problemId), suffix);
+		} catch (IOException | RuntimeException e) {
+			FileUtils.deleteQuietly(tempDir);
+			throw e;
+		}
 	}
 
-    /**
-     * Recreates the problem zip file from the unzipped directory.
-     */
-	private void recreateProblemZipLocked(long problemId) throws Exception {
-        File problemsDir = getUnzippedProblemFolder(problemId);
-		ProcessExecutor executor = new ProcessExecutor()
-      			.command("zip", "-r", "problem.zip", ".")
-      			.directory(problemsDir);
-      	executor.execute();
-      	File problemZipNew = getProblemFile(problemId, Paths.get("problem", "problem.zip").toString());
-      	File problemZipOrig = getProblemZip(problemId);
-      	problemZipOrig.delete();
-      	problemZipNew.renameTo(problemZipOrig);
-
-      	workerPool.deleteProblem(problemId);
+	private void swapDirectoryLocked(File tempDir, File targetDir, String suffix) throws IOException {
+		File backupDir = new File(targetDir.getParentFile(), targetDir.getName() + ".old." + suffix);
+		boolean movedOld = false;
+		if (targetDir.exists()) {
+			ProblemZipUtils.moveAtomically(targetDir.toPath(), backupDir.toPath());
+			movedOld = true;
+		}
+		try {
+			ProblemZipUtils.moveAtomically(tempDir.toPath(), targetDir.toPath());
+		} catch (IOException | RuntimeException e) {
+			if (movedOld && !targetDir.exists() && backupDir.exists()) {
+				try {
+					ProblemZipUtils.moveAtomically(backupDir.toPath(), targetDir.toPath());
+				} catch (IOException restoreEx) {
+					log.error("Failed to restore previous problem directory {}", targetDir, restoreEx);
+				}
+			}
+			throw e;
+		}
+		if (movedOld) {
+			FileUtils.deleteQuietly(backupDir);
+		}
 	}
 
     /**

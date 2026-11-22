@@ -9,15 +9,22 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -42,6 +49,7 @@ import com.olimpiici.arena.repository.SubmissionRepository;
 import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.mapper.ProblemMapper;
 import com.olimpiici.arena.service.mapper.TagMapper;
+import com.olimpiici.arena.service.util.ProblemZipUtils;
 
 public class ProblemServiceTest {
 
@@ -376,5 +384,81 @@ public class ProblemServiceTest {
         assertThat(dto.getMemory()).isEqualTo(256);
         assertThat(dto.getExtension()).isEqualTo("cpp");
         assertThat(problemService.getSolutionFileExtension(4L)).isEqualTo("cpp");
+    }
+
+    @Test
+    public void testReplaceProblemZip_StagesAndPreservesPreviousPackageOnFailure() throws Exception {
+        Map<String, String> valid = new LinkedHashMap<>();
+        valid.put("grade.properties", "time=2\nmemory=512\n");
+        valid.put("statement/task.pdf", "%PDF-1.4");
+        byte[] validZipBytes = buildZipBytes(valid);
+
+        problemService.replaceProblemZip(10L, new ByteArrayInputStream(validZipBytes));
+
+        Properties props = problemService.getProperties(10L);
+        assertThat(props.getProperty("time")).isEqualTo("2");
+        assertThat(new File(workDir, "problems/10/problem/statement/task.pdf")).isFile();
+
+        // Now try uploading a Zip-Slip archive: must fail AND preserve the previous working package
+        Map<String, String> malicious = new LinkedHashMap<>();
+        malicious.put("../escape.txt", "boom");
+        byte[] evilZipBytes = buildZipBytes(malicious);
+
+        assertThatThrownBy(() -> problemService.replaceProblemZip(10L, new ByteArrayInputStream(evilZipBytes)))
+            .isInstanceOf(IOException.class)
+            .hasMessageContaining("Zip-Slip");
+
+        assertThat(problemService.getProperties(10L).getProperty("time")).isEqualTo("2");
+        assertThat(new File(workDir, "problems/10/problem/statement/task.pdf")).isFile();
+    }
+
+    @Test
+    public void testUpdateLimits_StreamUpdatesZipWithoutReExtractingDeletedTests() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("grade.properties", "time=1\nmemory=256\ngroups=1-2,3-4\nweights=50,50\n");
+        entries.put("tests/p.01.in", "1 2\n");
+        entries.put("tests/p.01.sol", "3\n");
+        problemService.replaceProblemZip(11L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        // Simulate Friday cleanup.sh deleting problem/tests/
+        File testsDir = new File(workDir, "problems/11/problem/tests");
+        FileUtils.deleteDirectory(testsDir);
+        assertThat(testsDir).doesNotExist();
+
+        problemService.updateTimeLimit(11L, 1050);
+        problemService.updateMemoryLimit(11L, 512);
+
+        // Tests must NOT be re-extracted onto disk, yet MUST still be intact in problem.zip
+        assertThat(testsDir).doesNotExist();
+        File zipFile = new File(workDir, "problems/11/problem.zip");
+        assertThat(ProblemZipUtils.listFileEntries(zipFile))
+            .containsExactlyInAnyOrder("grade.properties", "tests/p.01.in", "tests/p.01.sol");
+
+        Properties updatedFromZip = new Properties();
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(
+                ProblemZipUtils.readEntry(zipFile, "grade.properties").get())) {
+            updatedFromZip.load(bais);
+        }
+        assertThat(updatedFromZip.getProperty("time")).isEqualTo("1.05");
+        assertThat(updatedFromZip.getProperty("memory")).isEqualTo("512");
+        assertThat(updatedFromZip.getProperty("groups")).isEqualTo("1-2,3-4");
+        assertThat(updatedFromZip.getProperty("weights")).isEqualTo("50,50");
+
+        // On-disk copy in problem/ must also be updated
+        assertThat(problemService.getProperties(11L).getProperty("time")).isEqualTo("1.05");
+        assertThat(problemService.getProperties(11L).getProperty("memory")).isEqualTo("512");
+        verify(workerPool, org.mockito.Mockito.times(2)).deleteProblem(11L);
+    }
+
+    private byte[] buildZipBytes(Map<String, String> entries) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            for (Map.Entry<String, String> e : entries.entrySet()) {
+                zos.putNextEntry(new ZipEntry(e.getKey()));
+                zos.write(e.getValue().getBytes(StandardCharsets.UTF_8));
+                zos.closeEntry();
+            }
+        }
+        return baos.toByteArray();
     }
 }
