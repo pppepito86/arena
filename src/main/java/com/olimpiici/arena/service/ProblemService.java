@@ -418,6 +418,7 @@ public class ProblemService {
      * and syncs the unzipped on-disk copy if its parent directory exists.
      */
 	private void modifyGradeProperties(long problemId, Function<Properties, Boolean> mutator) throws Exception {
+		boolean modified = false;
 		synchronized (lock) {
 			File zipFile = getProblemZip(problemId);
 			File unzippedFolder = getUnzippedProblemFolder(problemId);
@@ -473,7 +474,10 @@ public class ProblemService {
 			if (!zipFile.isFile() || (parent != null && Files.isDirectory(parent))) {
 				Files.write(propsPath, updatedBytes);
 			}
+			modified = true;
+		}
 
+		if (modified) {
 			workerPool.deleteProblem(problemId);
 		}
 	}
@@ -737,6 +741,9 @@ public class ProblemService {
      * stubs, checkers, graders, partial/wrong/cheat solutions, and macOS metadata.
      */
 	public Optional<File> getAuthorSolution(String workDir, Long taskId) {
+		String title = problemRepository.findById(taskId)
+				.map(Problem::getTitle)
+				.orElse(null);
 		synchronized (lock) {
 			File dir = getProblemDir(workDir, taskId);
 			if (!dir.isDirectory()) {
@@ -746,9 +753,6 @@ public class ProblemService {
 			try {
 				Properties props = getProperties(taskId);
 				List<String> allowedExtensions = parseAllowedExtensions(props.getProperty("extensions"));
-				String title = problemRepository.findById(taskId)
-						.map(Problem::getTitle)
-						.orElse(null);
 				List<String> relativeFiles = ProblemPackageResolver.listRelativeFiles(dir);
 				return ProblemPackageResolver.findAuthorSolution(relativeFiles, allowedExtensions, title)
 						.map(rel -> new File(dir, rel));
@@ -764,10 +768,10 @@ public class ProblemService {
      * and returns a diagnostic summary for admins.
      */
 	public ProblemPackageInfoDTO inspectPackage(Long problemId) throws IOException {
+		String title = problemRepository.findById(problemId)
+				.map(Problem::getTitle)
+				.orElse(null);
 		synchronized (lock) {
-			String title = problemRepository.findById(problemId)
-					.map(Problem::getTitle)
-					.orElse(null);
 			return ProblemPackageInspector.inspect(
 					getProblemZip(problemId),
 					getUnzippedProblemFolder(problemId),
