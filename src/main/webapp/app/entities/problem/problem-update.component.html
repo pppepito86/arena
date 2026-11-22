@@ -49,6 +49,9 @@
         <hr>
         <div class="form-group" *ngIf = "problem.id !== undefined">
             <label class="form-control-label" jhiTranslate="arenaApp.problem.file" for="file">File</label> {{fileUploadStatus}}
+            <small class="form-text text-muted mb-1" jhiTranslate="arenaApp.problem.uploadHint">
+                INFOS and BOS problem ZIP archives are supported directly (no need to repackage).
+            </small>
             <input type="file" class="form-control" name="file" 
             		id="file" accept=".zip,application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream"
             		[disabled]="isUploading"

@@ -29,6 +29,7 @@
             "memory": "Memory",
             "tags": "Tags",
             "file": "File",
+            "uploadHint": "INFOS and BOS problem ZIP archives are supported directly (no need to repackage).",
             "competition": "Competition",
             "year": "Year",
             "group": "Group"
