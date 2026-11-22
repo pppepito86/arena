@@ -116,16 +116,17 @@ public class ProblemResource {
 		if (problemId == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
+        if (problemDTO.getMemory() != null && problemDTO.getMemory() <= 0) {
+            throw new BadRequestAlertException("Memory limit must be positive", ENTITY_NAME, "memoryinvalid");
+        }
+        if (problemDTO.getTime() != null && problemDTO.getTime() <= 0) {
+            throw new BadRequestAlertException("Time limit must be positive", ENTITY_NAME, "timeinvalid");
+        }
 
         ProblemDTO before = findWithLimits(problemId);
 
         ProblemDTO result = problemService.save(problemDTO);
-        if (problemDTO.getMemory() != null) {
-        	problemService.updateMemoryLimit(problemId, problemDTO.getMemory());
-        }
-        if (problemDTO.getTime() != null) {
-        	problemService.updateTimeLimit(problemId, problemDTO.getTime());
-        }
+        problemService.updateLimits(problemId, problemDTO.getTime(), problemDTO.getMemory());
         auditProblemUpdate(before, problemDTO, result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, problemId.toString()))

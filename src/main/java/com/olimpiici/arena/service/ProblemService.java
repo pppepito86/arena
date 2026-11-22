@@ -357,6 +357,51 @@ public class ProblemService {
     }
 
     /**
+     * Atomically updates the time and/or memory limit in {@code grade.properties}
+     * in a single ZIP stream pass and evicts the worker cache at most once.
+     *
+     * @param problemId the problem ID
+     * @param newTimeLimitMs new time limit in milliseconds, or {@code null} to leave unchanged
+     * @param newMemoryLimitMb new memory limit in megabytes, or {@code null} to leave unchanged
+     * @throws Exception if there's an error updating the problem package
+     */
+	public void updateLimits(Long problemId, Integer newTimeLimitMs, Integer newMemoryLimitMb) throws Exception {
+		if (newTimeLimitMs == null && newMemoryLimitMb == null) {
+			return;
+		}
+		if (newTimeLimitMs != null && newTimeLimitMs <= 0) {
+			throw new IllegalArgumentException("Time limit must be positive, got: " + newTimeLimitMs);
+		}
+		if (newMemoryLimitMb != null && newMemoryLimitMb <= 0) {
+			throw new IllegalArgumentException("Memory limit must be positive, got: " + newMemoryLimitMb);
+		}
+		String timeValue = newTimeLimitMs != null ? formatTimeLimitSeconds(newTimeLimitMs) : null;
+		String memoryValue = newMemoryLimitMb != null ? String.valueOf(newMemoryLimitMb) : null;
+		modifyGradeProperties(problemId, props -> {
+			boolean changed = false;
+			if (newTimeLimitMs != null) {
+				String rawTime = props.getProperty("time");
+				Optional<Integer> oldTimeMs = parseTimeMillis(rawTime);
+				boolean hasExtraWhitespace = rawTime != null && !rawTime.equals(rawTime.trim());
+				if (hasExtraWhitespace || !oldTimeMs.isPresent() || oldTimeMs.get() != newTimeLimitMs.intValue()) {
+					props.setProperty("time", timeValue);
+					changed = true;
+				}
+			}
+			if (newMemoryLimitMb != null) {
+				String rawMemory = props.getProperty("memory");
+				Optional<Integer> oldMemoryMb = parseMemoryMb(rawMemory);
+				boolean hasExtraWhitespace = rawMemory != null && !rawMemory.equals(rawMemory.trim());
+				if (hasExtraWhitespace || !oldMemoryMb.isPresent() || oldMemoryMb.get() != newMemoryLimitMb.intValue()) {
+					props.setProperty("memory", memoryValue);
+					changed = true;
+				}
+			}
+			return changed;
+		});
+	}
+
+    /**
      * Update the time limit for a problem.
      *
      * @param problemId the problem ID
@@ -364,18 +409,7 @@ public class ProblemService {
      * @throws Exception if there's an error updating the problem package
      */
 	public void updateTimeLimit(Long problemId, int newTimeLimitMs) throws Exception {
-		if (newTimeLimitMs <= 0) {
-			throw new IllegalArgumentException("Time limit must be positive, got: " + newTimeLimitMs);
-		}
-		String timeValue = formatTimeLimitSeconds(newTimeLimitMs);
-		modifyGradeProperties(problemId, props -> {
-			Optional<Integer> oldTimeMs = parseTimeMillis(props.getProperty("time"));
-			if (oldTimeMs.isPresent() && oldTimeMs.get() == newTimeLimitMs) {
-				return false;
-			}
-			props.setProperty("time", timeValue);
-			return true;
-		});
+		updateLimits(problemId, newTimeLimitMs, null);
 	}
 
     /**
@@ -386,17 +420,7 @@ public class ProblemService {
      * @throws Exception if there's an error updating the problem package
      */
 	public void updateMemoryLimit(Long problemId, int newMemoryLimitMb) throws Exception {
-		if (newMemoryLimitMb <= 0) {
-			throw new IllegalArgumentException("Memory limit must be positive, got: " + newMemoryLimitMb);
-		}
-		modifyGradeProperties(problemId, props -> {
-			Optional<Integer> oldMemoryMb = parseMemoryMb(props.getProperty("memory"));
-			if (oldMemoryMb.isPresent() && oldMemoryMb.get() == newMemoryLimitMb) {
-				return false;
-			}
-			props.setProperty("memory", String.valueOf(newMemoryLimitMb));
-			return true;
-		});
+		updateLimits(problemId, null, newMemoryLimitMb);
 	}
 
     /**

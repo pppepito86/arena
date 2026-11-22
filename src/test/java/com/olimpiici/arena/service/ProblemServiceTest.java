@@ -325,13 +325,27 @@ public class ProblemServiceTest {
     public void testUpdateLimits_SkipsRewriteWhenNumericallyEqual() throws Exception {
         File problemDir = new File(workDir, "problems/2/problem");
         problemDir.mkdirs();
-        FileUtils.writeStringToFile(new File(problemDir, "grade.properties"), "time = 1.000 \nmemory = 512 \n", "UTF-8");
+        FileUtils.writeStringToFile(new File(problemDir, "grade.properties"), "time = 1.000\nmemory = 512\n", "UTF-8");
 
         // No problem.zip exists; if a rewrite were attempted, it would fail and/or call workerPool.deleteProblem
         problemService.updateTimeLimit(2L, 1000);
         problemService.updateMemoryLimit(2L, 512);
 
         verify(workerPool, never()).deleteProblem(anyLong());
+    }
+
+    @Test
+    public void testUpdateLimits_RewritesWhenTrailingWhitespacePresent() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("grade.properties", "time = 1.0 \nmemory = 512 \n");
+        problemService.replaceProblemZip(18L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        problemService.updateLimits(18L, 1000, 512);
+
+        Properties updated = problemService.getProperties(18L);
+        assertThat(updated.getProperty("time")).isEqualTo("1");
+        assertThat(updated.getProperty("memory")).isEqualTo("512");
+        verify(workerPool, org.mockito.Mockito.times(1)).deleteProblem(18L);
     }
 
     @Test
@@ -560,6 +574,21 @@ public class ProblemServiceTest {
         Optional<File> author = problemService.getAuthorSolution(workDir.getAbsolutePath(), 16L);
         assertThat(author).isPresent();
         assertThat(author.get().getAbsolutePath()).endsWith("A1_belote/solutions/belote_100p.cpp");
+    }
+
+    @Test
+    public void testUpdateLimits_CombinedUpdatesBothInOnePassAndEvictsWorkerOnce() throws Exception {
+        Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("grade.properties", "time=1\nmemory=256\n");
+        entries.put("tests/p.01.in", "1\n");
+        problemService.replaceProblemZip(17L, new ByteArrayInputStream(buildZipBytes(entries)));
+
+        problemService.updateLimits(17L, 1500, 512);
+
+        Properties updated = problemService.getProperties(17L);
+        assertThat(updated.getProperty("time")).isEqualTo("1.5");
+        assertThat(updated.getProperty("memory")).isEqualTo("512");
+        verify(workerPool, org.mockito.Mockito.times(1)).deleteProblem(17L);
     }
 
     private byte[] buildZipBytes(Map<String, String> entries) throws IOException {

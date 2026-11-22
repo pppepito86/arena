@@ -1,6 +1,7 @@
 package com.olimpiici.arena.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +27,9 @@ import com.olimpiici.arena.security.AuthoritiesConstants;
 import com.olimpiici.arena.service.AdminAuditService;
 import com.olimpiici.arena.service.CompetitionProblemService;
 import com.olimpiici.arena.service.ProblemService;
+import com.olimpiici.arena.service.dto.ProblemDTO;
 import com.olimpiici.arena.service.dto.ProblemPackageInfoDTO;
+import com.olimpiici.arena.web.rest.errors.BadRequestAlertException;
 
 public class ProblemResourceTest {
 
@@ -99,5 +103,46 @@ public class ProblemResourceTest {
         ResponseEntity<ProblemPackageInfoDTO> response = problemResource.getPackageInfo(42L);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().isHasPackage()).isTrue();
+    }
+
+    @Test
+    public void testUpdateProblem_RejectsNonPositiveLimitsBeforeSaving() throws Exception {
+        ProblemDTO badTime = new ProblemDTO();
+        badTime.setId(42L);
+        badTime.setMemory(512);
+        badTime.setTime(0);
+
+        assertThatThrownBy(() -> problemResource.updateProblem(badTime))
+            .isInstanceOf(BadRequestAlertException.class);
+
+        ProblemDTO badMemory = new ProblemDTO();
+        badMemory.setId(42L);
+        badMemory.setMemory(-128);
+        badMemory.setTime(1000);
+
+        assertThatThrownBy(() -> problemResource.updateProblem(badMemory))
+            .isInstanceOf(BadRequestAlertException.class);
+
+        verify(problemService, never()).save(any());
+        verify(problemService, never()).updateLimits(anyLong(), any(), any());
+    }
+
+    @Test
+    public void testUpdateProblem_CallsCombinedUpdateLimitsOnce() throws Exception {
+        ProblemDTO dto = new ProblemDTO();
+        dto.setId(42L);
+        dto.setTitle("Belote");
+        dto.setMemory(512);
+        dto.setTime(1500);
+
+        when(problemService.findOne(42L)).thenReturn(Optional.of(dto));
+        when(problemService.setLimitsToDto(dto)).thenReturn(dto);
+        when(problemService.save(dto)).thenReturn(dto);
+
+        ResponseEntity<ProblemDTO> response = problemResource.updateProblem(dto);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(problemService).save(dto);
+        verify(problemService).updateLimits(42L, 1500, 512);
     }
 }
