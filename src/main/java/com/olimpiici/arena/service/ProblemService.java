@@ -238,8 +238,8 @@ public class ProblemService {
     	}
     }
 
-    static final int DEFAULT_TIME_MS = 1000;
-    static final int DEFAULT_MEMORY_MB = 256;
+    public static final int DEFAULT_TIME_MS = 1000;
+    public static final int DEFAULT_MEMORY_MB = 256;
     static final String DEFAULT_EXTENSION = "cpp";
 
     /**
@@ -257,23 +257,16 @@ public class ProblemService {
 
 		synchronized (lock) {
 			try {
-				File zipFile = getProblemZip(problemId);
-				if (zipFile.isFile()) {
-					try (ProblemZipUtils.OpenedZip opened = ProblemZipUtils.openZipFile(zipFile)) {
-						Optional<String> zipEntry = ProblemPackageResolver.findPropertiesEntry(
-							ProblemZipUtils.listFileEntries(opened));
-						if (zipEntry.isPresent()) {
-							Optional<byte[]> bytes = ProblemZipUtils.readEntry(opened, zipEntry.get());
-							if (bytes.isPresent()) {
-								try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes.get())) {
-									props.load(bais);
-									return props;
-								}
-							}
+				try {
+					Optional<ZipPropertiesEntry> zipEntry = readZipPropertiesEntry(getProblemZip(problemId));
+					if (zipEntry.isPresent()) {
+						try (ByteArrayInputStream bais = new ByteArrayInputStream(zipEntry.get().bytes)) {
+							props.load(bais);
+							return props;
 						}
-					} catch (IOException e) {
-						log.warn("Cannot read metadata from problem.zip for problem {}, falling back to unzipped dir", problemId, e);
 					}
+				} catch (IOException e) {
+					log.warn("Cannot read metadata from problem.zip for problem {}, falling back to unzipped dir", problemId, e);
 				}
 
 				File unzippedFolder = getUnzippedProblemFolder(problemId);
@@ -447,30 +440,24 @@ public class ProblemService {
 			File zipFile = getProblemZip(problemId);
 			File unzippedFolder = getUnzippedProblemFolder(problemId);
 
-			Optional<String> existingZipEntry = Optional.empty();
-			Optional<byte[]> existingZipBytes = Optional.empty();
-			if (zipFile.isFile()) {
-				try (ProblemZipUtils.OpenedZip opened = ProblemZipUtils.openZipFile(zipFile)) {
-					existingZipEntry = ProblemPackageResolver.findPropertiesEntry(
-						ProblemZipUtils.listFileEntries(opened));
-					if (existingZipEntry.isPresent()) {
-						existingZipBytes = ProblemZipUtils.readEntry(opened, existingZipEntry.get());
-					}
-				}
+			Optional<ZipPropertiesEntry> zipEntry = readZipPropertiesEntry(zipFile);
+			String entryPath;
+			if (zipEntry.isPresent()) {
+				entryPath = zipEntry.get().path;
+			} else if (unzippedFolder.isDirectory()) {
+				entryPath = ProblemPackageResolver.findPropertiesEntry(
+					ProblemPackageResolver.listRelativeFiles(unzippedFolder)).orElse("grade.properties");
+			} else {
+				entryPath = "grade.properties";
 			}
-			Optional<String> existingDiskEntry = unzippedFolder.isDirectory()
-				? ProblemPackageResolver.findPropertiesEntry(ProblemPackageResolver.listRelativeFiles(unzippedFolder))
-				: Optional.empty();
-
-			String entryPath = existingZipEntry.orElseGet(() -> existingDiskEntry.orElse("grade.properties"));
 
 			Properties props = new Properties();
 			props.setProperty("time", "1");
 			props.setProperty("memory", "256");
 
 			File unzippedPropsFile = new File(unzippedFolder, ProblemPackageResolver.normalizeRelativePath(entryPath));
-			if (existingZipBytes.isPresent()) {
-				try (ByteArrayInputStream bais = new ByteArrayInputStream(existingZipBytes.get())) {
+			if (zipEntry.isPresent()) {
+				try (ByteArrayInputStream bais = new ByteArrayInputStream(zipEntry.get().bytes)) {
 					props.load(bais);
 				}
 			} else if (unzippedPropsFile.isFile()) {
@@ -503,6 +490,31 @@ public class ProblemService {
 
 		if (modified) {
 			workerPool.deleteProblem(problemId);
+		}
+	}
+
+	private Optional<ZipPropertiesEntry> readZipPropertiesEntry(File zipFile) throws IOException {
+		if (!zipFile.isFile()) {
+			return Optional.empty();
+		}
+		try (ProblemZipUtils.OpenedZip opened = ProblemZipUtils.openZipFile(zipFile)) {
+			Optional<String> entry = ProblemPackageResolver.findPropertiesEntry(
+				ProblemZipUtils.listFileEntries(opened));
+			if (!entry.isPresent()) {
+				return Optional.empty();
+			}
+			return ProblemZipUtils.readEntry(opened, entry.get())
+				.map(bytes -> new ZipPropertiesEntry(entry.get(), bytes));
+		}
+	}
+
+	private static final class ZipPropertiesEntry {
+		final String path;
+		final byte[] bytes;
+
+		ZipPropertiesEntry(String path, byte[] bytes) {
+			this.path = path;
+			this.bytes = bytes;
 		}
 	}
 

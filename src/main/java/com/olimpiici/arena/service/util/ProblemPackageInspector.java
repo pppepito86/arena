@@ -34,9 +34,6 @@ import com.olimpiici.arena.service.dto.ProblemPackageInfoDTO;
  */
 public final class ProblemPackageInspector {
 
-    private static final int DEFAULT_TIME_MS = 1000;
-    private static final int DEFAULT_MEMORY_MB = 256;
-
     /**
      * Files whose content the grader's {@link TaskDetails} reads (PropertiesFinder,
      * CriteriaFinder, QuizFinder); all other files are only looked at by name.
@@ -121,7 +118,7 @@ public final class ProblemPackageInspector {
             info.addWarning("Time limit in grade.properties has extra whitespace ('" + rawTime
                 + "'); save limits to clean it for the worker.");
         }
-        info.setTimeMs(parsedTime.orElse(DEFAULT_TIME_MS));
+        info.setTimeMs(parsedTime.orElse(ProblemService.DEFAULT_TIME_MS));
 
         String rawMemory = props.getProperty("memory");
         Optional<Integer> parsedMemory = ProblemService.parseMemoryMb(rawMemory);
@@ -131,7 +128,7 @@ public final class ProblemPackageInspector {
             info.addWarning("Memory limit in grade.properties has extra whitespace ('" + rawMemory
                 + "'); save limits to clean it for the worker.");
         }
-        info.setMemoryMb(parsedMemory.orElse(DEFAULT_MEMORY_MB));
+        info.setMemoryMb(parsedMemory.orElse(ProblemService.DEFAULT_MEMORY_MB));
 
         List<String> allowedExtensions = ProblemService.parseAllowedExtensions(props.getProperty("extensions"));
         info.setAllowedExtensions(allowedExtensions);
