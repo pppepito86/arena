@@ -178,7 +178,9 @@ export class StandingsComponent implements OnInit, OnDestroy {
         return 'unset';
     }
     getPointsForProblem(userPoints: IUserPoints, problemId: number) {
-        if (!userPoints.perProblem) return 0;
+        if (!userPoints.perProblem) {
+            return 0;
+        }
 
         return userPoints.perProblem[problemId] || 0;
     }

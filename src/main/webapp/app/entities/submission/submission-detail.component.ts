@@ -60,10 +60,10 @@ export class SubmissionDetailComponent implements OnInit {
 
                 if (!this.isJudged(this.submission)) {
                     this.refreshInterval = setInterval(() => {
-                        this.submissionService.find(this.submissionId).subscribe(res => {
-                            this.submission = res.body;
-                            if (res.body.details) {
-                                this.submissionDetails = JSON.parse(res.body.details);
+                        this.submissionService.find(this.submissionId).subscribe(refreshRes => {
+                            this.submission = refreshRes.body;
+                            if (refreshRes.body.details) {
+                                this.submissionDetails = JSON.parse(refreshRes.body.details);
                             }
                             this.parseTestDetails();
                             if (this.isJudged(this.submission)) {

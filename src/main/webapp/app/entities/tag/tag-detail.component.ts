@@ -72,9 +72,15 @@ export class TagDetailComponent implements OnInit {
     }
 
     getPathAtPos(p: ICompetitionProblem, pos: number) {
-        if (!p.path) return '';
-        while (pos < 0) pos += p.path.length;
-        if (pos >= p.path.length) pos %= p.path.length;
+        if (!p.path) {
+            return '';
+        }
+        while (pos < 0) {
+            pos += p.path.length;
+        }
+        if (pos >= p.path.length) {
+            pos %= p.path.length;
+        }
         return p.path[pos];
     }
 
@@ -92,9 +98,11 @@ export class TagDetailComponent implements OnInit {
     }
 
     getYear(p: ICompetitionProblem) {
-        if (!p.path) return 'z';
+        if (!p.path) {
+            return 'z';
+        }
         for (const comp of p.path) {
-            if (comp.length == 4) {
+            if (comp.length === 4) {
                 return comp;
             }
         }
@@ -102,7 +110,9 @@ export class TagDetailComponent implements OnInit {
     }
 
     getComp(p: ICompetitionProblem) {
-        if (!p.path) return '';
+        if (!p.path) {
+            return '';
+        }
         for (const comp of p.path) {
             if (comp.length > 4) {
                 return comp;
